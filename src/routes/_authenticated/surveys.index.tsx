@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, Download, FileDown, FileText, Eye } from "lucide-react";
@@ -14,6 +13,8 @@ import { useAuth } from "@/lib/auth-context";
 import { exportExcel, exportPDF } from "@/lib/export";
 import { getSubmitterNames } from "@/lib/users.functions";
 import { downloadSurveyPDF } from "@/lib/single-export";
+import { SurveyFilterPanel } from "@/components/SurveyFilterPanel";
+import { emptyFilters, matchSurvey, type SurveyFilters } from "@/lib/survey-filters";
 
 export const Route = createFileRoute("/_authenticated/surveys/")({
   component: SurveysList,
@@ -24,9 +25,7 @@ function SurveysList() {
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [villageF, setVillageF] = useState("all");
-  const [houseF, setHouseF] = useState("all");
-  const [farmF, setFarmF] = useState("all");
+  const [filters, setFilters] = useState<SurveyFilters>({ ...emptyFilters });
   const [submitters, setSubmitters] = useState<Record<string, string>>({});
   const fetchSubmitters = useServerFn(getSubmitterNames);
 
@@ -48,21 +47,16 @@ function SurveysList() {
 
   useEffect(() => { load(); }, [role]);
 
-  const villages = useMemo(() => Array.from(new Set(rows.map(r => r.village).filter(Boolean))), [rows]);
   const filtered = useMemo(() => {
     return rows.filter(r => {
       if (search) {
         const s = search.toLowerCase();
         if (!(r.head_name?.toLowerCase().includes(s) || r.mobile?.includes(s) || r.village?.toLowerCase().includes(s) || r.taluka?.toLowerCase().includes(s) || r.district?.toLowerCase().includes(s) || r.pincode?.includes(s))) return false;
       }
-      if (villageF !== "all" && r.village !== villageF) return false;
-      if (houseF === "yes" && !r.owns_house) return false;
-      if (houseF === "no" && r.owns_house) return false;
-      if (farmF === "yes" && !r.has_farmland) return false;
-      if (farmF === "no" && r.has_farmland) return false;
-      return true;
+      return matchSurvey(r, filters);
     });
-  }, [rows, search, villageF, houseF, farmF]);
+  }, [rows, search, filters]);
+
 
   async function del(id: string) {
     const { error } = await supabase.from("surveys").delete().eq("id", id);
@@ -86,34 +80,13 @@ function SurveysList() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">शोध व फिल्टर</CardTitle></CardHeader>
-        <CardContent className="grid md:grid-cols-4 gap-3">
-          <Input placeholder="नाव / मोबाईल / गाव शोधा..." value={search} onChange={e=>setSearch(e.target.value)} />
-          <Select value={villageF} onValueChange={setVillageF}>
-            <SelectTrigger><SelectValue placeholder="गाव"/></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">सर्व गावे</SelectItem>
-              {villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={houseF} onValueChange={setHouseF}>
-            <SelectTrigger><SelectValue placeholder="घर"/></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">सर्व</SelectItem>
-              <SelectItem value="yes">स्वतःचे घर</SelectItem>
-              <SelectItem value="no">घर नाही</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={farmF} onValueChange={setFarmF}>
-            <SelectTrigger><SelectValue placeholder="शेती"/></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">सर्व</SelectItem>
-              <SelectItem value="yes">शेती आहे</SelectItem>
-              <SelectItem value="no">शेती नाही</SelectItem>
-            </SelectContent>
-          </Select>
+        <CardHeader className="pb-3"><CardTitle className="text-base">शोध व फिल्टर</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <Input placeholder="नाव / मोबाईल / गाव / तालुका / जिल्हा / पिनकोड शोधा..." value={search} onChange={e=>setSearch(e.target.value)} />
+          <SurveyFilterPanel rows={rows} filters={filters} onChange={setFilters} />
         </CardContent>
       </Card>
+
 
       <Card>
         <CardContent className="p-0 overflow-x-auto">
