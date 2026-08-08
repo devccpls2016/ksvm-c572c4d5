@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronsUpDown, Filter, RotateCcw, Check, MapPin, Users, GraduationCap, Briefcase, Wheat, Home, Target, Landmark, Store } from "lucide-react";
 import {
@@ -53,11 +52,18 @@ function MultiSelect({
             <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[320px] p-0 bg-popover" align="start">
-          <div className="p-2 border-b">
+        <PopoverContent
+          className="w-[320px] p-0 bg-popover max-h-[min(60vh,22rem)] flex flex-col overflow-hidden"
+          align="start"
+        >
+          <div className="p-2 border-b shrink-0">
             <Input placeholder="शोधा..." value={q} onChange={(e) => setQ(e.target.value)} className="h-8" />
           </div>
-          <ScrollArea className="max-h-64">
+          <div
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+            onWheel={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+          >
             <div className="p-1">
               {list.length === 0 && <p className="p-3 text-xs text-muted-foreground">पर्याय नाही</p>}
               {list.map((o) => (
@@ -73,9 +79,10 @@ function MultiSelect({
                 </button>
               ))}
             </div>
-          </ScrollArea>
+          </div>
+
           {value.length > 0 && (
-            <div className="border-t p-2">
+            <div className="border-t p-2 shrink-0">
               <Button variant="ghost" size="sm" className="w-full" onClick={() => onChange([])}>
                 निवड रद्द करा
               </Button>
