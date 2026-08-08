@@ -108,6 +108,7 @@ function renderSection(s, isFirst) {
 
 // ---------- Part 2 & 3: appendix dumps of cascading data trees ----------
 const titleize = (k) => k
+  .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
   .replace(/_/g, " ")
   .toLowerCase()
   .replace(/\b\w/g, (m) => m.toUpperCase());
@@ -131,10 +132,11 @@ function dumpValue(key, value, out) {
 }
 
 function dumpNode(node, out, level) {
-  const label = node.label || node.name || node.value || node.title || "(item)";
+  const label = node.label || node.name || node.value || node.title
+    || node.level || node.stream || node.force || node.category || node.type || "(item)";
   out.push(Bullet(String(label), level, { bold: level === 0 }));
   for (const [k, v] of Object.entries(node)) {
-    if (["label", "name", "value", "title"].includes(k)) continue;
+    if (["label", "name", "value", "title", "level", "stream", "force", "category", "type"].includes(k)) continue;
     if (Array.isArray(v) && v.length) {
       if (typeof v[0] === "string") {
         out.push(Bullet(`${titleize(k)}: ${v.join(", ")}`, Math.min(level + 1, 4), { color: C.muted }));
