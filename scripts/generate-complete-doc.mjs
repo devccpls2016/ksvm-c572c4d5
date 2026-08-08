@@ -163,6 +163,7 @@ async function appendixFromModule(relPath, heading, intro) {
   out.push(P([T(intro, { italics: true, color: C.muted })], { after: 120 }));
   for (const [key, value] of Object.entries(mod)) {
     if (typeof value === "function") continue;
+    if (/^empty/i.test(key) || /^default/i.test(key)) continue; // skip blank default objects
     dumpValue(key, value, out);
   }
   return out;
