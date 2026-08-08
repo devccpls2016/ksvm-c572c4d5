@@ -86,34 +86,13 @@ function SurveysList() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">शोध व फिल्टर</CardTitle></CardHeader>
-        <CardContent className="grid md:grid-cols-4 gap-3">
-          <Input placeholder="नाव / मोबाईल / गाव शोधा..." value={search} onChange={e=>setSearch(e.target.value)} />
-          <Select value={villageF} onValueChange={setVillageF}>
-            <SelectTrigger><SelectValue placeholder="गाव"/></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">सर्व गावे</SelectItem>
-              {villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={houseF} onValueChange={setHouseF}>
-            <SelectTrigger><SelectValue placeholder="घर"/></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">सर्व</SelectItem>
-              <SelectItem value="yes">स्वतःचे घर</SelectItem>
-              <SelectItem value="no">घर नाही</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={farmF} onValueChange={setFarmF}>
-            <SelectTrigger><SelectValue placeholder="शेती"/></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">सर्व</SelectItem>
-              <SelectItem value="yes">शेती आहे</SelectItem>
-              <SelectItem value="no">शेती नाही</SelectItem>
-            </SelectContent>
-          </Select>
+        <CardHeader className="pb-3"><CardTitle className="text-base">शोध व फिल्टर</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <Input placeholder="नाव / मोबाईल / गाव / तालुका / जिल्हा / पिनकोड शोधा..." value={search} onChange={e=>setSearch(e.target.value)} />
+          <SurveyFilterPanel rows={rows} filters={filters} onChange={setFilters} />
         </CardContent>
       </Card>
+
 
       <Card>
         <CardContent className="p-0 overflow-x-auto">
