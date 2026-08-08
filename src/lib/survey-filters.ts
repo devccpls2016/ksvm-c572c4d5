@@ -273,7 +273,7 @@ function personMatch(row: any, f: SurveyFilters): boolean {
       o.institutionType, o.institutionLevel, o.branch, o.force, o.bankType,
       o.sector, o.hospitalType, o.serviceType,
     ])) return false;
-    if (f.designations.length && !anyIn(f.designations, [o.designation, o.rank, o.coopRole as any])) return false;
+    if (f.designations.length && !anyIn(f.designations, [o.designation, o.rank])) return false;
     if (f.occBusinessTypes.length) {
       const bt = [o.businessType, ...(o.businessTypes || []), ...(o.selfEmployedTypes || [])];
       if (!bt.some((b) => b && f.occBusinessTypes.includes(b))) return false;
