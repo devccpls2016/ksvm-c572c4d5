@@ -120,12 +120,10 @@ export const emptyFilters: SurveyFilters = {
 export const STATES = ["महाराष्ट्र (Maharashtra)", "मध्य प्रदेश (Madhya Pradesh)"];
 export const GENDER_OPTS = ["पुरुष", "स्त्री", "इतर"];
 export const AGE_GROUPS: { label: string; min: number; max: number }[] = [
-  { label: "0–5 वर्षे", min: 0, max: 5 },
-  { label: "6–14 वर्षे", min: 6, max: 14 },
-  { label: "15–24 वर्षे", min: 15, max: 24 },
-  { label: "25–44 वर्षे", min: 25, max: 44 },
-  { label: "45–59 वर्षे", min: 45, max: 59 },
-  { label: "60+ वर्षे", min: 60, max: 200 },
+  { label: "बालक / Children (0–14 वर्षे / years)", min: 0, max: 14 },
+  { label: "युवा / Youth (15–24 वर्षे / years)", min: 15, max: 24 },
+  { label: "प्रौढ / Adults (25–64 वर्षे / years)", min: 25, max: 64 },
+  { label: "ज्येष्ठ / Seniors (65+ वर्षे / years)", min: 65, max: 200 },
 ];
 export const FAMILY_SIZES: { label: string; min: number; max: number }[] = [
   { label: "1–2 सदस्य", min: 1, max: 2 },
