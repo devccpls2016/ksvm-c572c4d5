@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronsUpDown, Filter, RotateCcw, Check } from "lucide-react";
+import { ChevronsUpDown, Filter, RotateCcw, Check, MapPin, Users, GraduationCap, Briefcase, Wheat, Home, Target, Landmark, Store } from "lucide-react";
 import {
   AGE_GROUPS, FAMILY_SIZES, GENDER_OPTS, IRRIGATION_KEYS, LADKI_BAHIN_REASONS,
   MARRIAGE_TYPES, PUMP_TYPES, SPORT_LEVELS, STATES, TOOL_KEYS, EMPLOYMENT_TYPES,
@@ -127,12 +127,12 @@ function TextFilter({ label, value, onChange, placeholder }: { label: string; va
   );
 }
 
-function Group({ id, icon, title, count, children }: { id: string; icon: string; title: string; count: number; children: React.ReactNode }) {
+function Group({ id, icon: Icon, title, count, children }: { id: string; icon: any; title: string; count: number; children: React.ReactNode }) {
   return (
     <AccordionItem value={id} className="border rounded-lg px-3 bg-card">
       <AccordionTrigger className="hover:no-underline py-3">
         <span className="flex items-center gap-2 text-sm font-semibold">
-          <span>{icon}</span>{title}
+          <Icon className="h-4 w-4 text-primary" />{title}
           {count > 0 && <Badge variant="secondary" className="ml-1">{count}</Badge>}
         </span>
       </AccordionTrigger>
@@ -219,7 +219,7 @@ export function SurveyFilterPanel({
 
       <Accordion type="multiple" className="space-y-2">
         {/* 1 LOCATION */}
-        <Group id="loc" icon="📍" title="स्थान (Location)" count={c("state", "districts", "talukas", "villages", "pincodes")}>
+        <Group id="loc" icon={MapPin} title="स्थान (Location)" count={c("state", "districts", "talukas", "villages", "pincodes")}>
           <div className="space-y-1.5">
             <Label className="text-xs font-medium text-muted-foreground">राज्य (State)</Label>
             <Select value={f.state || "any"} onValueChange={(v) => set("state", v === "any" ? "" : v)}>
@@ -240,7 +240,7 @@ export function SurveyFilterPanel({
         </Group>
 
         {/* 2 FAMILY */}
-        <Group id="fam" icon="👨‍👩‍👧" title="कुटुंब व लोकसंख्याशास्त्र (Family & Demographics)"
+        <Group id="fam" icon={Users} title="कुटुंब व लोकसंख्याशास्त्र (Family & Demographics)"
           count={c("genders", "ageGroups", "ageMin", "ageMax", "maritalStatuses", "marriageTypes", "spouseCaste", "familySizes", "familyMin", "familyMax")}>
           <MultiSelect label="लिंग (Gender)" options={GENDER_OPTS} value={f.genders} onChange={(v) => set("genders", v)} />
           <MultiSelect label="वयोगट (Age Group)" options={AGE_GROUPS.map((g) => g.label)} value={f.ageGroups} onChange={(v) => set("ageGroups", v)} />
@@ -253,7 +253,7 @@ export function SurveyFilterPanel({
         </Group>
 
         {/* 3 EDUCATION */}
-        <Group id="edu" icon="🎓" title="शिक्षण (Education)" count={c("eduLevels", "eduStreams", "eduCourses", "eduInstitutions")}>
+        <Group id="edu" icon={GraduationCap} title="शिक्षण (Education)" count={c("eduLevels", "eduStreams", "eduCourses", "eduInstitutions")}>
           <MultiSelect label="शिक्षण स्तर (Level)" options={eduLevels} value={f.eduLevels}
             onChange={(v) => onChange({ ...f, eduLevels: v, eduStreams: [], eduCourses: [] })} />
           <MultiSelect label="शाखा / गट (Stream)" options={eduStreams} value={f.eduStreams}
@@ -263,7 +263,7 @@ export function SurveyFilterPanel({
         </Group>
 
         {/* 4 OCCUPATION */}
-        <Group id="occ" icon="💼" title="नौकरी / व्यवसाय (Occupation)" count={c("occCategories", "employmentTypes", "department", "designations", "occBusinessTypes")}>
+        <Group id="occ" icon={Briefcase} title="नौकरी / व्यवसाय (Occupation)" count={c("occCategories", "employmentTypes", "department", "designations", "occBusinessTypes")}>
           <MultiSelect label="मुख्य श्रेणी (Category)" options={PRIMARY_CATEGORIES} value={f.occCategories} onChange={(v) => set("occCategories", v)} />
           <MultiSelect label="रोजगार प्रकार (Employment Type)" options={EMPLOYMENT_TYPES} value={f.employmentTypes} onChange={(v) => set("employmentTypes", v)} />
           <TextFilter label="विभाग / संस्था (Department)" value={f.department} onChange={(v) => set("department", v)} placeholder="विभाग शोधा" />
@@ -272,7 +272,7 @@ export function SurveyFilterPanel({
         </Group>
 
         {/* 5 AGRICULTURE */}
-        <Group id="agri" icon="🌾" title="शेती (Agriculture)"
+        <Group id="agri" icon={Wheat} title="शेती (Agriculture)"
           count={c("hasFarmland", "landSizes", "landMin", "landMax", "cropSeasons", "majorCropTypes", "irrigationSources", "pumpTypes", "malguzariPond", "freeWater", "farmingTypes", "farmingTools", "toolOwnership", "toolWantBuy", "toolLoan", "contractFarming", "contractMin", "contractMax")}>
           <TriSelect label="शेती आहे का? (Has Farmland)" value={f.hasFarmland} onChange={(v) => set("hasFarmland", v)} />
           <MultiSelect label="जमिनीचे क्षेत्र (Land Size)" options={LAND_SIZES} value={f.landSizes} onChange={(v) => set("landSizes", v)} />
@@ -307,7 +307,7 @@ export function SurveyFilterPanel({
         </Group>
 
         {/* 6 HOUSE */}
-        <Group id="house" icon="🏠" title="घर व मालमत्ता (House & Assets)"
+        <Group id="house" icon={Home} title="घर व मालमत्ता (House & Assets)"
           count={c("ownsHouse", "houseTypes", "livingStatuses", "gharkulReceived", "gharkulWanted", "solarInstalled", "solarWanted", "assets", "assetMinQty")}>
           <TriSelect label="स्वतःचे घर? (Own House)" value={f.ownsHouse} onChange={(v) => set("ownsHouse", v)} />
           <MultiSelect label="घराचा प्रकार (House Type)" options={HOUSE_TYPES} value={f.houseTypes} onChange={(v) => set("houseTypes", v)} />
@@ -332,7 +332,7 @@ export function SurveyFilterPanel({
         </Group>
 
         {/* 7 BENEFITS */}
-        <Group id="ben" icon="🎯" title="लाभ / सहाय्य (Benefits)"
+        <Group id="ben" icon={Target} title="लाभ / सहाय्य (Benefits)"
           count={c("ladkiBahin", "ladkiBahinRegular", "ladkiBahinReasons", "criticalIllness", "medicalAidNeeded", "hasSportsperson", "sportLevels", "sportType")}>
           <TriSelect label="लाडकी बहीण लाभार्थी" value={f.ladkiBahin} onChange={(v) => set("ladkiBahin", v)} />
           <TriSelect label="लाभ नियमित मिळतो?" value={f.ladkiBahinRegular} onChange={(v) => set("ladkiBahinRegular", v)} />
@@ -345,7 +345,7 @@ export function SurveyFilterPanel({
         </Group>
 
         {/* 8 POSITION */}
-        <Group id="pos" icon="🏛️" title="धारण केलेले पद (Position)"
+        <Group id="pos" icon={Landmark} title="धारण केलेले पद (Position)"
           count={c("hasPosition", "positionTypes", "positionStatuses", "politicalLevels", "party", "representativeTypes", "representativeRoles", "organisation")}>
           <TriSelect label="पद आहे का? (Has Position)" value={f.hasPosition} onChange={(v) => set("hasPosition", v)} />
           <MultiSelect label="पदाचा प्रकार (Type)" options={POSITION_TYPES} value={f.positionTypes} onChange={(v) => set("positionTypes", v)} />
@@ -359,7 +359,7 @@ export function SurveyFilterPanel({
         </Group>
 
         {/* 9 BUSINESS */}
-        <Group id="biz" icon="🏪" title="व्यवसाय / उद्योजक (Business)"
+        <Group id="biz" icon={Store} title="व्यवसाय / उद्योजक (Business)"
           count={c("entrepreneur", "bizTypes", "sideBusiness", "loanRequired", "loanMin", "loanMax", "loanPurposes")}>
           <TriSelect label="उद्योजक आहे का? (Entrepreneur)" value={f.entrepreneur} onChange={(v) => set("entrepreneur", v)} />
           <MultiSelect label="व्यवसाय प्रकार (Business Type)" options={BUSINESS_TYPES} value={f.bizTypes} onChange={(v) => set("bizTypes", v)} />
