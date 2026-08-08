@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronsUpDown, Filter, RotateCcw, Check, MapPin, Users, GraduationCap, Briefcase, Wheat, Home, Target, Landmark, Store } from "lucide-react";
 import {
@@ -83,7 +82,7 @@ function MultiSelect({
           </div>
 
           {value.length > 0 && (
-            <div className="border-t p-2">
+            <div className="border-t p-2 shrink-0">
               <Button variant="ghost" size="sm" className="w-full" onClick={() => onChange([])}>
                 निवड रद्द करा
               </Button>
