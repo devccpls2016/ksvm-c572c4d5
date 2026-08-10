@@ -272,6 +272,14 @@ function UsersPage() {
         </Dialog>
       </div>
 
+      <UserFilterPanel
+        filters={filters}
+        onChange={setFilters}
+        locs={locs}
+        total={rows.length}
+        shown={visibleRows.length}
+      />
+
       <Card>
         <CardHeader><CardTitle className="text-base">All Users</CardTitle></CardHeader>
         <CardContent className="p-0 overflow-x-auto">
@@ -284,12 +292,13 @@ function UsersPage() {
                 <TableHead>Role</TableHead>
                 <TableHead>Access Scope</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Last Login</TableHead>
                 <TableHead className="text-right">क्रिया</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">रेकॉर्ड नाही</TableCell></TableRow>}
-              {rows.map((r) => (
+              {visibleRows.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-6">रेकॉर्ड नाही</TableCell></TableRow>}
+              {visibleRows.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-medium">{r.full_name}</TableCell>
                   <TableCell>{r.email}</TableCell>
