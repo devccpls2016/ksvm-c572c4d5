@@ -306,6 +306,7 @@ function UsersPage() {
                   <TableCell><Badge variant={r.role === "admin" ? "default" : "secondary"}>{r.role}</Badge></TableCell>
                   <TableCell className="text-xs">{r.role === "admin" ? "All" : accessSummary(r)}</TableCell>
                   <TableCell>{r.is_active ? <Badge>Active</Badge> : <Badge variant="outline">Inactive</Badge>}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{r.last_sign_in_at ? new Date(r.last_sign_in_at).toLocaleDateString("en-GB") : "—"}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" onClick={() => startEdit(r)}><Pencil className="h-4 w-4"/></Button>
                     {r.role !== "admin" && (
