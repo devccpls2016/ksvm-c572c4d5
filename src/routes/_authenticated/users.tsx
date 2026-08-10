@@ -79,6 +79,8 @@ function UsersPage() {
   const [locs, setLocs] = useState<{ district: string; taluka: string; village: string }[]>([]);
 
   const [rows, setRows] = useState<any[]>([]);
+  const [filters, setFilters] = useState<UserFilters>(emptyUserFilters);
+  const visibleRows = filterUsers(rows, filters);
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState<any | null>(null);
