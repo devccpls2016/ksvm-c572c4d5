@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { listAppUsers, createSurveyUser, updateSurveyUser, deleteSurveyUser, getLocationTree } from "@/lib/users.functions";
 import { ACCESS_SCOPES, ACCESS_SCOPE_LABELS, accessSummary, type AccessScope } from "@/lib/users.access";
+import { UserFilterPanel, emptyUserFilters, filterUsers, type UserFilters } from "@/components/UserFilterPanel";
 
 function uniqSorted(v: string[]) {
   return Array.from(new Set(v.filter(Boolean))).sort((a, b) => a.localeCompare(b, "mr"));
@@ -78,6 +79,8 @@ function UsersPage() {
   const [locs, setLocs] = useState<{ district: string; taluka: string; village: string }[]>([]);
 
   const [rows, setRows] = useState<any[]>([]);
+  const [filters, setFilters] = useState<UserFilters>(emptyUserFilters);
+  const visibleRows = filterUsers(rows, filters);
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState<any | null>(null);
@@ -191,7 +194,7 @@ function UsersPage() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-2xl font-bold">Create Survey User</h1>
-          <p className="text-sm text-muted-foreground">{rows.length} वापरकर्ते</p>
+          <p className="text-sm text-muted-foreground">{visibleRows.length} / {rows.length} वापरकर्ते</p>
         </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-1"/>नवीन Survey User</Button></DialogTrigger>
@@ -269,6 +272,14 @@ function UsersPage() {
         </Dialog>
       </div>
 
+      <UserFilterPanel
+        filters={filters}
+        onChange={setFilters}
+        locs={locs}
+        total={rows.length}
+        shown={visibleRows.length}
+      />
+
       <Card>
         <CardHeader><CardTitle className="text-base">All Users</CardTitle></CardHeader>
         <CardContent className="p-0 overflow-x-auto">
@@ -281,12 +292,13 @@ function UsersPage() {
                 <TableHead>Role</TableHead>
                 <TableHead>Access Scope</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Last Login</TableHead>
                 <TableHead className="text-right">क्रिया</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">रेकॉर्ड नाही</TableCell></TableRow>}
-              {rows.map((r) => (
+              {visibleRows.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-6">रेकॉर्ड नाही</TableCell></TableRow>}
+              {visibleRows.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-medium">{r.full_name}</TableCell>
                   <TableCell>{r.email}</TableCell>
@@ -294,6 +306,7 @@ function UsersPage() {
                   <TableCell><Badge variant={r.role === "admin" ? "default" : "secondary"}>{r.role}</Badge></TableCell>
                   <TableCell className="text-xs">{r.role === "admin" ? "All" : accessSummary(r)}</TableCell>
                   <TableCell>{r.is_active ? <Badge>Active</Badge> : <Badge variant="outline">Inactive</Badge>}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{r.last_sign_in_at ? new Date(r.last_sign_in_at).toLocaleDateString("en-GB") : "—"}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" onClick={() => startEdit(r)}><Pencil className="h-4 w-4"/></Button>
                     {r.role !== "admin" && (

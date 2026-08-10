@@ -70,9 +70,11 @@ export const listAppUsers = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
     if (error) throw error;
     const { data: roles } = await admin.from("user_roles").select("user_id, role");
+    const { data: authList } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
     return (profiles || []).map((p) => ({
       ...p,
       role: roles?.find((r) => r.user_id === p.id)?.role ?? "surveyor",
+      last_sign_in_at: authList?.users?.find((u) => u.id === p.id)?.last_sign_in_at ?? null,
     }));
   });
 
