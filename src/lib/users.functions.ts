@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { accessFields, accessFieldsOptional, normalizeAccess } from "@/lib/users.access";
 
 async function getAdmin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -65,7 +66,7 @@ export const listAppUsers = createServerFn({ method: "GET" })
     const admin = await getAdmin();
     const { data: profiles, error } = await admin
       .from("profiles")
-      .select("id, full_name, email, mobile, is_active, created_at")
+      .select("id, full_name, email, mobile, is_active, created_at, access_scope, access_districts, access_talukas, access_villages")
       .order("created_at", { ascending: false });
     if (error) throw error;
     const { data: roles } = await admin.from("user_roles").select("user_id, role");
@@ -81,6 +82,7 @@ const createUserInput = z.object({
   mobile: z.string().max(20).optional(),
   password: z.string().min(6).max(72),
   is_active: z.boolean().default(true),
+  ...accessFields,
 });
 
 export const createSurveyUser = createServerFn({ method: "POST" })
@@ -99,7 +101,7 @@ export const createSurveyUser = createServerFn({ method: "POST" })
     const uid = created.user!.id;
     await admin
       .from("profiles")
-      .upsert({ id: uid, full_name: data.full_name, email: data.email, mobile: data.mobile ?? null, is_active: data.is_active });
+      .upsert({ id: uid, full_name: data.full_name, email: data.email, mobile: data.mobile ?? null, is_active: data.is_active, ...normalizeAccess(data) });
     await admin
       .from("user_roles")
       .upsert({ user_id: uid, role: "surveyor" }, { onConflict: "user_id,role" });
@@ -113,6 +115,7 @@ const updateUserInput = z.object({
   is_active: z.boolean().optional(),
   password: z.string().min(6).max(72).optional(),
   email: z.string().email().max(255).optional(),
+  ...accessFieldsOptional,
 });
 
 export const updateSurveyUser = createServerFn({ method: "POST" })
@@ -133,6 +136,7 @@ export const updateSurveyUser = createServerFn({ method: "POST" })
     if (data.mobile !== undefined) patch.mobile = data.mobile;
     if (data.is_active !== undefined) patch.is_active = data.is_active;
     if (data.email !== undefined) patch.email = data.email;
+    if (data.access_scope !== undefined) Object.assign(patch, normalizeAccess(data));
     if (Object.keys(patch).length) {
       await admin.from("profiles").update(patch).eq("id", data.id);
     }
@@ -186,4 +190,20 @@ export const getSubmitterNames = createServerFn({ method: "GET" })
     const admin = await getAdmin();
     const { data } = await admin.from("profiles").select("id, full_name, email");
     return data || [];
+  });
+
+// ADMIN ONLY: distinct district / taluka / village values available in the portal
+export const getLocationTree = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const admin = await getAdmin();
+    const { data } = await admin.from("surveys").select("district, taluka, village");
+    return (data || [])
+      .map((r) => ({
+        district: (r.district || "").trim(),
+        taluka: (r.taluka || "").trim(),
+        village: (r.village || "").trim(),
+      }))
+      .filter((r) => r.district || r.taluka || r.village);
   });

@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.survey_in_user_scope(uuid, text, text, text) FROM PUBLIC, anon, authenticated;
