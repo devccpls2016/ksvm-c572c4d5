@@ -134,7 +134,16 @@ function TextFilter({ label, value, onChange, placeholder }: { label: string; va
   );
 }
 
+/** When set, only the listed group ids render (used for per-section dashboard filters). */
+const OnlyGroups = createContext<string[] | null>(null);
+
+/** Group ids available in this panel. */
+export const FILTER_GROUP_IDS = ["loc", "fam", "edu", "occ", "agri", "house", "ben", "pos", "biz"] as const;
+export type FilterGroupId = (typeof FILTER_GROUP_IDS)[number];
+
 function Group({ id, icon: Icon, title, count, children }: { id: string; icon: any; title: string; count: number; children: React.ReactNode }) {
+  const only = useContext(OnlyGroups);
+  if (only && !only.includes(id)) return null;
   return (
     <AccordionItem value={id} className="border rounded-lg px-3 bg-card">
       <AccordionTrigger className="hover:no-underline py-3">
@@ -152,8 +161,11 @@ function Group({ id, icon: Icon, title, count, children }: { id: string; icon: a
 
 /* ---------------- panel ---------------- */
 export function SurveyFilterPanel({
-  rows, filters, onChange,
-}: { rows: any[]; filters: SurveyFilters; onChange: (f: SurveyFilters) => void }) {
+  rows, filters, onChange, only, title = "प्रगत फिल्टर", defaultOpen,
+}: {
+  rows: any[]; filters: SurveyFilters; onChange: (f: SurveyFilters) => void;
+  only?: string[]; title?: string; defaultOpen?: string[];
+}) {
   const f = filters;
   const set = <K extends keyof SurveyFilters>(k: K, v: SurveyFilters[K]) => onChange({ ...f, [k]: v });
 
