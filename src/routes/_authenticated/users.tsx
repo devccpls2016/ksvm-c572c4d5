@@ -194,7 +194,7 @@ function UsersPage() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-2xl font-bold">Create Survey User</h1>
-          <p className="text-sm text-muted-foreground">{rows.length} वापरकर्ते</p>
+          <p className="text-sm text-muted-foreground">{visibleRows.length} / {rows.length} वापरकर्ते</p>
         </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-1"/>नवीन Survey User</Button></DialogTrigger>
