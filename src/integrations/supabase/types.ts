@@ -16,6 +16,10 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          access_districts: string[]
+          access_scope: string
+          access_talukas: string[]
+          access_villages: string[]
           created_at: string
           email: string | null
           full_name: string | null
@@ -24,6 +28,10 @@ export type Database = {
           mobile: string | null
         }
         Insert: {
+          access_districts?: string[]
+          access_scope?: string
+          access_talukas?: string[]
+          access_villages?: string[]
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -32,6 +40,10 @@ export type Database = {
           mobile?: string | null
         }
         Update: {
+          access_districts?: string[]
+          access_scope?: string
+          access_talukas?: string[]
+          access_villages?: string[]
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -236,6 +248,15 @@ export type Database = {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
+        }
+        Returns: boolean
+      }
+      survey_in_user_scope: {
+        Args: {
+          _district: string
+          _taluka: string
+          _user_id: string
+          _village: string
         }
         Returns: boolean
       }
