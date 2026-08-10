@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { accessFields, accessFieldsOptional, normalizeAccess } from "@/lib/users.access";
 
 async function getAdmin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -75,28 +76,6 @@ export const listAppUsers = createServerFn({ method: "GET" })
     }));
   });
 
-const accessFields = {
-  access_scope: z.enum(["all", "district", "taluka", "village"]).default("all"),
-  access_districts: z.array(z.string()).default([]),
-  access_talukas: z.array(z.string()).default([]),
-  access_villages: z.array(z.string()).default([]),
-};
-
-function normalizeAccess(d: {
-  access_scope?: "all" | "district" | "taluka" | "village";
-  access_districts?: string[];
-  access_talukas?: string[];
-  access_villages?: string[];
-}) {
-  const scope = d.access_scope ?? "all";
-  return {
-    access_scope: scope,
-    access_districts: scope === "all" ? [] : (d.access_districts ?? []),
-    access_talukas: scope === "taluka" || scope === "village" ? (d.access_talukas ?? []) : [],
-    access_villages: scope === "village" ? (d.access_villages ?? []) : [],
-  };
-}
-
 const createUserInput = z.object({
   full_name: z.string().min(1).max(120),
   email: z.string().email().max(255),
@@ -136,10 +115,7 @@ const updateUserInput = z.object({
   is_active: z.boolean().optional(),
   password: z.string().min(6).max(72).optional(),
   email: z.string().email().max(255).optional(),
-  access_scope: z.enum(["all", "district", "taluka", "village"]).optional(),
-  access_districts: z.array(z.string()).optional(),
-  access_talukas: z.array(z.string()).optional(),
-  access_villages: z.array(z.string()).optional(),
+  ...accessFieldsOptional,
 });
 
 export const updateSurveyUser = createServerFn({ method: "POST" })
