@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { listAppUsers, createSurveyUser, updateSurveyUser, deleteSurveyUser, getLocationTree } from "@/lib/users.functions";
 import { ACCESS_SCOPES, ACCESS_SCOPE_LABELS, accessSummary, type AccessScope } from "@/lib/users.access";
+import { UserFilterPanel, emptyUserFilters, filterUsers, type UserFilters } from "@/components/UserFilterPanel";
 
 function uniqSorted(v: string[]) {
   return Array.from(new Set(v.filter(Boolean))).sort((a, b) => a.localeCompare(b, "mr"));
