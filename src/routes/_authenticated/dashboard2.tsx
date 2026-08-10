@@ -16,11 +16,13 @@ import {
   SectionHeader, CompletionList, Empty,
 } from "@/components/analytics/AnalyticsUI";
 import * as A from "@/lib/analytics";
+import { SurveyFilterPanel } from "@/components/SurveyFilterPanel";
+import { countActive, emptyFilters, matchSurvey, type SurveyFilters } from "@/lib/survey-filters";
 import {
   LayoutDashboard, MapPin, Users, GraduationCap, Briefcase, Sprout, Droplets,
   Tractor, Home, Package, Sun, Target, HeartPulse, Trophy, Landmark, Store,
   UserRound, BriefcaseBusiness, HandHeart, UserCog, TrendingUp, CheckCircle2,
-  Shuffle, Table2, RotateCcw,
+  Shuffle, Table2, RotateCcw, Filter, ChevronDown, CalendarRange,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard2")({
@@ -54,6 +56,34 @@ const SECTIONS = [
   { id: "reports", no: "24", label: "Detailed Reports", icon: Table2 },
 ];
 
+/** which filter groups are relevant to each analytics section */
+const SECTION_FILTERS: Record<string, string[]> = {
+  overview: ["loc", "fam"],
+  geo: ["loc", "fam"],
+  family: ["loc", "fam"],
+  education: ["loc", "edu", "fam"],
+  occupation: ["loc", "occ", "fam"],
+  agri: ["loc", "agri"],
+  crop: ["loc", "agri"],
+  equipment: ["loc", "agri"],
+  housing: ["loc", "house"],
+  assets: ["loc", "house"],
+  solar: ["loc", "house"],
+  benefits: ["loc", "ben", "fam"],
+  medical: ["loc", "ben"],
+  sports: ["loc", "ben"],
+  leadership: ["loc", "pos"],
+  business: ["loc", "biz", "occ"],
+  women: ["loc", "fam", "ben"],
+  hr: ["loc", "occ", "edu"],
+  needs: ["loc", "biz", "house", "agri"],
+  users: ["loc"],
+  progress: ["loc"],
+  quality: ["loc", "fam"],
+  cross: ["loc", "fam", "edu", "occ", "agri", "house", "ben", "pos", "biz"],
+  reports: ["loc", "fam", "edu", "occ", "agri", "house", "ben", "pos", "biz"],
+};
+
 function Dashboard2() {
   const { role, user } = useAuth();
   const isAdmin = role === "admin";
@@ -63,10 +93,8 @@ function Dashboard2() {
   const fetchUsers = useServerFn(listAppUsers);
 
   const [section, setSection] = useState("overview");
-  const [fState, setFState] = useState("all");
-  const [fDistrict, setFDistrict] = useState("all");
-  const [fTaluka, setFTaluka] = useState("all");
-  const [fVillage, setFVillage] = useState("all");
+  const [filters, setFilters] = useState<SurveyFilters>({ ...emptyFilters });
+  const [showAll, setShowAll] = useState(false);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
 
@@ -85,39 +113,23 @@ function Dashboard2() {
 
   const rows = useMemo(() => {
     return scoped.filter((r) => {
-      if (fState !== "all" && A.stateOf(r) !== fState) return false;
-      if (fDistrict !== "all" && A.txt(r.district) !== fDistrict) return false;
-      if (fTaluka !== "all" && A.txt(r.taluka) !== fTaluka) return false;
-      if (fVillage !== "all" && A.txt(r.village) !== fVillage) return false;
       if (from && new Date(r.created_at) < new Date(from)) return false;
       if (to) {
         const end = new Date(to); end.setHours(23, 59, 59, 999);
         if (new Date(r.created_at) > end) return false;
       }
-      return true;
+      return matchSurvey(r, filters);
     });
-  }, [scoped, fState, fDistrict, fTaluka, fVillage, from, to]);
-
-  const districts = useMemo(
-    () => A.uniq(scoped.filter((r) => fState === "all" || A.stateOf(r) === fState), (r) => A.txt(r.district)),
-    [scoped, fState],
-  );
-  const talukas = useMemo(
-    () => A.uniq(scoped.filter((r) => fDistrict === "all" || A.txt(r.district) === fDistrict), (r) => A.txt(r.taluka)),
-    [scoped, fDistrict],
-  );
-  const villages = useMemo(
-    () => A.uniq(scoped.filter((r) => fTaluka === "all" || A.txt(r.taluka) === fTaluka), (r) => A.txt(r.village)),
-    [scoped, fTaluka],
-  );
+  }, [scoped, filters, from, to]);
 
   const people = useMemo(() => A.allPersons(rows), [rows]);
 
   if (loading) return <div className="text-muted-foreground">लोड होत आहे...</div>;
 
-  const reset = () => {
-    setFState("all"); setFDistrict("all"); setFTaluka("all"); setFVillage("all"); setFrom(""); setTo("");
-  };
+  const reset = () => { setFilters({ ...emptyFilters }); setFrom(""); setTo(""); };
+  const activeCount = countActive(filters) + (from ? 1 : 0) + (to ? 1 : 0);
+  const sectionGroups = SECTION_FILTERS[section] ?? ["loc"];
+  const sectionMeta = SECTIONS.find((s) => s.id === section)!;
 
   const ctx: Ctx = { rows, people, appUsers, isAdmin };
 
@@ -130,25 +142,46 @@ function Dashboard2() {
         </p>
       </div>
 
-      {/* Filters */}
+      {/* Global filters */}
       <Card className="print:hidden">
-        <CardContent className="p-3 flex flex-wrap items-end gap-2">
-          <Picker label="State" value={fState} onChange={(v) => { setFState(v); setFDistrict("all"); setFTaluka("all"); setFVillage("all"); }} options={["महाराष्ट्र", "मध्य प्रदेश"]} />
-          <Picker label="District" value={fDistrict} onChange={(v) => { setFDistrict(v); setFTaluka("all"); setFVillage("all"); }} options={districts} />
-          <Picker label="Taluka" value={fTaluka} onChange={(v) => { setFTaluka(v); setFVillage("all"); }} options={talukas} />
-          <Picker label="Village" value={fVillage} onChange={setFVillage} options={villages} />
-          <div className="space-y-1">
-            <div className="text-[10px] text-muted-foreground">From</div>
-            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-8 w-36 text-xs" />
+        <CardContent className="p-3 space-y-3">
+          <div className="flex flex-wrap items-end gap-2">
+            <div className="space-y-1">
+              <div className="text-[10px] text-muted-foreground flex items-center gap-1"><CalendarRange className="h-3 w-3" />From</div>
+              <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-8 w-36 text-xs" />
+            </div>
+            <div className="space-y-1">
+              <div className="text-[10px] text-muted-foreground">To</div>
+              <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-8 w-36 text-xs" />
+            </div>
+            <Button
+              variant={showAll ? "default" : "outline"}
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => setShowAll((v) => !v)}
+            >
+              <Filter className="h-3.5 w-3.5 mr-1" />सर्व फिल्टर / All filters
+              <ChevronDown className={`h-3.5 w-3.5 ml-1 transition-transform ${showAll ? "rotate-180" : ""}`} />
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={reset}>
+              <RotateCcw className="h-3.5 w-3.5 mr-1" />Reset
+            </Button>
+            <div className="ml-auto flex items-center gap-2">
+              {activeCount > 0 && <Badge className="text-xs">{activeCount} फिल्टर सक्रिय</Badge>}
+              <Badge variant="secondary" className="text-xs">{rows.length} कुटुंबे / families</Badge>
+              <Badge variant="secondary" className="text-xs">{people.length} सदस्य / members</Badge>
+            </div>
           </div>
-          <div className="space-y-1">
-            <div className="text-[10px] text-muted-foreground">To</div>
-            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-8 w-36 text-xs" />
-          </div>
-          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={reset}>
-            <RotateCcw className="h-3.5 w-3.5 mr-1" />Reset
-          </Button>
-          <Badge variant="secondary" className="ml-auto text-xs">{rows.length} कुटुंबे / families</Badge>
+          {showAll && (
+            <div className="border-t pt-3">
+              <SurveyFilterPanel
+                rows={scoped}
+                filters={filters}
+                onChange={setFilters}
+                title="सर्व फिल्टर (All fields)"
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -183,24 +216,26 @@ function Dashboard2() {
         </Card>
 
         <div className="min-w-0 space-y-4">
+          <Card className="print:hidden border-primary/30">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <sectionMeta.icon className="h-4 w-4 text-primary" />
+                {sectionMeta.no}. {sectionMeta.label} — विभागनिहाय फिल्टर / Section filters
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <SurveyFilterPanel
+                rows={scoped}
+                filters={filters}
+                onChange={setFilters}
+                only={sectionGroups}
+                title="या विभागाचे फिल्टर"
+              />
+            </CardContent>
+          </Card>
           <Section id={section} ctx={ctx} />
         </div>
       </div>
-    </div>
-  );
-}
-
-function Picker({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: string[] }) {
-  return (
-    <div className="space-y-1">
-      <div className="text-[10px] text-muted-foreground">{label}</div>
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all" className="text-xs">सर्व / All</SelectItem>
-          {options.map((o) => <SelectItem key={o} value={o} className="text-xs">{o}</SelectItem>)}
-        </SelectContent>
-      </Select>
     </div>
   );
 }

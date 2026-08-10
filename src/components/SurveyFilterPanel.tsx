@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -134,7 +134,16 @@ function TextFilter({ label, value, onChange, placeholder }: { label: string; va
   );
 }
 
+/** When set, only the listed group ids render (used for per-section dashboard filters). */
+const OnlyGroups = createContext<string[] | null>(null);
+
+/** Group ids available in this panel. */
+export const FILTER_GROUP_IDS = ["loc", "fam", "edu", "occ", "agri", "house", "ben", "pos", "biz"] as const;
+export type FilterGroupId = (typeof FILTER_GROUP_IDS)[number];
+
 function Group({ id, icon: Icon, title, count, children }: { id: string; icon: any; title: string; count: number; children: React.ReactNode }) {
+  const only = useContext(OnlyGroups);
+  if (only && !only.includes(id)) return null;
   return (
     <AccordionItem value={id} className="border rounded-lg px-3 bg-card">
       <AccordionTrigger className="hover:no-underline py-3">
@@ -152,8 +161,11 @@ function Group({ id, icon: Icon, title, count, children }: { id: string; icon: a
 
 /* ---------------- panel ---------------- */
 export function SurveyFilterPanel({
-  rows, filters, onChange,
-}: { rows: any[]; filters: SurveyFilters; onChange: (f: SurveyFilters) => void }) {
+  rows, filters, onChange, only, title = "प्रगत फिल्टर", defaultOpen,
+}: {
+  rows: any[]; filters: SurveyFilters; onChange: (f: SurveyFilters) => void;
+  only?: string[]; title?: string; defaultOpen?: string[];
+}) {
   const f = filters;
   const set = <K extends keyof SurveyFilters>(k: K, v: SurveyFilters[K]) => onChange({ ...f, [k]: v });
 
@@ -212,19 +224,31 @@ export function SurveyFilterPanel({
 
   const active = countActive(f);
 
+  const clearGroups = () => {
+    if (!only) return onChange({ ...emptyFilters });
+    const keep: SurveyFilters = { ...f };
+    for (const id of only) for (const k of GROUP_KEYS[id] ?? []) (keep as any)[k] = (emptyFilters as any)[k];
+    onChange(keep);
+  };
+
+  const groupActive = only
+    ? only.reduce((n, id) => n + c(...((GROUP_KEYS[id] ?? []) as (keyof SurveyFilters)[])), 0)
+    : active;
+
   return (
+    <OnlyGroups.Provider value={only ?? null}>
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <span className="flex items-center gap-2 text-sm font-semibold">
-          <Filter className="h-4 w-4 text-primary" /> प्रगत फिल्टर
-          {active > 0 && <Badge>{active} सक्रिय</Badge>}
+          <Filter className="h-4 w-4 text-primary" /> {title}
+          {groupActive > 0 && <Badge>{groupActive} सक्रिय</Badge>}
         </span>
-        <Button variant="outline" size="sm" onClick={() => onChange({ ...emptyFilters })}>
+        <Button variant="outline" size="sm" onClick={clearGroups}>
           <RotateCcw className="h-3.5 w-3.5 mr-1" /> रीसेट
         </Button>
       </div>
 
-      <Accordion type="multiple" className="space-y-2">
+      <Accordion type="multiple" className="space-y-2" defaultValue={defaultOpen ?? (only && only.length <= 3 ? only : undefined)}>
         {/* 1 LOCATION */}
         <Group id="loc" icon={MapPin} title="स्थान (Location)" count={c("state", "districts", "talukas", "villages", "pincodes")}>
           <div className="space-y-1.5">
@@ -377,8 +401,22 @@ export function SurveyFilterPanel({
         </Group>
       </Accordion>
     </div>
+    </OnlyGroups.Provider>
   );
 }
+
+/** filter-state keys belonging to each group id */
+export const GROUP_KEYS: Record<string, (keyof SurveyFilters)[]> = {
+  loc: ["state", "districts", "talukas", "villages", "pincodes"],
+  fam: ["genders", "ageGroups", "ageMin", "ageMax", "maritalStatuses", "marriageTypes", "spouseCaste", "familySizes", "familyMin", "familyMax"],
+  edu: ["eduLevels", "eduStreams", "eduCourses", "eduInstitutions"],
+  occ: ["occCategories", "employmentTypes", "department", "designations", "occBusinessTypes"],
+  agri: ["hasFarmland", "landSizes", "landMin", "landMax", "cropSeasons", "majorCropTypes", "irrigationSources", "pumpTypes", "malguzariPond", "freeWater", "farmingTypes", "farmingTools", "toolOwnership", "toolWantBuy", "toolLoan", "contractFarming", "contractMin", "contractMax"],
+  house: ["ownsHouse", "houseTypes", "livingStatuses", "gharkulReceived", "gharkulWanted", "solarInstalled", "solarWanted", "assets", "assetMinQty"],
+  ben: ["ladkiBahin", "ladkiBahinRegular", "ladkiBahinReasons", "criticalIllness", "medicalAidNeeded", "hasSportsperson", "sportLevels", "sportType"],
+  pos: ["hasPosition", "positionTypes", "positionStatuses", "politicalLevels", "party", "representativeTypes", "representativeRoles", "organisation"],
+  biz: ["entrepreneur", "bizTypes", "sideBusiness", "loanRequired", "loanMin", "loanMax", "loanPurposes"],
+};
 
 function uniq(arr: (string | undefined | null)[]): string[] {
   return Array.from(new Set(arr.filter((x): x is string => !!x && String(x).trim() !== ""))).sort((a, b) => a.localeCompare(b, "mr"));
