@@ -1,0 +1,1340 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
+import { listAppUsers } from "@/lib/users.functions";
+import { useAuth } from "@/lib/auth-context";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  Kpi, KpiGrid, ChartCard, BarCh, PieCh, LineCh, StackedBar, DataTable,
+  SectionHeader, CompletionList, Empty,
+} from "@/components/analytics/AnalyticsUI";
+import * as A from "@/lib/analytics";
+import {
+  LayoutDashboard, MapPin, Users, GraduationCap, Briefcase, Sprout, Droplets,
+  Tractor, Home, Package, Sun, Target, HeartPulse, Trophy, Landmark, Store,
+  UserRound, BriefcaseBusiness, HandHeart, UserCog, TrendingUp, CheckCircle2,
+  Shuffle, Table2, RotateCcw,
+} from "lucide-react";
+
+export const Route = createFileRoute("/_authenticated/dashboard2")({
+  component: Dashboard2,
+});
+
+const SECTIONS = [
+  { id: "overview", no: "01", label: "Overview", icon: LayoutDashboard },
+  { id: "geo", no: "02", label: "Geographic Analytics", icon: MapPin },
+  { id: "family", no: "03", label: "Family & Demographics", icon: Users },
+  { id: "education", no: "04", label: "Education Analytics", icon: GraduationCap },
+  { id: "occupation", no: "05", label: "Occupation & Employment", icon: Briefcase },
+  { id: "agri", no: "06", label: "Agriculture Analytics", icon: Sprout },
+  { id: "crop", no: "07", label: "Crop & Irrigation", icon: Droplets },
+  { id: "equipment", no: "08", label: "Farming Equipment", icon: Tractor },
+  { id: "housing", no: "09", label: "Housing Analytics", icon: Home },
+  { id: "assets", no: "10", label: "Household Assets", icon: Package },
+  { id: "solar", no: "11", label: "Solar Analytics", icon: Sun },
+  { id: "benefits", no: "12", label: "Benefits & Assistance", icon: Target },
+  { id: "medical", no: "13", label: "Medical & Health", icon: HeartPulse },
+  { id: "sports", no: "14", label: "Sports Analytics", icon: Trophy },
+  { id: "leadership", no: "15", label: "Political & Social Leadership", icon: Landmark },
+  { id: "business", no: "16", label: "Business & Entrepreneurship", icon: Store },
+  { id: "women", no: "17", label: "Women & Family", icon: UserRound },
+  { id: "hr", no: "18", label: "Community Human Resources", icon: BriefcaseBusiness },
+  { id: "needs", no: "19", label: "Community Needs", icon: HandHeart },
+  { id: "users", no: "20", label: "Survey User Performance", icon: UserCog },
+  { id: "progress", no: "21", label: "Survey Progress", icon: TrendingUp },
+  { id: "quality", no: "22", label: "Data Quality", icon: CheckCircle2 },
+  { id: "cross", no: "23", label: "Cross Analytics", icon: Shuffle },
+  { id: "reports", no: "24", label: "Detailed Reports", icon: Table2 },
+];
+
+function Dashboard2() {
+  const { role, user } = useAuth();
+  const isAdmin = role === "admin";
+  const [all, setAll] = useState<A.Row[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [appUsers, setAppUsers] = useState<any[]>([]);
+  const fetchUsers = useServerFn(listAppUsers);
+
+  const [section, setSection] = useState("overview");
+  const [fState, setFState] = useState("all");
+  const [fDistrict, setFDistrict] = useState("all");
+  const [fTaluka, setFTaluka] = useState("all");
+  const [fVillage, setFVillage] = useState("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+
+  useEffect(() => {
+    supabase.from("surveys").select("*").order("created_at", { ascending: false }).then(({ data }) => {
+      setAll(data || []);
+      setLoading(false);
+    });
+    if (isAdmin) fetchUsers({} as any).then((u: any) => setAppUsers(u || [])).catch(() => {});
+  }, [isAdmin, fetchUsers]);
+
+  const scoped = useMemo(
+    () => (isAdmin ? all : all.filter((r) => r.created_by === user?.id)),
+    [all, isAdmin, user?.id],
+  );
+
+  const rows = useMemo(() => {
+    return scoped.filter((r) => {
+      if (fState !== "all" && A.stateOf(r) !== fState) return false;
+      if (fDistrict !== "all" && A.txt(r.district) !== fDistrict) return false;
+      if (fTaluka !== "all" && A.txt(r.taluka) !== fTaluka) return false;
+      if (fVillage !== "all" && A.txt(r.village) !== fVillage) return false;
+      if (from && new Date(r.created_at) < new Date(from)) return false;
+      if (to) {
+        const end = new Date(to); end.setHours(23, 59, 59, 999);
+        if (new Date(r.created_at) > end) return false;
+      }
+      return true;
+    });
+  }, [scoped, fState, fDistrict, fTaluka, fVillage, from, to]);
+
+  const districts = useMemo(
+    () => A.uniq(scoped.filter((r) => fState === "all" || A.stateOf(r) === fState), (r) => A.txt(r.district)),
+    [scoped, fState],
+  );
+  const talukas = useMemo(
+    () => A.uniq(scoped.filter((r) => fDistrict === "all" || A.txt(r.district) === fDistrict), (r) => A.txt(r.taluka)),
+    [scoped, fDistrict],
+  );
+  const villages = useMemo(
+    () => A.uniq(scoped.filter((r) => fTaluka === "all" || A.txt(r.taluka) === fTaluka), (r) => A.txt(r.village)),
+    [scoped, fTaluka],
+  );
+
+  const people = useMemo(() => A.allPersons(rows), [rows]);
+
+  if (loading) return <div className="text-muted-foreground">लोड होत आहे...</div>;
+
+  const reset = () => {
+    setFState("all"); setFDistrict("all"); setFTaluka("all"); setFVillage("all"); setFrom(""); setTo("");
+  };
+
+  const ctx: Ctx = { rows, people, appUsers, isAdmin };
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl bg-gradient-to-r from-primary to-primary/70 text-primary-foreground p-5 shadow-sm">
+        <h1 className="text-xl md:text-2xl font-bold">📊 Community Survey Analytics</h1>
+        <p className="text-xs md:text-sm opacity-90 mt-1">
+          कोहळी समाज विकास मंडळ, नागपूर — Executive KPIs · Category Analytics · Drill-down
+        </p>
+      </div>
+
+      {/* Filters */}
+      <Card className="print:hidden">
+        <CardContent className="p-3 flex flex-wrap items-end gap-2">
+          <Picker label="State" value={fState} onChange={(v) => { setFState(v); setFDistrict("all"); setFTaluka("all"); setFVillage("all"); }} options={["महाराष्ट्र", "मध्य प्रदेश"]} />
+          <Picker label="District" value={fDistrict} onChange={(v) => { setFDistrict(v); setFTaluka("all"); setFVillage("all"); }} options={districts} />
+          <Picker label="Taluka" value={fTaluka} onChange={(v) => { setFTaluka(v); setFVillage("all"); }} options={talukas} />
+          <Picker label="Village" value={fVillage} onChange={setFVillage} options={villages} />
+          <div className="space-y-1">
+            <div className="text-[10px] text-muted-foreground">From</div>
+            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-8 w-36 text-xs" />
+          </div>
+          <div className="space-y-1">
+            <div className="text-[10px] text-muted-foreground">To</div>
+            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-8 w-36 text-xs" />
+          </div>
+          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={reset}>
+            <RotateCcw className="h-3.5 w-3.5 mr-1" />Reset
+          </Button>
+          <Badge variant="secondary" className="ml-auto text-xs">{rows.length} कुटुंबे / families</Badge>
+        </CardContent>
+      </Card>
+
+      <div className="grid lg:grid-cols-[240px_1fr] gap-4">
+        {/* Section nav */}
+        <Card className="lg:sticky lg:top-16 h-max print:hidden">
+          <CardContent className="p-2">
+            <div className="lg:hidden">
+              <Select value={section} onValueChange={setSection}>
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {SECTIONS.map((s) => <SelectItem key={s.id} value={s.id} className="text-xs">{s.no} · {s.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <nav className="hidden lg:flex flex-col gap-0.5 max-h-[70vh] overflow-y-auto">
+              {SECTIONS.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setSection(s.id)}
+                  className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
+                    section === s.id ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                  }`}
+                >
+                  <s.icon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="tabular-nums opacity-70">{s.no}</span>
+                  <span className="truncate">{s.label}</span>
+                </button>
+              ))}
+            </nav>
+          </CardContent>
+        </Card>
+
+        <div className="min-w-0 space-y-4">
+          <Section id={section} ctx={ctx} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Picker({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: string[] }) {
+  return (
+    <div className="space-y-1">
+      <div className="text-[10px] text-muted-foreground">{label}</div>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all" className="text-xs">सर्व / All</SelectItem>
+          {options.map((o) => <SelectItem key={o} value={o} className="text-xs">{o}</SelectItem>)}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+type Ctx = { rows: A.Row[]; people: A.Person[]; appUsers: any[]; isAdmin: boolean };
+
+const G = ({ children }: { children: React.ReactNode }) => (
+  <div className="grid md:grid-cols-2 gap-3">{children}</div>
+);
+
+function Section({ id, ctx }: { id: string; ctx: Ctx }) {
+  const meta = SECTIONS.find((s) => s.id === id)!;
+  const body = (() => {
+    switch (id) {
+      case "overview": return <Overview {...ctx} />;
+      case "geo": return <Geographic {...ctx} />;
+      case "family": return <Family {...ctx} />;
+      case "education": return <Education {...ctx} />;
+      case "occupation": return <Occupation {...ctx} />;
+      case "agri": return <Agriculture {...ctx} />;
+      case "crop": return <CropIrrigation {...ctx} />;
+      case "equipment": return <Equipment {...ctx} />;
+      case "housing": return <Housing {...ctx} />;
+      case "assets": return <Assets {...ctx} />;
+      case "solar": return <Solar {...ctx} />;
+      case "benefits": return <Benefits {...ctx} />;
+      case "medical": return <Medical {...ctx} />;
+      case "sports": return <Sports {...ctx} />;
+      case "leadership": return <Leadership {...ctx} />;
+      case "business": return <BusinessSec {...ctx} />;
+      case "women": return <Women {...ctx} />;
+      case "hr": return <HumanResources {...ctx} />;
+      case "needs": return <Needs {...ctx} />;
+      case "users": return <SurveyUsers {...ctx} />;
+      case "progress": return <ProgressSec {...ctx} />;
+      case "quality": return <Quality {...ctx} />;
+      case "cross": return <CrossAnalytics {...ctx} />;
+      default: return <Reports {...ctx} />;
+    }
+  })();
+  return (
+    <div className="space-y-4">
+      <SectionHeader title={`${meta.no}. ${meta.label}`} icon={meta.icon} subtitle="Filters above apply to every chart and report in this section." />
+      {body}
+    </div>
+  );
+}
+
+/* ============================================================ 01 Overview */
+
+function Overview({ rows, people, appUsers }: Ctx) {
+  const male = people.filter((p) => p.gender === "पुरुष").length;
+  const female = people.filter((p) => p.gender === "स्त्री").length;
+  const other = people.filter((p) => p.gender && p.gender !== "पुरुष" && p.gender !== "स्त्री").length;
+  const ms = (k: string) => people.filter((p) => p.marital_status.includes(k)).length;
+  const ages = people.map((p) => p.age).filter((a): a is number => typeof a === "number");
+  const band = (f: (a: number) => boolean) => ages.filter(f).length;
+  const villages = A.uniq(rows, (r) => A.txt(r.village)).length;
+  const talukas = A.uniq(rows, (r) => A.txt(r.taluka)).length;
+  const districts = A.uniq(rows, (r) => A.txt(r.district)).length;
+  const avg = rows.length ? (people.length / rows.length).toFixed(1) : "0";
+
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={LayoutDashboard} label="Total Survey Submitted" value={rows.length} />
+        <Kpi icon={Home} tone="green" label="Total Families" value={rows.length} />
+        <Kpi icon={Users} tone="violet" label="Total Family Members" value={people.length} />
+        <Kpi icon={UserCog} tone="amber" label="Total Survey Users" value={appUsers.length} />
+        <Kpi icon={MapPin} tone="cyan" label="Villages Covered" value={villages} />
+        <Kpi icon={MapPin} tone="cyan" label="Talukas Covered" value={talukas} />
+        <Kpi icon={MapPin} tone="cyan" label="Districts Covered" value={districts} />
+        <Kpi icon={Users} tone="pink" label="Average Family Size" value={avg} />
+      </KpiGrid>
+      <KpiGrid>
+        <Kpi label="Total Male" value={male} tone="primary" />
+        <Kpi label="Total Female" value={female} tone="pink" />
+        <Kpi label="Other Gender" value={other} tone="violet" />
+        <Kpi label="Married Members" value={ms("विवाहित") - ms("अविवाहित")} tone="green" />
+        <Kpi label="Unmarried Members" value={ms("अविवाहित")} tone="amber" />
+        <Kpi label="Widow Members" value={ms("विधवा") + ms("विधुर")} tone="red" />
+        <Kpi label="Divorced Members" value={ms("घटस्फोटित")} tone="red" />
+        <Kpi label="Children (0–14)" value={band((a) => a <= 14)} tone="lime" />
+        <Kpi label="Youth (15–24)" value={band((a) => a >= 15 && a <= 24)} tone="cyan" />
+        <Kpi label="Adults (25–59)" value={band((a) => a >= 25 && a <= 59)} tone="primary" />
+        <Kpi label="Senior Citizens (60+)" value={band((a) => a >= 60)} tone="violet" />
+        <Kpi label="Farmer Families" value={rows.filter((r) => r.has_farmland).length} tone="green" />
+      </KpiGrid>
+      <G>
+        <ChartCard title="लिंग वितरण / Gender Distribution">
+          <PieCh donut data={[{ name: "पुरुष", value: male }, { name: "स्त्री", value: female }, { name: "इतर", value: other }]} />
+        </ChartCard>
+        <ChartCard title="वयोगट वितरण / Age Group Distribution">
+          <BarCh data={A.AGE_BANDS.map((b) => ({ name: b.name, value: ages.filter(b.test).length }))} />
+        </ChartCard>
+        <ChartCard title="जिल्हानिहाय कुटुंबे / Families by District">
+          <BarCh data={A.groupCount(rows, (r) => A.txt(r.district))} color="#10b981" />
+        </ChartCard>
+        <ChartCard title="गावनिहाय कुटुंबे / Families by Village">
+          <BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" />
+        </ChartCard>
+      </G>
+    </div>
+  );
+}
+
+/* ========================================================== 02 Geographic */
+
+function Geographic({ rows }: Ctx) {
+  const states = A.locationRollup(rows, (r) => A.stateOf(r));
+  const cols = [
+    { key: "name", label: "Name" }, { key: "families", label: "Families" },
+    { key: "members", label: "Members" }, { key: "male", label: "Male" },
+    { key: "female", label: "Female" }, { key: "pctOfTotal", label: "Survey %" },
+  ];
+  const stateRows = states.map((s) => {
+    const sub = rows.filter((r) => A.stateOf(r) === s.name);
+    return {
+      ...s,
+      villages: A.uniq(sub, (r) => A.txt(r.village)).length,
+      talukas: A.uniq(sub, (r) => A.txt(r.taluka)).length,
+      districts: A.uniq(sub, (r) => A.txt(r.district)).length,
+    };
+  });
+
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={MapPin} label="States Covered" value={states.length} />
+        <Kpi icon={MapPin} tone="green" label="Districts Covered" value={A.uniq(rows, (r) => A.txt(r.district)).length} />
+        <Kpi icon={MapPin} tone="amber" label="Talukas Covered" value={A.uniq(rows, (r) => A.txt(r.taluka)).length} />
+        <Kpi icon={MapPin} tone="violet" label="Villages Covered" value={A.uniq(rows, (r) => A.txt(r.village)).length} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="राज्यनिहाय / State-wise Families"><PieCh data={states.map((s) => ({ name: s.name, value: s.families }))} /></ChartCard>
+        <ChartCard title="पिनकोडनिहाय / Pincode-wise"><BarCh data={A.groupCount(rows, (r) => A.txt(r.pincode))} color="#8b5cf6" /></ChartCard>
+        <ChartCard title="जिल्हानिहाय / District-wise"><BarCh data={A.groupCount(rows, (r) => A.txt(r.district))} color="#2563eb" /></ChartCard>
+        <ChartCard title="तालुकानिहाय / Taluka-wise"><BarCh data={A.groupCount(rows, (r) => A.txt(r.taluka))} color="#10b981" /></ChartCard>
+      </G>
+      <DataTable title="State-wise Survey Summary" rows={stateRows} columns={[...cols, { key: "villages", label: "Villages" }, { key: "talukas", label: "Talukas" }, { key: "districts", label: "Districts" }]} />
+      <DataTable title="District-wise Survey Count" rows={A.locationRollup(rows, (r) => A.txt(r.district))} columns={cols} />
+      <DataTable title="Taluka-wise Survey Count" rows={A.locationRollup(rows, (r) => A.txt(r.taluka))} columns={cols} />
+      <DataTable title="Village-wise Survey Count (Drill-down)" rows={A.locationRollup(rows, (r) => `${A.txt(r.district)} › ${A.txt(r.taluka)} › ${A.txt(r.village)}`)} columns={cols} />
+    </div>
+  );
+}
+
+/* ============================================== 03 Family & Demographics */
+
+function Family({ rows, people }: Ctx) {
+  const male = people.filter((p) => p.gender === "पुरुष").length;
+  const female = people.filter((p) => p.gender === "स्त्री").length;
+  const sizes = rows.map((r) => A.familySize(r));
+  const sizeData = A.FAMILY_SIZE_BANDS.map((b) => ({ name: b, value: sizes.filter((s) => A.familySizeBand(s) === b).length }));
+  const genderByAge = A.AGE_BANDS.map((b) => ({
+    name: b.name,
+    पुरुष: people.filter((p) => p.gender === "पुरुष" && typeof p.age === "number" && b.test(p.age)).length,
+    स्त्री: people.filter((p) => p.gender === "स्त्री" && typeof p.age === "number" && b.test(p.age)).length,
+  }));
+  const married = people.filter((p) => p.marital_status.includes("विवाहित") && !p.marital_status.includes("अविवाहित"));
+
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi label="Male" value={male} />
+        <Kpi label="Female" value={female} tone="pink" />
+        <Kpi label="Average Family Size" value={rows.length ? (people.length / rows.length).toFixed(1) : 0} tone="green" />
+        <Kpi label="Largest Family" value={sizes.length ? Math.max(...sizes) : 0} tone="amber" />
+      </KpiGrid>
+      <G>
+        <ChartCard title="लिंग वितरण / Gender Distribution"><PieCh donut data={[{ name: "पुरुष", value: male }, { name: "स्त्री", value: female }]} /></ChartCard>
+        <ChartCard title="वयोगट / Age Group"><BarCh data={A.AGE_BANDS.map((b) => ({ name: b.name, value: people.filter((p) => typeof p.age === "number" && b.test(p.age)).length }))} /></ChartCard>
+        <ChartCard title="लिंग × वयोगट / Gender × Age Group"><StackedBar data={genderByAge} columns={["पुरुष", "स्त्री"]} /></ChartCard>
+        <ChartCard title="वैवाहिक स्थिती / Marital Status"><PieCh data={A.groupCount(people as any, (p: any) => p.marital_status || "—")} /></ChartCard>
+        <ChartCard title="विवाहाचा प्रकार / Marriage Type"><PieCh data={A.groupCount(married as any, (p: any) => p.marriage_type || "नमूद नाही")} /></ChartCard>
+        <ChartCard title="कुटुंब आकार / Family Size Distribution"><BarCh data={sizeData} color="#8b5cf6" /></ChartCard>
+        <ChartCard title="गावनिहाय सदस्य / Members by Village"><BarCh horizontal data={A.locationRollup(rows, (r) => A.txt(r.village)).map((v) => ({ name: v.name, value: v.members }))} color="#06b6d4" /></ChartCard>
+        <ChartCard title="जिल्हानिहाय लिंग / Gender by District"><StackedBar columns={["पुरुष", "स्त्री"]} data={A.locationRollup(rows, (r) => A.txt(r.district)).map((d) => ({ name: d.name, पुरुष: d.male, स्त्री: d.female }))} /></ChartCard>
+      </G>
+      <DataTable
+        title="Family Size by Village"
+        columns={[{ key: "name", label: "Village" }, { key: "families", label: "Families" }, { key: "members", label: "Members" }, { key: "avg", label: "Avg Size" }]}
+        rows={A.locationRollup(rows, (r) => A.txt(r.village)).map((v) => ({ ...v, avg: v.families ? (v.members / v.families).toFixed(1) : 0 }))}
+      />
+    </div>
+  );
+}
+
+/* =========================================================== 04 Education */
+
+function Education({ rows, people }: Ctx) {
+  const withEdu = people.filter((p) => p.education);
+  const level = (k: string) => withEdu.filter((p) => A.eduLevel(p.education) === k).length;
+  const levelData = A.EDU_LEVELS.map((l) => ({ name: l.name, value: level(l.name) }))
+    .concat([{ name: "इतर / Other", value: withEdu.filter((p) => A.eduLevel(p.education) === "इतर / Other").length }])
+    .filter((d) => d.value > 0);
+
+  const eduByGender = A.EDU_LEVELS.map((l) => ({
+    name: l.name.split(" / ")[0]!,
+    पुरुष: withEdu.filter((p) => A.eduLevel(p.education) === l.name && p.gender === "पुरुष").length,
+    स्त्री: withEdu.filter((p) => A.eduLevel(p.education) === l.name && p.gender === "स्त्री").length,
+  }));
+
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={GraduationCap} label="Total Graduates" value={level("पदवी / Graduate")} />
+        <Kpi icon={GraduationCap} tone="green" label="Total Postgraduates" value={level("पदव्युत्तर / Postgraduate")} />
+        <Kpi icon={GraduationCap} tone="amber" label="Diploma Holders" value={level("पदविका / Diploma")} />
+        <Kpi icon={GraduationCap} tone="violet" label="Ph.D. Holders" value={level("डॉक्टरेट / Ph.D.")} />
+        <Kpi icon={GraduationCap} tone="red" label="Illiterate" value={level("निरक्षर / Illiterate")} />
+        <Kpi tone="cyan" label="Education Data Recorded" value={withEdu.length} hint={`${A.pct(withEdu.length, people.length)}% of members`} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="शिक्षण स्तर / Education Level"><BarCh horizontal data={levelData} color="#2563eb" /></ChartCard>
+        <ChartCard title="शिक्षण शाखा / Education Stream"><PieCh data={A.groupCount(withEdu as any, (p: any) => A.eduStream(p.education)).filter((d) => d.name !== "—")} /></ChartCard>
+        <ChartCard title="शिक्षण × लिंग / Education × Gender"><StackedBar data={eduByGender} columns={["पुरुष", "स्त्री"]} /></ChartCard>
+        <ChartCard title="शिक्षण × वयोगट / Education × Age Group">
+          <StackedBar
+            columns={A.AGE_BANDS.map((b) => b.name)}
+            data={A.EDU_LEVELS.map((l) => ({
+              name: l.name.split(" / ")[0]!,
+              ...A.AGE_BANDS.reduce<Record<string, number>>((a, b) => {
+                a[b.name] = withEdu.filter((p) => A.eduLevel(p.education) === l.name && typeof p.age === "number" && b.test(p.age)).length;
+                return a;
+              }, {}),
+            }))}
+          />
+        </ChartCard>
+        <ChartCard title="गावनिहाय पदवीधर / Graduates by Village">
+          <BarCh horizontal color="#10b981" data={A.groupCount(withEdu.filter((p) => ["पदवी / Graduate", "पदव्युत्तर / Postgraduate", "डॉक्टरेट / Ph.D."].includes(A.eduLevel(p.education))) as any, (p: any) => A.txt(p.row.village))} />
+        </ChartCard>
+        <ChartCard title="शिक्षण × व्यवसाय / Education × Occupation">
+          <StackedBar
+            columns={[...new Set(withEdu.map((p) => A.occGroup(p.occupation)))].slice(0, 8)}
+            data={A.EDU_LEVELS.map((l) => {
+              const sub = withEdu.filter((p) => A.eduLevel(p.education) === l.name);
+              const o: any = { name: l.name.split(" / ")[0]! };
+              sub.forEach((p) => { const k = A.occGroup(p.occupation); o[k] = (o[k] || 0) + 1; });
+              return o;
+            })}
+          />
+        </ChartCard>
+      </G>
+      <DataTable
+        title="Education Detail Report"
+        columns={[{ key: "name", label: "Education Level" }, { key: "value", label: "Members" }, { key: "male", label: "Male" }, { key: "female", label: "Female" }, { key: "share", label: "Share %" }]}
+        rows={levelData.map((d) => ({
+          ...d,
+          male: withEdu.filter((p) => A.eduLevel(p.education) === d.name && p.gender === "पुरुष").length,
+          female: withEdu.filter((p) => A.eduLevel(p.education) === d.name && p.gender === "स्त्री").length,
+          share: A.pct(d.value, withEdu.length),
+        }))}
+      />
+      <div className="text-xs text-muted-foreground">
+        संस्था प्रकार / Institution Type breakdown is captured inside each occupation record and is reported in section 05.
+      </div>
+    </div>
+  );
+}
+
+/* ========================================================== 05 Occupation */
+
+function Occupation({ rows, people }: Ctx) {
+  const withOcc = people.filter((p) => p.occupation);
+  const g = (k: string) => withOcc.filter((p) => A.occGroup(p.occupation) === k).length;
+  const data = A.groupCount(withOcc as any, (p: any) => A.occGroup(p.occupation));
+  const jobHolders = withOcc.filter((p) => !["बेरोजगार / Unemployed", "निवृत्त / Pensioner", "—"].includes(A.occGroup(p.occupation))).length;
+
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={Briefcase} label="Total Job Holders" value={jobHolders} />
+        <Kpi tone="green" label="Government Employees" value={g("सरकारी कर्मचारी")} />
+        <Kpi tone="cyan" label="Private Employees" value={g("खाजगी कर्मचारी")} />
+        <Kpi tone="amber" label="Self Employed" value={g("स्वरोजगार / Self Employed")} />
+        <Kpi tone="violet" label="Business Owners" value={g("व्यवसाय / Business Owner")} />
+        <Kpi tone="lime" label="Farmers" value={g("शेतकरी / Farmer")} />
+        <Kpi tone="lime" label="Farm Labour" value={g("शेतमजूर / Farm Labour")} />
+        <Kpi tone="red" label="Unemployed" value={g("बेरोजगार / Unemployed")} />
+        <Kpi tone="pink" label="Retired / Pensioner" value={g("निवृत्त / Pensioner")} />
+        <Kpi tone="primary" label="NRI" value={g("परदेशस्थ / NRI")} />
+        <Kpi tone="green" label="Education Sector" value={g("शिक्षण क्षेत्र")} />
+        <Kpi tone="red" label="Medical Sector" value={g("वैद्यकीय क्षेत्र")} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="व्यवसाय श्रेणी / Occupation Category"><BarCh horizontal data={data} color="#2563eb" /></ChartCard>
+        <ChartCard title="नौकरी प्रकार / Job Type (Members)"><PieCh data={A.groupCount(people.filter((p) => p.job_type) as any, (p: any) => p.job_type)} /></ChartCard>
+        <ChartCard title="व्यवसाय × लिंग / Occupation × Gender">
+          <StackedBar columns={["पुरुष", "स्त्री"]} data={data.slice(0, 12).map((d) => ({
+            name: d.name.split(" / ")[0]!,
+            पुरुष: withOcc.filter((p) => A.occGroup(p.occupation) === d.name && p.gender === "पुरुष").length,
+            स्त्री: withOcc.filter((p) => A.occGroup(p.occupation) === d.name && p.gender === "स्त्री").length,
+          }))} />
+        </ChartCard>
+        <ChartCard title="गावनिहाय व्यवसाय / Occupation by Village">
+          <BarCh horizontal color="#f59e0b" data={A.groupCount(withOcc as any, (p: any) => A.txt(p.row.village))} />
+        </ChartCard>
+      </G>
+      <DataTable
+        title="Occupation Detail Report"
+        columns={[
+          { key: "name", label: "Occupation" }, { key: "value", label: "Members" },
+          { key: "male", label: "Male" }, { key: "female", label: "Female" },
+          { key: "villages", label: "Villages" }, { key: "share", label: "Share %" },
+        ]}
+        rows={data.map((d) => {
+          const sub = withOcc.filter((p) => A.occGroup(p.occupation) === d.name);
+          return {
+            ...d,
+            male: sub.filter((p) => p.gender === "पुरुष").length,
+            female: sub.filter((p) => p.gender === "स्त्री").length,
+            villages: new Set(sub.map((p) => A.txt(p.row.village))).size,
+            share: A.pct(d.value, withOcc.length),
+          };
+        })}
+      />
+      <DataTable
+        title="Employment Report by Village"
+        columns={[
+          { key: "name", label: "Village" }, { key: "govt", label: "Govt" }, { key: "priv", label: "Private" },
+          { key: "self", label: "Self-employed" }, { key: "biz", label: "Business" },
+          { key: "farmer", label: "Farmer" }, { key: "unemp", label: "Unemployed" },
+        ]}
+        rows={A.uniq(rows, (r) => A.txt(r.village)).map((v) => {
+          const sub = withOcc.filter((p) => A.txt(p.row.village) === v);
+          const c = (k: string) => sub.filter((p) => A.occGroup(p.occupation) === k).length;
+          return {
+            name: v, govt: c("सरकारी कर्मचारी"), priv: c("खाजगी कर्मचारी"),
+            self: c("स्वरोजगार / Self Employed"), biz: c("व्यवसाय / Business Owner"),
+            farmer: c("शेतकरी / Farmer"), unemp: c("बेरोजगार / Unemployed"),
+          };
+        })}
+      />
+    </div>
+  );
+}
+
+/* ========================================================= 06 Agriculture */
+
+function Agriculture({ rows }: Ctx) {
+  const farm = rows.filter((r) => r.has_farmland);
+  const sum = (k: string) => Math.round(rows.reduce((a, r) => a + A.num(r[k]), 0) * 10) / 10;
+  const totalLand = sum("total_farmland");
+  const landData = A.LAND_BANDS.map((b) => ({ name: b, value: farm.filter((r) => A.landBand(A.num(r.total_farmland)) === b).length }));
+
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={Sprout} tone="green" label="Agriculture Families" value={farm.length} hint={`${A.pct(farm.length, rows.length)}%`} />
+        <Kpi icon={Sprout} tone="red" label="Non-Agriculture Families" value={rows.filter((r) => r.has_farmland === false).length} />
+        <Kpi tone="amber" label="Total Reported Farmland (एकर)" value={totalLand} />
+        <Kpi tone="violet" label="Average Landholding (एकर)" value={farm.length ? (totalLand / farm.length).toFixed(2) : 0} />
+        <Kpi tone="cyan" label="Irrigated Area" value={sum("irrigated_area")} />
+        <Kpi tone="lime" label="Dryland Area" value={sum("dryland_area")} />
+        <Kpi tone="primary" label="Kharif Area" value={sum("kharif_area")} />
+        <Kpi tone="pink" label="Rabi Area (धान सोडून)" value={sum("rabi_area")} />
+        <Kpi tone="amber" label="Summer Area (धानासह)" value={sum("summer_area")} />
+        <Kpi tone="green" label="Contract / Share Cropping" value={rows.filter((r) => (r.farm_management || {}).has_contract_or_share).length} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="शेतजमीन / Farmland"><PieCh donut data={[{ name: "शेती आहे", value: farm.length }, { name: "शेती नाही", value: rows.filter((r) => r.has_farmland === false).length }]} /></ChartCard>
+        <ChartCard title="जमीन आकार वितरण / Landholding Distribution"><BarCh data={landData} color="#10b981" /></ChartCard>
+        <ChartCard title="हंगामनिहाय क्षेत्र / Seasonal Area"><BarCh data={[{ name: "खरीप", value: sum("kharif_area") }, { name: "रब्बी", value: sum("rabi_area") }, { name: "उन्हाळी", value: sum("summer_area") }]} color="#f59e0b" /></ChartCard>
+        <ChartCard title="सिंचित vs कोरडवाहू / Irrigated vs Dryland"><PieCh data={[{ name: "सिंचित", value: sum("irrigated_area") }, { name: "कोरडवाहू", value: sum("dryland_area") }]} /></ChartCard>
+        <ChartCard title="गावनिहाय जमीन / Landholding by Village">
+          <BarCh horizontal color="#8b5cf6" data={A.uniq(farm, (r) => A.txt(r.village)).map((v) => ({ name: v, value: Math.round(farm.filter((r) => A.txt(r.village) === v).reduce((a, r) => a + A.num(r.total_farmland), 0)) }))} />
+        </ChartCard>
+        <ChartCard title="तालुकानिहाय जमीन / Landholding by Taluka">
+          <BarCh horizontal color="#06b6d4" data={A.uniq(farm, (r) => A.txt(r.taluka)).map((t) => ({ name: t, value: Math.round(farm.filter((r) => A.txt(r.taluka) === t).reduce((a, r) => a + A.num(r.total_farmland), 0)) }))} />
+        </ChartCard>
+      </G>
+      <DataTable
+        title="Agriculture Report by Village"
+        columns={[
+          { key: "name", label: "Village" }, { key: "farmers", label: "Farmers" }, { key: "land", label: "Land (Acre)" },
+          { key: "irrigated", label: "Irrigated" }, { key: "dry", label: "Dryland" },
+          { key: "kharif", label: "Kharif" }, { key: "rabi", label: "Rabi" }, { key: "summer", label: "Summer" },
+        ]}
+        rows={A.uniq(farm, (r) => A.txt(r.village)).map((v) => {
+          const sub = farm.filter((r) => A.txt(r.village) === v);
+          const s = (k: string) => Math.round(sub.reduce((a, r) => a + A.num(r[k]), 0) * 10) / 10;
+          return { name: v, farmers: sub.length, land: s("total_farmland"), irrigated: s("irrigated_area"), dry: s("dryland_area"), kharif: s("kharif_area"), rabi: s("rabi_area"), summer: s("summer_area") };
+        })}
+      />
+    </div>
+  );
+}
+
+/* ==================================================== 07 Crop & Irrigation */
+
+function CropIrrigation({ rows }: Ctx) {
+  const farm = rows.filter((r) => r.has_farmland);
+  const cropTypes = A.countMulti(rows, (r) => (Array.isArray(r.major_crop_types) ? r.major_crop_types : []));
+  const seasons = A.countMulti(rows, (r) => (Array.isArray(r.crops) ? r.crops.map((c: any) => A.txt(c?.season)) : []));
+  const irrSources = A.countMulti(rows, (r) => (Array.isArray(r.irrigation_sources) ? r.irrigation_sources : []));
+  const det = (key: string, f: (d: any) => boolean) => rows.filter((r) => f(((r.irrigation_details || {}) as any)[key] || {})).length;
+  const electric = A.IRRIGATION_KEYS.reduce((a, k) => a + det(k.key, (d) => !!d.electric), 0);
+  const solar = A.IRRIGATION_KEYS.reduce((a, k) => a + det(k.key, (d) => !!d.solar), 0);
+  const malguzari = det("pond", (d) => !!d.is_kohli_malguzari);
+  const freeWater = A.IRRIGATION_KEYS.reduce((a, k) => a + det(k.key, (d) => !!d.water_free_for_irrigation), 0);
+
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={Droplets} label="Families with Irrigation" value={rows.filter((r) => (r.irrigation_sources || []).length).length} />
+        <Kpi tone="amber" label="Electric Pumps" value={electric} />
+        <Kpi tone="green" label="Solar Pumps" value={solar} />
+        <Kpi tone="cyan" label="Malguzari Ponds (कोहळी)" value={malguzari} />
+        <Kpi tone="violet" label="Free Irrigation Water" value={freeWater} />
+        <Kpi tone="lime" label="Crop Types Recorded" value={cropTypes.length} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="मुख्य पीक प्रकार / Major Crop Types">{cropTypes.length ? <BarCh horizontal data={cropTypes} color="#84cc16" /> : <Empty />}</ChartCard>
+        <ChartCard title="हंगाम वितरण / Crop Season">{seasons.length ? <PieCh data={seasons} /> : <Empty />}</ChartCard>
+        <ChartCard title="सिंचन साधन / Irrigation Sources">{irrSources.length ? <BarCh horizontal data={irrSources} color="#06b6d4" /> : <Empty />}</ChartCard>
+        <ChartCard title="पंप प्रकार / Pump Type"><PieCh data={[{ name: "विद्युत पंप", value: electric }, { name: "सोलर पंप", value: solar }]} /></ChartCard>
+        <ChartCard title="पीक × गाव / Crop × Village">
+          <StackedBar
+            columns={cropTypes.slice(0, 6).map((c) => c.name)}
+            data={A.uniq(farm, (r) => A.txt(r.village)).slice(0, 15).map((v) => {
+              const sub = farm.filter((r) => A.txt(r.village) === v);
+              const o: any = { name: v };
+              cropTypes.slice(0, 6).forEach((c) => { o[c.name] = sub.filter((r) => (r.major_crop_types || []).includes(c.name)).length; });
+              return o;
+            })}
+          />
+        </ChartCard>
+        <ChartCard title="सिंचन × जमीन आकार / Irrigation × Land Size">
+          <StackedBar
+            columns={irrSources.slice(0, 6).map((c) => c.name)}
+            data={A.LAND_BANDS.map((b) => {
+              const sub = farm.filter((r) => A.landBand(A.num(r.total_farmland)) === b);
+              const o: any = { name: b };
+              irrSources.slice(0, 6).forEach((c) => { o[c.name] = sub.filter((r) => (r.irrigation_sources || []).includes(c.name)).length; });
+              return o;
+            })}
+          />
+        </ChartCard>
+      </G>
+      <DataTable
+        title="Irrigation Detail Report"
+        columns={[{ key: "name", label: "Source" }, { key: "families", label: "Families" }, { key: "count", label: "Total Units" }, { key: "electric", label: "Electric" }, { key: "solar", label: "Solar" }]}
+        rows={A.IRRIGATION_KEYS.map((k) => ({
+          name: k.label,
+          families: rows.filter((r) => (((r.irrigation_details || {}) as any)[k.key]?.count ?? 0) || ((r.irrigation_sources || []).some((s: string) => s.includes(k.label.split(" / ")[0]!)))).length,
+          count: rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any)[k.key]?.count), 0),
+          electric: det(k.key, (d) => !!d.electric),
+          solar: det(k.key, (d) => !!d.solar),
+        }))}
+      />
+    </div>
+  );
+}
+
+/* ========================================================== 08 Equipment */
+
+function Equipment({ rows }: Ctx) {
+  const d = (r: A.Row, key: string) => ((r.farming_tools_details || {}) as any)[key] || {};
+  const stats = A.TOOL_KEYS.map((k) => ({
+    name: k.label,
+    owners: rows.filter((r) => d(r, k.key).has).length,
+    qty: rows.reduce((a, r) => a + A.num(d(r, k.key).count), 0),
+    wants: rows.filter((r) => d(r, k.key).has === false && d(r, k.key).want_to_buy).length,
+    loan: rows.filter((r) => d(r, k.key).needs_loan).length,
+  }));
+  const totalOwners = stats.reduce((a, s) => a + s.owners, 0);
+
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={Tractor} label="Families Owning Equipment" value={rows.filter((r) => A.TOOL_KEYS.some((k) => d(r, k.key).has)).length} />
+        <Kpi tone="green" label="Total Equipment Units" value={stats.reduce((a, s) => a + s.qty, 0)} />
+        <Kpi tone="amber" label="Purchase Demand" value={stats.reduce((a, s) => a + s.wants, 0)} />
+        <Kpi tone="red" label="Loan Required" value={stats.reduce((a, s) => a + s.loan, 0)} />
+        <Kpi tone="violet" label="Other Modern Equipment" value={rows.filter((r) => (r.farming_tools_details || {}).other_uses).length} />
+        <Kpi tone="cyan" label="Equipment Ownership Records" value={totalOwners} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="साधन मालकी / Equipment Ownership"><BarCh data={stats.map((s) => ({ name: s.name, value: s.owners }))} color="#10b981" /></ChartCard>
+        <ChartCard title="खरेदीची इच्छा / Purchase Demand"><BarCh data={stats.map((s) => ({ name: s.name, value: s.wants }))} color="#f59e0b" /></ChartCard>
+        <ChartCard title="कर्जाची आवश्यकता / Loan Required"><BarCh data={stats.map((s) => ({ name: s.name, value: s.loan }))} color="#ef4444" /></ChartCard>
+        <ChartCard title="एकूण संख्या / Total Quantity"><PieCh data={stats.map((s) => ({ name: s.name, value: s.qty }))} /></ChartCard>
+      </G>
+      <DataTable
+        title="Farming Equipment Report"
+        columns={[{ key: "name", label: "Equipment" }, { key: "owners", label: "Owner Families" }, { key: "qty", label: "Quantity" }, { key: "wants", label: "Required / Wants to Buy" }, { key: "loan", label: "Loan Required" }]}
+        rows={stats}
+      />
+    </div>
+  );
+}
+
+/* ============================================================ 09 Housing */
+
+function Housing({ rows }: Ctx) {
+  const c = (f: (r: A.Row) => boolean) => rows.filter(f).length;
+  const kachcha = rows.filter((r) => A.txt(r.house_type).includes("माती") || A.txt(r.house_type).toLowerCase().includes("kach")).length;
+  const pakka = rows.filter((r) => A.txt(r.house_type).includes("पक्क")).length;
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={Home} label="Own House Families" value={c((r) => !!r.owns_house)} />
+        <Kpi tone="amber" label="Rented Families" value={c((r) => A.txt(r.living_status).includes("भाड"))} />
+        <Kpi tone="violet" label="Dependent Families" value={c((r) => A.txt(r.living_status).includes("आश्रित") || A.txt(r.living_status).includes("अवलंब"))} />
+        <Kpi tone="red" label="No House" value={c((r) => r.owns_house === false)} />
+        <Kpi tone="lime" label="Kachcha Houses" value={kachcha} />
+        <Kpi tone="green" label="Pakka Houses" value={pakka} />
+        <Kpi tone="cyan" label="Gharkul Beneficiaries" value={c((r) => !!r.gharkul_received)} />
+        <Kpi tone="pink" label="Families Requiring Gharkul" value={c((r) => !!r.gharkul_wanted)} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="घर मालकी / House Ownership"><PieCh donut data={[{ name: "स्वतःचे घर", value: c((r) => !!r.owns_house) }, { name: "घर नाही", value: c((r) => r.owns_house === false) }]} /></ChartCard>
+        <ChartCard title="घर प्रकार / House Type"><PieCh data={A.groupCount(rows.filter((r) => r.house_type), (r) => A.txt(r.house_type))} /></ChartCard>
+        <ChartCard title="राहण्याची स्थिती / Living Status"><BarCh data={A.groupCount(rows.filter((r) => r.living_status), (r) => A.txt(r.living_status))} color="#8b5cf6" /></ChartCard>
+        <ChartCard title="घरकुल / Gharkul"><PieCh data={[{ name: "मिळाले", value: c((r) => !!r.gharkul_received) }, { name: "आवश्यक", value: c((r) => !!r.gharkul_wanted) }, { name: "मिळाले नाही", value: c((r) => r.gharkul_received === false) }]} /></ChartCard>
+      </G>
+      <DataTable
+        title="Housing Report by Village"
+        columns={[{ key: "name", label: "Village" }, { key: "families", label: "Families" }, { key: "own", label: "Own House" }, { key: "kachcha", label: "Kachcha" }, { key: "pakka", label: "Pakka" }, { key: "gharkul", label: "Gharkul Received" }, { key: "need", label: "Gharkul Need" }]}
+        rows={A.uniq(rows, (r) => A.txt(r.village)).map((v) => {
+          const sub = rows.filter((r) => A.txt(r.village) === v);
+          return {
+            name: v, families: sub.length,
+            own: sub.filter((r) => r.owns_house).length,
+            kachcha: sub.filter((r) => A.txt(r.house_type).includes("माती")).length,
+            pakka: sub.filter((r) => A.txt(r.house_type).includes("पक्क")).length,
+            gharkul: sub.filter((r) => r.gharkul_received).length,
+            need: sub.filter((r) => r.gharkul_wanted).length,
+          };
+        })}
+      />
+    </div>
+  );
+}
+
+/* ============================================================= 10 Assets */
+
+function Assets({ rows }: Ctx) {
+  const owned = A.countMulti(rows, (r) => (Array.isArray(r.household_items) ? r.household_items : []));
+  const qty = (name: string) => rows.reduce((a, r) => a + A.num((r.household_item_counts || {})[name]), 0);
+  const table = owned.map((o) => ({ name: o.name, families: o.value, pct: A.pct(o.value, rows.length), qty: qty(o.name) || o.value }));
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        {table.slice(0, 8).map((t) => <Kpi key={t.name} label={t.name} value={t.families} hint={`${t.pct}% कुटुंबे`} tone="cyan" />)}
+      </KpiGrid>
+      <G>
+        <ChartCard title="वस्तूनिहाय कुटुंबे / Asset-wise Families">{owned.length ? <BarCh horizontal data={owned} color="#06b6d4" /> : <Empty />}</ChartCard>
+        <ChartCard title="वस्तू संख्या / Asset Quantity">{table.length ? <BarCh horizontal data={table.map((t) => ({ name: t.name, value: t.qty }))} color="#8b5cf6" /> : <Empty />}</ChartCard>
+        <ChartCard title="मालकी टक्केवारी / Asset Ownership %">{table.length ? <BarCh data={table.map((t) => ({ name: t.name, value: t.pct }))} color="#10b981" /> : <Empty />}</ChartCard>
+        <ChartCard title="गावनिहाय वस्तू / Assets by Village">
+          <StackedBar
+            columns={owned.slice(0, 6).map((o) => o.name)}
+            data={A.uniq(rows, (r) => A.txt(r.village)).slice(0, 15).map((v) => {
+              const sub = rows.filter((r) => A.txt(r.village) === v);
+              const o: any = { name: v };
+              owned.slice(0, 6).forEach((it) => { o[it.name] = sub.filter((r) => (r.household_items || []).includes(it.name)).length; });
+              return o;
+            })}
+          />
+        </ChartCard>
+      </G>
+      <DataTable title="Household Assets Report" columns={[{ key: "name", label: "Asset" }, { key: "families", label: "Families" }, { key: "pct", label: "Ownership %" }, { key: "qty", label: "Total Quantity" }]} rows={table} />
+    </div>
+  );
+}
+
+/* ============================================================== 11 Solar */
+
+function Solar({ rows }: Ctx) {
+  const installed = rows.filter((r) => r.solar_panel_installed).length;
+  const wanted = rows.filter((r) => r.solar_panel_wanted).length;
+  const notInstalled = rows.filter((r) => r.solar_panel_installed === false).length;
+  const solarPumps = rows.filter((r) => A.IRRIGATION_KEYS.some((k) => ((r.irrigation_details || {}) as any)[k.key]?.solar)).length;
+  const farmSolar = rows.filter((r) => r.has_farmland && r.solar_panel_installed).length;
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={Sun} tone="amber" label="Solar Installed" value={installed} />
+        <Kpi tone="red" label="Not Installed" value={notInstalled} />
+        <Kpi tone="green" label="Solar Required" value={wanted} />
+        <Kpi tone="violet" label="Solar Adoption %" value={`${A.pct(installed, rows.length)}%`} />
+        <Kpi tone="cyan" label="Solar Pumps (Irrigation)" value={solarPumps} />
+        <Kpi tone="lime" label="Farmer Solar Adoption" value={farmSolar} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="सोलर स्थिती / Solar Status"><PieCh donut data={[{ name: "बसवले", value: installed }, { name: "बसवले नाही", value: notInstalled }, { name: "आवश्यक", value: wanted }]} /></ChartCard>
+        <ChartCard title="गावनिहाय सोलर आवश्यकता / Solar Requirement by Village">
+          <BarCh horizontal color="#f59e0b" data={A.uniq(rows, (r) => A.txt(r.village)).map((v) => ({ name: v, value: rows.filter((r) => A.txt(r.village) === v && r.solar_panel_wanted).length })).filter((d) => d.value > 0)} />
+        </ChartCard>
+        <ChartCard title="सोलर पंप vs घरगुती पॅनेल"><PieCh data={[{ name: "सोलर पंप", value: solarPumps }, { name: "घरगुती सोलर पॅनेल", value: installed }]} /></ChartCard>
+        <ChartCard title="शेतकरी सोलर / Solar × Agriculture">
+          <BarCh data={[{ name: "शेतकरी - बसवले", value: farmSolar }, { name: "शेतकरी - आवश्यक", value: rows.filter((r) => r.has_farmland && r.solar_panel_wanted).length }, { name: "बिगर शेतकरी", value: rows.filter((r) => !r.has_farmland && r.solar_panel_installed).length }]} color="#84cc16" />
+        </ChartCard>
+      </G>
+      <DataTable
+        title="Solar Report by Village"
+        columns={[{ key: "name", label: "Village" }, { key: "families", label: "Families" }, { key: "installed", label: "Installed" }, { key: "required", label: "Required" }, { key: "pct", label: "Adoption %" }]}
+        rows={A.uniq(rows, (r) => A.txt(r.village)).map((v) => {
+          const sub = rows.filter((r) => A.txt(r.village) === v);
+          const inst = sub.filter((r) => r.solar_panel_installed).length;
+          return { name: v, families: sub.length, installed: inst, required: sub.filter((r) => r.solar_panel_wanted).length, pct: A.pct(inst, sub.length) };
+        })}
+      />
+    </div>
+  );
+}
+
+/* =========================================================== 12 Benefits */
+
+function Benefits({ rows }: Ctx) {
+  const b = (r: A.Row) => (r.benefits_info || {}) as any;
+  const benef = rows.filter((r) => b(r).ladki_bahin);
+  const members = benef.reduce((a, r) => a + (b(r).ladki_bahin_beneficiaries?.length || A.num(b(r).ladki_bahin_count)), 0);
+  const regular = benef.filter((r) => b(r).ladki_bahin_regular).length;
+  const reasons = A.countMulti(rows, (r) => [
+    ...(b(r).ladki_bahin_beneficiaries || []).map((x: any) => A.txt(x?.reason)),
+    ...(b(r).ladki_bahin_non_beneficiaries || []).map((x: any) => A.txt(x?.reason)),
+  ].filter(Boolean));
+
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={Target} label="Beneficiary Families" value={benef.length} hint={`${A.pct(benef.length, rows.length)}%`} />
+        <Kpi tone="green" label="Beneficiary Members" value={members} />
+        <Kpi tone="cyan" label="Regularly Receiving" value={regular} />
+        <Kpi tone="red" label="Not Regularly Receiving" value={benef.length - regular} />
+        <Kpi tone="amber" label="Non-Beneficiary Families" value={rows.filter((r) => b(r).ladki_bahin === false).length} />
+        <Kpi tone="violet" label="Recorded Issue Reasons" value={reasons.reduce((a, r) => a + r.value, 0)} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="लाडकी बहीण लाभार्थी / Ladki Bahin"><PieCh donut data={[{ name: "लाभार्थी", value: benef.length }, { name: "लाभार्थी नाही", value: rows.filter((r) => b(r).ladki_bahin === false).length }]} /></ChartCard>
+        <ChartCard title="नियमित लाभ / Benefit Regularity"><PieCh data={[{ name: "नियमित", value: regular }, { name: "अनियमित", value: benef.length - regular }]} /></ChartCard>
+        <ChartCard title="कारणे / Reasons (KYC, Aadhaar, DBT…)" wide>{reasons.length ? <BarCh horizontal data={reasons} color="#ef4444" /> : <Empty />}</ChartCard>
+      </G>
+      <DataTable
+        title="Ladki Bahin Report by Village"
+        columns={[{ key: "name", label: "Village" }, { key: "families", label: "Families" }, { key: "benef", label: "Beneficiary" }, { key: "regular", label: "Regular" }, { key: "pct", label: "Coverage %" }]}
+        rows={A.uniq(rows, (r) => A.txt(r.village)).map((v) => {
+          const sub = rows.filter((r) => A.txt(r.village) === v);
+          const bf = sub.filter((r) => b(r).ladki_bahin).length;
+          return { name: v, families: sub.length, benef: bf, regular: sub.filter((r) => b(r).ladki_bahin_regular).length, pct: A.pct(bf, sub.length) };
+        })}
+      />
+    </div>
+  );
+}
+
+/* ============================================================ 13 Medical */
+
+function Medical({ rows, people }: Ctx) {
+  const b = (r: A.Row) => (r.benefits_info || {}) as any;
+  const ill = rows.filter((r) => b(r).critical_illness);
+  const aid = rows.filter((r) => b(r).medical_aid_needed);
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={HeartPulse} tone="red" label="Families with Critical Illness" value={ill.length} />
+        <Kpi tone="amber" label="Members in Affected Families" value={A.allPersons(ill).length} />
+        <Kpi tone="violet" label="Medical Assistance Required" value={aid.length} />
+        <Kpi tone="cyan" label="Share of Surveyed Families" value={`${A.pct(ill.length, rows.length)}%`} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="गंभीर आजार / Critical Illness"><PieCh donut data={[{ name: "आजार आहे", value: ill.length }, { name: "आजार नाही", value: rows.length - ill.length }]} /></ChartCard>
+        <ChartCard title="वैद्यकीय मदतीची आवश्यकता / Medical Assistance"><PieCh data={[{ name: "आवश्यक", value: aid.length }, { name: "आवश्यक नाही", value: rows.length - aid.length }]} /></ChartCard>
+        <ChartCard title="गावनिहाय गरज / Assistance by Village" wide>
+          <BarCh horizontal color="#ef4444" data={A.uniq(rows, (r) => A.txt(r.village)).map((v) => ({ name: v, value: aid.filter((r) => A.txt(r.village) === v).length })).filter((d) => d.value > 0)} />
+        </ChartCard>
+      </G>
+      <DataTable
+        title="Medical Assistance Detail"
+        columns={[{ key: "head", label: "Family Head" }, { key: "village", label: "Village" }, { key: "taluka", label: "Taluka" }, { key: "mobile", label: "Mobile" }, { key: "members", label: "Members" }]}
+        rows={[...ill, ...aid.filter((r) => !ill.includes(r))].map((r) => ({
+          head: r.head_name, village: r.village, taluka: r.taluka, mobile: r.mobile,
+          members: A.personsOf(r).length,
+        }))}
+      />
+      <div className="text-xs text-muted-foreground">Illness-type breakdown (cancer / heart / kidney) appears here once recorded in the survey record.</div>
+      <div className="hidden">{people.length}</div>
+    </div>
+  );
+}
+
+/* ============================================================= 14 Sports */
+
+function Sports({ rows }: Ctx) {
+  const b = (r: A.Row) => (r.benefits_info || {}) as any;
+  const sp = rows.filter((r) => b(r).has_sportsperson);
+  const lvl = (k: string) => sp.filter((r) => A.txt(b(r).sport_level).includes(k)).length;
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={Trophy} tone="amber" label="Total Sportspersons" value={sp.length} />
+        <Kpi tone="green" label="State Level" value={lvl("राज्य")} />
+        <Kpi tone="violet" label="National Level" value={lvl("राष्ट्रीय")} />
+        <Kpi tone="cyan" label="International Level" value={lvl("आंतरराष्ट्रीय")} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="खेळ प्रकार / Sport Type">{sp.length ? <BarCh horizontal data={A.groupCount(sp, (r) => A.txt(b(r).sport_type) || "—")} color="#f59e0b" /> : <Empty />}</ChartCard>
+        <ChartCard title="स्तरानुसार / By Level">{sp.length ? <PieCh data={A.groupCount(sp, (r) => A.txt(b(r).sport_level) || "—")} /> : <Empty />}</ChartCard>
+        <ChartCard title="गावनिहाय खेळाडू / Sportspersons by Village" wide>{sp.length ? <BarCh horizontal data={A.groupCount(sp, (r) => A.txt(r.village))} color="#10b981" /> : <Empty />}</ChartCard>
+      </G>
+      <DataTable
+        title="Sports Detail Report"
+        columns={[{ key: "head", label: "Family Head" }, { key: "sport", label: "Sport" }, { key: "level", label: "Level" }, { key: "village", label: "Village" }, { key: "district", label: "District" }]}
+        rows={sp.map((r) => ({ head: r.head_name, sport: b(r).sport_type, level: b(r).sport_level, village: r.village, district: r.district }))}
+      />
+    </div>
+  );
+}
+
+/* ========================================================= 15 Leadership */
+
+function Leadership({ rows }: Ctx) {
+  const pos = A.allPositions(rows);
+  const t = (k: string) => pos.filter((p) => A.txt(p.type).includes(k)).length;
+  const st = (k: string) => pos.filter((p) => A.txt(p.status).includes(k)).length;
+  const lvl = (k: string) => pos.filter((p) => A.txt(p.political_level).includes(k)).length;
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={Landmark} label="Total Positions" value={pos.length} />
+        <Kpi tone="green" label="Current (आजी)" value={st("आजी")} />
+        <Kpi tone="amber" label="Former (माजी)" value={st("माजी")} />
+        <Kpi tone="violet" label="Political Leaders" value={t("राजकीय")} />
+        <Kpi tone="cyan" label="Social Leaders" value={t("सामाजिक")} />
+        <Kpi tone="pink" label="Representatives" value={t("लोकप्रतिनिधी")} />
+        <Kpi tone="lime" label="Village Level" value={lvl("गाव")} />
+        <Kpi tone="primary" label="Taluka Level" value={lvl("तालुका")} />
+        <Kpi tone="red" label="District Level" value={lvl("जिल्हा")} />
+        <Kpi tone="green" label="State Level" value={lvl("राज्य")} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="पद प्रकार / Position Type"><PieCh donut data={A.groupCount(pos, (p) => A.txt(p.type) || "—")} /></ChartCard>
+        <ChartCard title="आजी / माजी"><PieCh data={A.groupCount(pos, (p) => A.txt(p.status) || "—")} /></ChartCard>
+        <ChartCard title="राजकीय स्तर / Political Level"><BarCh data={A.groupCount(pos.filter((p) => p.political_level), (p) => A.txt(p.political_level))} color="#8b5cf6" /></ChartCard>
+        <ChartCard title="पक्षनिहाय / Party-wise"><BarCh horizontal data={A.groupCount(pos.filter((p) => p.party_name), (p) => A.txt(p.party_name_other) || A.txt(p.party_name))} color="#2563eb" /></ChartCard>
+        <ChartCard title="लोकप्रतिनिधी प्रकार / Representative Type"><BarCh horizontal data={A.groupCount(pos.filter((p) => p.representative_type), (p) => A.txt(p.representative_type))} color="#10b981" /></ChartCard>
+        <ChartCard title="संस्था / Organisation"><BarCh horizontal data={A.groupCount(pos.filter((p) => p.coop_org_name || p.social_org), (p) => A.txt(p.coop_org_name) || A.txt(p.social_org))} color="#f59e0b" /></ChartCard>
+      </G>
+      <DataTable
+        title="Leadership Detail Report"
+        columns={[
+          { key: "person", label: "Person" }, { key: "type", label: "Type" }, { key: "status", label: "Status" },
+          { key: "level", label: "Level" }, { key: "rep", label: "Representative / Role" }, { key: "party", label: "Party" },
+          { key: "term", label: "Term" }, { key: "village", label: "Village" },
+        ]}
+        rows={pos.map((p) => ({
+          person: p.person_name || p.row.head_name,
+          type: p.type, status: p.status, level: p.political_level,
+          rep: p.representative_type || p.coop_role || p.social_role,
+          party: p.party_name_other || p.party_name,
+          term: [p.term_from, p.term_to].filter(Boolean).join(" – "),
+          village: p.row.village,
+        }))}
+      />
+    </div>
+  );
+}
+
+/* =========================================================== 16 Business */
+
+function BusinessSec({ rows, people }: Ctx) {
+  const e = (r: A.Row) => (r.employment_info || {}) as any;
+  const entrepreneurs = rows.filter((r) => e(r).has_entrepreneur);
+  const side = rows.filter((r) => e(r).has_side_business);
+  const selfEmp = people.filter((p) => A.occGroup(p.occupation) === "स्वरोजगार / Self Employed").length;
+  const owners = people.filter((p) => A.occGroup(p.occupation) === "व्यवसाय / Business Owner").length;
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={Store} label="Entrepreneur Families" value={entrepreneurs.length} />
+        <Kpi tone="green" label="Self-employed Members" value={selfEmp} />
+        <Kpi tone="violet" label="Business Owners" value={owners} />
+        <Kpi tone="amber" label="Side Businesses" value={side.length} />
+        <Kpi tone="cyan" label="Business + Agriculture" value={people.filter((p) => A.occGroup(p.occupation) === "शेती + व्यवसाय").length} />
+        <Kpi tone="pink" label="Entrepreneur Share" value={`${A.pct(entrepreneurs.length, rows.length)}%`} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="उद्योजकता / Entrepreneurship"><PieCh donut data={[{ name: "उद्योजक कुटुंबे", value: entrepreneurs.length }, { name: "इतर", value: rows.length - entrepreneurs.length }]} /></ChartCard>
+        <ChartCard title="व्यवसाय प्रकार / Business Types">{entrepreneurs.length ? <BarCh horizontal data={A.groupCount(entrepreneurs, (r) => A.txt(e(r).entrepreneur_details) || "—")} color="#8b5cf6" /> : <Empty />}</ChartCard>
+        <ChartCard title="जोड व्यवसाय / Side Business">{side.length ? <BarCh horizontal data={A.groupCount(side, (r) => A.txt(e(r).side_business_details) || "—")} color="#f59e0b" /> : <Empty />}</ChartCard>
+        <ChartCard title="गावनिहाय उद्योजक / Entrepreneurs by Village">{entrepreneurs.length ? <BarCh horizontal data={A.groupCount(entrepreneurs, (r) => A.txt(r.village))} color="#10b981" /> : <Empty />}</ChartCard>
+      </G>
+      <DataTable
+        title="Business & Entrepreneurship Report"
+        columns={[{ key: "head", label: "Family Head" }, { key: "business", label: "Business" }, { key: "address", label: "Business Location" }, { key: "side", label: "Side Business" }, { key: "village", label: "Village" }]}
+        rows={[...entrepreneurs, ...side.filter((r) => !entrepreneurs.includes(r))].map((r) => ({
+          head: r.head_name, business: e(r).entrepreneur_details, address: e(r).entrepreneur_address,
+          side: e(r).side_business_details, village: r.village,
+        }))}
+      />
+    </div>
+  );
+}
+
+/* ============================================================== 17 Women */
+
+function Women({ rows, people }: Ctx) {
+  const women = people.filter((p) => p.gender === "स्त्री");
+  const shg = (f: (g: any) => boolean) => women.filter((w) => w.bachat_gat && f(w.bachat_gat)).length;
+  const b = (r: A.Row) => (r.benefits_info || {}) as any;
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={UserRound} tone="pink" label="Total Female Members" value={women.length} />
+        <Kpi tone="green" label="Married Women" value={women.filter((w) => w.marital_status.includes("विवाहित") && !w.marital_status.includes("अविवाहित")).length} />
+        <Kpi tone="amber" label="Unmarried Women" value={women.filter((w) => w.marital_status.includes("अविवाहित")).length} />
+        <Kpi tone="violet" label="Bachat Gat Members" value={shg((g) => g.is_member)} />
+        <Kpi tone="cyan" label="Interested in Bachat Gat" value={shg((g) => g.wants_to_join)} />
+        <Kpi tone="lime" label="Running Home Business" value={shg((g) => g.has_rural_home_business)} />
+        <Kpi tone="primary" label="Interested in Business" value={shg((g) => g.wants_to_start_business)} />
+        <Kpi tone="red" label="Ladki Bahin Beneficiary Families" value={rows.filter((r) => b(r).ladki_bahin).length} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="महिला बचत गट / Self Help Group"><PieCh donut data={[{ name: "सदस्य", value: shg((g) => g.is_member) }, { name: "सहभागी होऊ इच्छिते", value: shg((g) => g.wants_to_join) }, { name: "इतर", value: Math.max(0, women.length - shg((g) => g.is_member) - shg((g) => g.wants_to_join)) }]} /></ChartCard>
+        <ChartCard title="महिला वयोगट / Women by Age Group"><BarCh data={A.AGE_BANDS.map((band) => ({ name: band.name, value: women.filter((w) => typeof w.age === "number" && band.test(w.age)).length }))} color="#ec4899" /></ChartCard>
+        <ChartCard title="महिला शिक्षण / Women by Education"><BarCh horizontal data={A.groupCount(women.filter((w) => w.education) as any, (w: any) => A.eduLevel(w.education))} color="#8b5cf6" /></ChartCard>
+        <ChartCard title="महिला व्यवसाय / Women by Occupation"><BarCh horizontal data={A.groupCount(women.filter((w) => w.occupation) as any, (w: any) => A.occGroup(w.occupation))} color="#10b981" /></ChartCard>
+      </G>
+      <DataTable
+        title="Women Business & Bachat Gat Detail"
+        columns={[{ key: "name", label: "Name" }, { key: "village", label: "Village" }, { key: "member", label: "Bachat Gat" }, { key: "interest", label: "Interested" }, { key: "business", label: "Home Business" }, { key: "want", label: "Wants Business" }]}
+        rows={women.filter((w) => w.bachat_gat).map((w) => ({
+          name: w.name, village: A.txt(w.row.village),
+          member: w.bachat_gat.is_member ? "होय" : "नाही",
+          interest: w.bachat_gat.wants_to_join ? "होय" : "—",
+          business: w.bachat_gat.business_name || (w.bachat_gat.has_rural_home_business ? "होय" : "नाही"),
+          want: w.bachat_gat.desired_business || (w.bachat_gat.wants_to_start_business ? "होय" : "—"),
+        }))}
+      />
+    </div>
+  );
+}
+
+/* ================================================= 18 Human Resources */
+
+function HumanResources({ people }: Ctx) {
+  const list = A.PROFESSIONS.map((p) => ({ name: p.name, value: people.filter((x) => A.professionOf(x.occupation) === p.name).length }));
+  const professionals = people.filter((p) => A.professionOf(p.occupation));
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        {list.map((l) => <Kpi key={l.name} label={l.name} value={l.value} tone="primary" />)}
+      </KpiGrid>
+      <G>
+        <ChartCard title="व्यावसायिक मनुष्यबळ / Professional Categories"><BarCh horizontal data={list.filter((l) => l.value > 0)} color="#2563eb" /></ChartCard>
+        <ChartCard title="व्यवसाय × जिल्हा / Profession × District">
+          <StackedBar
+            columns={list.filter((l) => l.value > 0).slice(0, 6).map((l) => l.name)}
+            data={[...new Set(professionals.map((p) => A.txt(p.row.district)))].map((d) => {
+              const sub = professionals.filter((p) => A.txt(p.row.district) === d);
+              const o: any = { name: d || "—" };
+              sub.forEach((p) => { const k = A.professionOf(p.occupation)!; o[k] = (o[k] || 0) + 1; });
+              return o;
+            })}
+          />
+        </ChartCard>
+        <ChartCard title="व्यवसाय × शिक्षण / Profession × Education">
+          <StackedBar
+            columns={[...new Set(professionals.map((p) => A.eduLevel(p.education)))].slice(0, 8)}
+            data={list.filter((l) => l.value > 0).map((l) => {
+              const sub = professionals.filter((p) => A.professionOf(p.occupation) === l.name);
+              const o: any = { name: l.name.split(" / ")[0]! };
+              sub.forEach((p) => { const k = A.eduLevel(p.education); o[k] = (o[k] || 0) + 1; });
+              return o;
+            })}
+          />
+        </ChartCard>
+        <ChartCard title="व्यवसाय × वयोगट / Profession × Age">
+          <StackedBar
+            columns={A.AGE_BANDS.map((b) => b.name)}
+            data={list.filter((l) => l.value > 0).map((l) => {
+              const sub = professionals.filter((p) => A.professionOf(p.occupation) === l.name);
+              const o: any = { name: l.name.split(" / ")[0]! };
+              A.AGE_BANDS.forEach((b) => { o[b.name] = sub.filter((p) => typeof p.age === "number" && b.test(p.age)).length; });
+              return o;
+            })}
+          />
+        </ChartCard>
+      </G>
+      <DataTable
+        title="Community Human Resource Directory"
+        columns={[{ key: "name", label: "Name" }, { key: "profession", label: "Profession" }, { key: "education", label: "Education" }, { key: "village", label: "Village" }, { key: "taluka", label: "Taluka" }, { key: "district", label: "District" }]}
+        rows={professionals.map((p) => ({
+          name: p.name, profession: A.professionOf(p.occupation), education: p.education,
+          village: A.txt(p.row.village), taluka: A.txt(p.row.taluka), district: A.txt(p.row.district),
+        }))}
+      />
+    </div>
+  );
+}
+
+/* =============================================================== 19 Needs */
+
+function Needs({ rows, people }: Ctx) {
+  const d = (r: A.Row, key: string) => ((r.farming_tools_details || {}) as any)[key] || {};
+  const equipNeed = rows.filter((r) => A.TOOL_KEYS.some((k) => d(r, k.key).want_to_buy)).length;
+  const equipLoan = rows.filter((r) => A.TOOL_KEYS.some((k) => d(r, k.key).needs_loan)).length;
+  const women = people.filter((p) => p.gender === "स्त्री" && p.bachat_gat);
+  const items = [
+    { name: "घरकुल आवश्यक / Gharkul Required", value: rows.filter((r) => r.gharkul_wanted).length },
+    { name: "सोलर आवश्यक / Solar Required", value: rows.filter((r) => r.solar_panel_wanted).length },
+    { name: "वैद्यकीय मदत / Medical Assistance", value: rows.filter((r) => (r.benefits_info || {}).medical_aid_needed).length },
+    { name: "शेती साधने / Equipment Required", value: equipNeed },
+    { name: "शेती कर्ज / Agricultural Loan", value: equipLoan },
+    { name: "बेरोजगार सदस्य / Unemployed", value: people.filter((p) => A.occGroup(p.occupation) === "बेरोजगार / Unemployed").length },
+    { name: "व्यवसाय सुरू करण्याची इच्छा / Startup Interest", value: women.filter((w) => w.bachat_gat.wants_to_start_business).length },
+    { name: "बचत गट सहभाग इच्छुक / Bachat Gat Interest", value: women.filter((w) => w.bachat_gat.wants_to_join).length },
+  ];
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        {items.map((i) => <Kpi key={i.name} label={i.name} value={i.value} tone="amber" icon={HandHeart} />)}
+      </KpiGrid>
+      <G>
+        <ChartCard title="समाजाच्या गरजा / Community Needs" wide><BarCh horizontal data={items} color="#f59e0b" /></ChartCard>
+      </G>
+      <DataTable
+        title="Village-wise Needs Report"
+        columns={[{ key: "name", label: "Village" }, { key: "gharkul", label: "Gharkul" }, { key: "solar", label: "Solar" }, { key: "medical", label: "Medical" }, { key: "equipment", label: "Equipment" }, { key: "loan", label: "Loan" }]}
+        rows={A.uniq(rows, (r) => A.txt(r.village)).map((v) => {
+          const sub = rows.filter((r) => A.txt(r.village) === v);
+          return {
+            name: v,
+            gharkul: sub.filter((r) => r.gharkul_wanted).length,
+            solar: sub.filter((r) => r.solar_panel_wanted).length,
+            medical: sub.filter((r) => (r.benefits_info || {}).medical_aid_needed).length,
+            equipment: sub.filter((r) => A.TOOL_KEYS.some((k) => d(r, k.key).want_to_buy)).length,
+            loan: sub.filter((r) => A.TOOL_KEYS.some((k) => d(r, k.key).needs_loan)).length,
+          };
+        })}
+      />
+    </div>
+  );
+}
+
+/* ======================================================== 20 Survey Users */
+
+function SurveyUsers({ rows, appUsers, isAdmin }: Ctx) {
+  if (!isAdmin) return <Card><CardContent className="p-6 text-sm text-muted-foreground">ही माहिती फक्त प्रशासकांसाठी उपलब्ध आहे.</CardContent></Card>;
+  const byUser = appUsers.map((u) => {
+    const sub = rows.filter((r) => r.created_by === u.id);
+    return {
+      name: u.full_name || u.email,
+      surveys: sub.length,
+      families: sub.length,
+      members: A.allPersons(sub).length,
+      villages: A.uniq(sub, (r) => A.txt(r.village)).length,
+      last: sub[0] ? new Date(sub[0].created_at).toLocaleDateString("en-GB") : "—",
+    };
+  }).sort((a, b) => b.surveys - a.surveys);
+  const active = byUser.filter((u) => u.surveys > 0);
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={UserCog} label="Total Survey Users" value={appUsers.length} />
+        <Kpi tone="green" label="Active Survey Users" value={active.length} />
+        <Kpi tone="amber" label="Top Survey User" value={byUser[0]?.name ?? "—"} hint={`${byUser[0]?.surveys ?? 0} surveys`} />
+        <Kpi tone="violet" label="Average Surveys / User" value={active.length ? (rows.length / active.length).toFixed(1) : 0} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="Survey User-wise Submission Count" wide><BarCh horizontal data={active.map((u) => ({ name: u.name, value: u.surveys }))} color="#2563eb" /></ChartCard>
+      </G>
+      <DataTable
+        title="Survey User Performance"
+        columns={[{ key: "name", label: "Survey User" }, { key: "surveys", label: "Surveys" }, { key: "families", label: "Families" }, { key: "members", label: "Members" }, { key: "villages", label: "Villages" }, { key: "last", label: "Last Submission" }]}
+        rows={byUser}
+      />
+    </div>
+  );
+}
+
+/* ============================================================ 21 Progress */
+
+function ProgressSec({ rows }: Ctx) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const weekStart = new Date(today); weekStart.setDate(today.getDate() - 6);
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const since = (d: Date) => rows.filter((r) => new Date(r.created_at) >= d).length;
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={TrendingUp} label="Submitted Today" value={since(today)} />
+        <Kpi tone="green" label="This Week" value={since(weekStart)} />
+        <Kpi tone="amber" label="This Month" value={since(monthStart)} />
+        <Kpi tone="violet" label="Total Submitted" value={rows.length} />
+      </KpiGrid>
+      <G>
+        <ChartCard title="दैनिक प्रगती / Daily Submission (30 days)" wide><LineCh data={A.trend(rows, 30)} /></ChartCard>
+        <ChartCard title="जिल्हानिहाय प्रगती / District Progress"><BarCh data={A.groupCount(rows, (r) => A.txt(r.district))} color="#10b981" /></ChartCard>
+        <ChartCard title="गावनिहाय प्रगती / Village Progress"><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" /></ChartCard>
+      </G>
+      <DataTable
+        title="Daily Submission Report"
+        columns={[{ key: "name", label: "Date" }, { key: "value", label: "Surveys" }]}
+        rows={A.trend(rows, 30).slice().reverse()}
+      />
+    </div>
+  );
+}
+
+/* ============================================================= 22 Quality */
+
+function Quality({ rows }: Ctx) {
+  const comp = A.completeness(rows);
+  const missing = (f: (r: A.Row) => boolean) => rows.filter(f).length;
+  const complete = rows.filter((r) => r.head_name && r.village && r.mobile && r.education && r.occupation && (r.members || []).length > 0).length;
+  return (
+    <div className="space-y-4">
+      <KpiGrid>
+        <Kpi icon={CheckCircle2} label="Total Records" value={rows.length} />
+        <Kpi tone="green" label="Complete Records" value={complete} />
+        <Kpi tone="red" label="Incomplete Records" value={rows.length - complete} />
+        <Kpi tone="amber" label="Duplicate Records" value={A.duplicates(rows)} />
+        <Kpi tone="violet" label="Missing Mobile" value={missing((r) => !A.txt(r.mobile))} />
+        <Kpi tone="violet" label="Missing Pincode" value={missing((r) => !A.txt(r.pincode))} />
+        <Kpi tone="cyan" label="Missing Education" value={missing((r) => !A.txt(r.education))} />
+        <Kpi tone="cyan" label="Missing Occupation" value={missing((r) => !A.txt(r.occupation))} />
+        <Kpi tone="lime" label="Missing Agriculture Data" value={missing((r) => r.has_farmland == null)} />
+        <Kpi tone="pink" label="Missing Family Members" value={missing((r) => !(r.members || []).length)} />
+        <Kpi tone="green" label="Overall Data Completion" value={`${comp.overall}%`} />
+      </KpiGrid>
+      <G>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">विभागनिहाय पूर्णता / Section-wise Completion</CardTitle></CardHeader>
+          <CardContent><CompletionList items={comp.per} /></CardContent>
+        </Card>
+        <ChartCard title="त्रुटी / Missing Data"><BarCh horizontal color="#ef4444" data={[
+          { name: "Mobile", value: missing((r) => !A.txt(r.mobile)) },
+          { name: "Pincode", value: missing((r) => !A.txt(r.pincode)) },
+          { name: "Education", value: missing((r) => !A.txt(r.education)) },
+          { name: "Occupation", value: missing((r) => !A.txt(r.occupation)) },
+          { name: "Agriculture", value: missing((r) => r.has_farmland == null) },
+          { name: "Members", value: missing((r) => !(r.members || []).length) },
+        ]} /></ChartCard>
+      </G>
+      <DataTable
+        title="Incomplete Records"
+        columns={[{ key: "head", label: "Family Head" }, { key: "village", label: "Village" }, { key: "missing", label: "Missing Fields" }, { key: "date", label: "Created" }]}
+        rows={rows.filter((r) => !(r.head_name && r.village && r.mobile && r.education && r.occupation && (r.members || []).length)).map((r) => ({
+          head: r.head_name, village: r.village,
+          missing: [!A.txt(r.mobile) && "Mobile", !A.txt(r.pincode) && "Pincode", !A.txt(r.education) && "Education", !A.txt(r.occupation) && "Occupation", !(r.members || []).length && "Members"].filter(Boolean).join(", "),
+          date: new Date(r.created_at).toLocaleDateString("en-GB"),
+        }))}
+      />
+    </div>
+  );
+}
+
+/* ======================================================= 23 Cross Analytics */
+
+function CrossAnalytics({ rows }: Ctx) {
+  const [d1, setD1] = useState("district");
+  const [d2, setD2] = useState("occupation");
+  const { columns, data, unit } = useMemo(() => A.crossTab(rows, d1, d2), [rows, d1, d2]);
+  const tableCols = [{ key: "name", label: A.DIMENSIONS.find((d) => d.id === d1)!.label }, ...columns.map((c) => ({ key: c, label: c })), { key: "total", label: "Total" }];
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="p-3 flex flex-wrap items-end gap-3">
+          <div className="space-y-1">
+            <div className="text-[10px] text-muted-foreground">Dimension 1</div>
+            <Select value={d1} onValueChange={setD1}>
+              <SelectTrigger className="h-8 w-52 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>{A.DIMENSIONS.map((d) => <SelectItem key={d.id} value={d.id} className="text-xs">{d.label}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <div className="text-[10px] text-muted-foreground">Dimension 2</div>
+            <Select value={d2} onValueChange={setD2}>
+              <SelectTrigger className="h-8 w-52 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>{A.DIMENSIONS.map((d) => <SelectItem key={d.id} value={d.id} className="text-xs">{d.label}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+          <Badge variant="secondary" className="text-xs">Metric: {unit}</Badge>
+        </CardContent>
+      </Card>
+      <ChartCard title={`${A.DIMENSIONS.find((d) => d.id === d1)!.label} × ${A.DIMENSIONS.find((d) => d.id === d2)!.label}`} wide>
+        <StackedBar data={data} columns={columns} />
+      </ChartCard>
+      <DataTable title="Cross Analytics Table" columns={tableCols} rows={data} />
+    </div>
+  );
+}
+
+/* =========================================================== 24 Reports */
+
+function Reports({ rows }: Ctx) {
+  const villages = A.uniq(rows, (r) => A.txt(r.village));
+  const people = (v: string) => A.allPersons(rows.filter((r) => A.txt(r.village) === v));
+  return (
+    <div className="space-y-4">
+      <DataTable
+        title="Village Master Report"
+        columns={[
+          { key: "name", label: "Village" }, { key: "families", label: "Families" }, { key: "members", label: "Members" },
+          { key: "male", label: "Male" }, { key: "female", label: "Female" }, { key: "farmers", label: "Farmers" },
+          { key: "graduates", label: "Graduates" }, { key: "govt", label: "Govt Jobs" }, { key: "houses", label: "Own Houses" },
+          { key: "gharkul", label: "Gharkul Need" },
+        ]}
+        rows={villages.map((v) => {
+          const sub = rows.filter((r) => A.txt(r.village) === v);
+          const ppl = people(v);
+          return {
+            name: v, families: sub.length, members: ppl.length,
+            male: ppl.filter((p) => p.gender === "पुरुष").length,
+            female: ppl.filter((p) => p.gender === "स्त्री").length,
+            farmers: sub.filter((r) => r.has_farmland).length,
+            graduates: ppl.filter((p) => ["पदवी / Graduate", "पदव्युत्तर / Postgraduate", "डॉक्टरेट / Ph.D."].includes(A.eduLevel(p.education))).length,
+            govt: ppl.filter((p) => A.occGroup(p.occupation) === "सरकारी कर्मचारी").length,
+            houses: sub.filter((r) => r.owns_house).length,
+            gharkul: sub.filter((r) => r.gharkul_wanted).length,
+          };
+        })}
+      />
+      <DataTable
+        title="Family Master Report"
+        columns={[
+          { key: "head", label: "Family Head" }, { key: "mobile", label: "Mobile" }, { key: "village", label: "Village" },
+          { key: "taluka", label: "Taluka" }, { key: "district", label: "District" }, { key: "members", label: "Members" },
+          { key: "occupation", label: "Occupation" }, { key: "education", label: "Education" },
+          { key: "land", label: "Land (Acre)" }, { key: "house", label: "House" }, { key: "date", label: "Created" },
+        ]}
+        rows={rows.map((r) => ({
+          head: r.head_name, mobile: r.mobile, village: r.village, taluka: r.taluka, district: r.district,
+          members: A.personsOf(r).length, occupation: r.occupation, education: r.education,
+          land: r.has_farmland ? A.num(r.total_farmland) : 0,
+          house: r.house_type || (r.owns_house ? "स्वतःचे" : "—"),
+          date: new Date(r.created_at).toLocaleDateString("en-GB"),
+        }))}
+        pageSize={15}
+      />
+    </div>
+  );
+}
