@@ -240,8 +240,12 @@ export function DataTable({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-0">
+            <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+            {note && <p className="text-[10px] leading-snug text-muted-foreground mt-1">{note}</p>}
+          </div>
+
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
