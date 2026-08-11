@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, ClipboardList, PlusCircle, LogOut, UserPlus, BarChart3 } from "lucide-react";
+import { LayoutDashboard, ClipboardList, PlusCircle, LogOut, UserPlus, BarChart3, PieChart } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
@@ -11,6 +11,7 @@ import { T } from "@/lib/marathi";
 const ADMIN_ITEMS = [
   { title: "Visual Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Dashboard 2", url: "/dashboard2", icon: BarChart3 },
+  { title: "Dashboard 3", url: "/dashboard3", icon: PieChart },
   { title: "New Survey", url: "/new", icon: PlusCircle },
   { title: "All Survey", url: "/surveys", icon: ClipboardList },
   { title: "Create Survey User", url: "/users", icon: UserPlus },
@@ -19,6 +20,7 @@ const ADMIN_ITEMS = [
 const SURVEYOR_ITEMS = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Dashboard 2", url: "/dashboard2", icon: BarChart3 },
+  { title: "Dashboard 3", url: "/dashboard3", icon: PieChart },
   { title: "Make Survey", url: "/new", icon: PlusCircle },
 ];
 
