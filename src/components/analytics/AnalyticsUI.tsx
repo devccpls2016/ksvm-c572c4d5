@@ -84,22 +84,18 @@ export function SectionHeader({ title, subtitle, icon: Icon }: { title: string; 
 /* ------------------------------------------------------------------ charts */
 
 export function ChartCard({
-  title, children, wide, actions, note,
-}: { title: string; children: React.ReactNode; wide?: boolean; actions?: React.ReactNode; note?: string }) {
+  title, children, wide, actions,
+}: { title: string; children: React.ReactNode; wide?: boolean; actions?: React.ReactNode }) {
   return (
     <Card className={wide ? "md:col-span-2" : ""}>
-      <CardHeader className="pb-2 flex-row items-start justify-between gap-2 space-y-0">
-        <div className="min-w-0">
-          <CardTitle className="text-sm font-semibold">{title}</CardTitle>
-          {note && <p className="text-[10px] leading-snug text-muted-foreground mt-1">{note}</p>}
-        </div>
+      <CardHeader className="pb-2 flex-row items-center justify-between gap-2 space-y-0">
+        <CardTitle className="text-sm font-semibold">{title}</CardTitle>
         {actions}
       </CardHeader>
       <CardContent className="h-[280px] pt-2">{children}</CardContent>
     </Card>
   );
 }
-
 
 export function Empty({ label = "निवडलेल्या फिल्टरसाठी माहिती उपलब्ध नाही / No data available for the selected filters." }) {
   return (
@@ -188,9 +184,8 @@ export function StackedBar({ data, columns }: { data: any[]; columns: string[] }
 export type Col = { key: string; label: string };
 
 export function DataTable({
-  title, columns, rows, pageSize = 10, note,
-}: { title: string; columns: Col[]; rows: any[]; pageSize?: number; note?: string }) {
-
+  title, columns, rows, pageSize = 10,
+}: { title: string; columns: Col[]; rows: any[]; pageSize?: number }) {
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null);
   const [page, setPage] = useState(0);
@@ -240,12 +235,8 @@ export function DataTable({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-0">
-            <CardTitle className="text-sm font-semibold">{title}</CardTitle>
-            {note && <p className="text-[10px] leading-snug text-muted-foreground mt-1">{note}</p>}
-          </div>
-
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle className="text-sm font-semibold">{title}</CardTitle>
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />

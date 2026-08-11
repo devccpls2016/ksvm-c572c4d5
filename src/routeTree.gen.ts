@@ -14,7 +14,6 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedNewRouteImport } from './routes/_authenticated/new'
-import { Route as AuthenticatedDashboard3RouteImport } from './routes/_authenticated/dashboard3'
 import { Route as AuthenticatedDashboard2RouteImport } from './routes/_authenticated/dashboard2'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedSurveysIndexRouteImport } from './routes/_authenticated/surveys.index'
@@ -43,11 +42,6 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
 const AuthenticatedNewRoute = AuthenticatedNewRouteImport.update({
   id: '/new',
   path: '/new',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedDashboard3Route = AuthenticatedDashboard3RouteImport.update({
-  id: '/dashboard3',
-  path: '/dashboard3',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDashboard2Route = AuthenticatedDashboard2RouteImport.update({
@@ -83,7 +77,6 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dashboard2': typeof AuthenticatedDashboard2Route
-  '/dashboard3': typeof AuthenticatedDashboard3Route
   '/new': typeof AuthenticatedNewRoute
   '/users': typeof AuthenticatedUsersRoute
   '/surveys/$id': typeof AuthenticatedSurveysIdRoute
@@ -95,7 +88,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dashboard2': typeof AuthenticatedDashboard2Route
-  '/dashboard3': typeof AuthenticatedDashboard3Route
   '/new': typeof AuthenticatedNewRoute
   '/users': typeof AuthenticatedUsersRoute
   '/surveys/$id': typeof AuthenticatedSurveysIdRoute
@@ -109,7 +101,6 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/dashboard2': typeof AuthenticatedDashboard2Route
-  '/_authenticated/dashboard3': typeof AuthenticatedDashboard3Route
   '/_authenticated/new': typeof AuthenticatedNewRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/surveys/$id': typeof AuthenticatedSurveysIdRoute
@@ -123,7 +114,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/dashboard2'
-    | '/dashboard3'
     | '/new'
     | '/users'
     | '/surveys/$id'
@@ -135,7 +125,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/dashboard2'
-    | '/dashboard3'
     | '/new'
     | '/users'
     | '/surveys/$id'
@@ -148,7 +137,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/dashboard'
     | '/_authenticated/dashboard2'
-    | '/_authenticated/dashboard3'
     | '/_authenticated/new'
     | '/_authenticated/users'
     | '/_authenticated/surveys/$id'
@@ -199,13 +187,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/dashboard3': {
-      id: '/_authenticated/dashboard3'
-      path: '/dashboard3'
-      fullPath: '/dashboard3'
-      preLoaderRoute: typeof AuthenticatedDashboard3RouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/dashboard2': {
       id: '/_authenticated/dashboard2'
       path: '/dashboard2'
@@ -247,7 +228,6 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDashboard2Route: typeof AuthenticatedDashboard2Route
-  AuthenticatedDashboard3Route: typeof AuthenticatedDashboard3Route
   AuthenticatedNewRoute: typeof AuthenticatedNewRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedSurveysIdRoute: typeof AuthenticatedSurveysIdRoute
@@ -258,7 +238,6 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDashboard2Route: AuthenticatedDashboard2Route,
-  AuthenticatedDashboard3Route: AuthenticatedDashboard3Route,
   AuthenticatedNewRoute: AuthenticatedNewRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedSurveysIdRoute: AuthenticatedSurveysIdRoute,
