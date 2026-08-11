@@ -236,7 +236,7 @@ function Dashboard3() {
                 onChange={setFilters}
                 only={SECTION_FILTERS[section] ?? ["loc"]}
                 title=""
-                defaultOpen
+                defaultOpen={SECTION_FILTERS[section] ?? ["loc"]}
               />
             </CardContent>
           </Card>
