@@ -11,6 +11,7 @@ import { T } from "@/lib/marathi";
 const ADMIN_ITEMS = [
   { title: "Visual Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Dashboard 2", url: "/dashboard2", icon: BarChart3 },
+  { title: "Dashboard 3", url: "/dashboard3", icon: BarChart3 },
   { title: "New Survey", url: "/new", icon: PlusCircle },
   { title: "All Survey", url: "/surveys", icon: ClipboardList },
   { title: "Create Survey User", url: "/users", icon: UserPlus },
@@ -19,8 +20,10 @@ const ADMIN_ITEMS = [
 const SURVEYOR_ITEMS = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Dashboard 2", url: "/dashboard2", icon: BarChart3 },
+  { title: "Dashboard 3", url: "/dashboard3", icon: BarChart3 },
   { title: "Make Survey", url: "/new", icon: PlusCircle },
 ];
+
 
 
 export function AppSidebar() {
