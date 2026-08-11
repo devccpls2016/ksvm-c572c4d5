@@ -84,18 +84,22 @@ export function SectionHeader({ title, subtitle, icon: Icon }: { title: string; 
 /* ------------------------------------------------------------------ charts */
 
 export function ChartCard({
-  title, children, wide, actions,
-}: { title: string; children: React.ReactNode; wide?: boolean; actions?: React.ReactNode }) {
+  title, children, wide, actions, note,
+}: { title: string; children: React.ReactNode; wide?: boolean; actions?: React.ReactNode; note?: string }) {
   return (
     <Card className={wide ? "md:col-span-2" : ""}>
-      <CardHeader className="pb-2 flex-row items-center justify-between gap-2 space-y-0">
-        <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+      <CardHeader className="pb-2 flex-row items-start justify-between gap-2 space-y-0">
+        <div className="min-w-0">
+          <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+          {note && <p className="text-[10px] leading-snug text-muted-foreground mt-1">{note}</p>}
+        </div>
         {actions}
       </CardHeader>
       <CardContent className="h-[280px] pt-2">{children}</CardContent>
     </Card>
   );
 }
+
 
 export function Empty({ label = "निवडलेल्या फिल्टरसाठी माहिती उपलब्ध नाही / No data available for the selected filters." }) {
   return (
