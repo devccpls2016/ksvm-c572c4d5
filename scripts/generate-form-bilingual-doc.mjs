@@ -50,12 +50,22 @@ const pair = (v, o = {}) => {
   return runs;
 };
 
+// Type label: avoid duplicated English when the Marathi string already contains it
+function typeLabel(t) {
+  const mr = typeof t === "string" ? t : t.mr;
+  const en = typeof t === "string" ? null : t.en;
+  if (!en || en === mr) return mr;
+  const strip = (x) => x.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (strip(mr).includes(strip(en)) && strip(en).length > 2) return mr;
+  return `${mr} (${en})`;
+}
+
 function renderField(f) {
   const nodes = [];
   nodes.push(P([
     T("•  ", { bold: true, color: C.accent, size: 24 }),
     ...pair(f.name, { bold: true, size: 23, color: C.text, enColor: C.accent }),
-    ...(f.type ? [T("   [", { color: C.light }), ...pair(f.type, { color: C.light, enColor: C.light, size: 20 }), T("]", { color: C.light })] : []),
+    ...(f.type ? [T(`   [${typeLabel(f.type)}]`, { color: C.light, size: 20 })] : []),
   ], { indent: { left: 360, hanging: 200 }, before: 80, after: 30 }));
 
   (f.options || []).forEach((op) => {
