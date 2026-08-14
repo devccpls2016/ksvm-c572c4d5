@@ -85,10 +85,6 @@ function AuthPage() {
                 defaultEmail="admin@gmail.com"
                 onSubmit={(e, p) => attemptLogin(e, p, "admin")}
               />
-              <HintBox>
-                <strong>डीफॉल्ट Admin:</strong>
-                <span> admin@gmail.com / 123456</span>
-              </HintBox>
             </TabsContent>
 
             <TabsContent value="surveyor" className="mt-4">
