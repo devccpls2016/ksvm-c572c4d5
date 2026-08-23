@@ -459,10 +459,8 @@ function Geographic({ rows }: Ctx) {
           <StatBars total={rows.length} items={states.map((s) => ({ name: s.name, value: s.families }))} />
         </Panel>
         <Panel title={`${level === "district" ? "जिल्हा" : level === "taluka" ? "तालुका" : "गाव"} — Families (click to drill)`}>
-          <ChartBox h={230}>
-            <DBar horizontal color="#2563eb" onSelect={drillTo}
-              data={roll.map((r) => ({ name: r.name, value: r.families }))} />
-          </ChartBox>
+          <StatBars total={subset.length} onSelect={drillTo}
+            items={roll.slice(0, 12).map((r) => ({ name: r.name, value: r.families }))} />
         </Panel>
       </G2>
       <MiniTable
