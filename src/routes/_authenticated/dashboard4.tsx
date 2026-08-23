@@ -83,11 +83,16 @@ const NAV = [
   { id: "cross", label: "Cross Analytics" },
 ];
 
+/** Section pairing at the page level (two columns on wide screens). */
+const Pair = ({ children }: { children: React.ReactNode }) => (
+  <div className="grid gap-4 xl:grid-cols-2 items-start">{children}</div>
+);
+/** Charts inside a section stack vertically so axes never get cramped. */
 const G2 = ({ children }: { children: React.ReactNode }) => (
-  <div className="grid gap-3 md:grid-cols-2">{children}</div>
+  <div className="grid gap-3">{children}</div>
 );
 const G3 = ({ children }: { children: React.ReactNode }) => (
-  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
+  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{children}</div>
 );
 
 const ALL = "__all__";
@@ -300,50 +305,50 @@ function Dashboard4() {
       </div>
 
       <ExecutiveKpis {...ctx} />
-      <G2>
+      <Pair>
         <Geographic {...ctx} />
         <Demographics {...ctx} />
-      </G2>
-      <G2>
+      </Pair>
+      <Pair>
         <Education {...ctx} />
         <Occupation {...ctx} />
-      </G2>
-      <G2>
+      </Pair>
+      <Pair>
         <Agriculture {...ctx} />
         <Crops {...ctx} />
-      </G2>
-      <G2>
+      </Pair>
+      <Pair>
         <Irrigation {...ctx} />
         <Equipment {...ctx} />
-      </G2>
-      <G2>
+      </Pair>
+      <Pair>
         <Housing {...ctx} />
         <Assets {...ctx} />
-      </G2>
-      <G2>
+      </Pair>
+      <Pair>
         <Solar {...ctx} />
         <Benefits {...ctx} />
-      </G2>
-      <G2>
+      </Pair>
+      <Pair>
         <Medical {...ctx} />
         <Sports {...ctx} />
-      </G2>
-      <G2>
+      </Pair>
+      <Pair>
         <Leadership {...ctx} />
         <BusinessSec {...ctx} />
-      </G2>
-      <G2>
+      </Pair>
+      <Pair>
         <Women {...ctx} />
         <HumanResources {...ctx} />
-      </G2>
-      <G2>
+      </Pair>
+      <Pair>
         <Needs {...ctx} />
         <UserPerformance {...ctx} />
-      </G2>
-      <G2>
+      </Pair>
+      <Pair>
         <ProgressSec {...ctx} />
         <Quality {...ctx} />
-      </G2>
+      </Pair>
       <CrossAnalytics {...ctx} />
     </div>
   );
