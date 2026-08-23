@@ -1548,7 +1548,10 @@ function CrossAnalytics({ rows }: Ctx) {
   const grand = res.data.reduce((a, r) => a + r.total, 0);
   const chartData = metric === "count"
     ? res.data
-    : res.data.map((r) => ({ ...r, ...res.columns.reduce<Record<string, number>>((a, c) => ((a[c] = r.total ? Math.round((r[c] / r.total) * 1000) / 10 : 0), a), {}) }));
+    : res.data.map((row) => {
+      const r = row as any;
+      return { ...r, ...res.columns.reduce<Record<string, number>>((a, c) => ((a[c] = r.total ? Math.round((A.num(r[c]) / r.total) * 1000) / 10 : 0), a), {}) };
+    });
 
   return (
     <SectionShell id="cross" no="25" title="🔄 Advanced Cross Analytics" icon={Shuffle} accent="violet"
