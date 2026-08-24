@@ -81,7 +81,7 @@ const clean = (s) => s
 
 function extractKpis(body) {
   const out = [];
-  for (const m of body.matchAll(/<Kpi\b([^>]*?)\/>/g)) {
+  for (const m of body.matchAll(/<Kpi\s([\s\S]*?)\/>/g)) {
     const attrs = m[1];
     const lab = attrs.match(/label="([^"]*)"/) || attrs.match(/label=\{`([^`]*)`\}/);
     if (!lab) continue;
