@@ -172,17 +172,19 @@ export function GroupedBar({
     <ResponsiveContainer>
       <BarChart data={top} layout={horizontal ? "vertical" : "horizontal"} margin={{ left: 4, right: 20, top: 14, bottom: 4 }}>
         <CartesianGrid strokeDasharray="3 3" opacity={0.35} />
-        {horizontal ? (
-          <>
-            <XAxis type="number" fontSize={10} allowDecimals={false} />
-            <YAxis type="category" dataKey="name" fontSize={10} width={Math.min(190, Math.max(90, longest * 7))} interval={0} />
-          </>
-        ) : (
-          <>
-            <XAxis dataKey="name" fontSize={10} interval={0} angle={-25} textAnchor="end" height={Math.min(110, 40 + longest * 4)} />
-            <YAxis fontSize={10} allowDecimals={false} />
-          </>
-        )}
+        <XAxis
+          {...(horizontal
+            ? { type: "number" as const, allowDecimals: false }
+            : { dataKey: "name", interval: 0 as const, angle: -25, textAnchor: "end", height: Math.min(110, 40 + longest * 4) })}
+          fontSize={10}
+        />
+        <YAxis
+          {...(horizontal
+            ? { type: "category" as const, dataKey: "name", width: Math.min(180, Math.max(90, longest * 7)), interval: 0 as const, tickLine: false }
+            : { allowDecimals: false })}
+          fontSize={10}
+        />
+
         <Tooltip {...tipStyle} />
         <Legend wrapperStyle={{ fontSize: 11 }} />
         {series.map((s, i) => (
