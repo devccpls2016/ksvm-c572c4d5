@@ -213,23 +213,25 @@ function Dashboard5() {
         </Card>
 
         <div className="min-w-0 space-y-4">
-          <Card className="print:hidden border-primary/30">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <sectionMeta.icon className="h-4 w-4 text-primary" />
-                {sectionMeta.no}. {sectionMeta.label} — विभागनिहाय फिल्टर / Section filters
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <SurveyFilterPanel
-                rows={scoped}
-                filters={filters}
-                onChange={setFilters}
-                only={sectionGroups}
-                title="या विभागाचे फिल्टर"
-              />
-            </CardContent>
-          </Card>
+          {section !== "overview" && (
+            <Card className="print:hidden border-primary/30">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <sectionMeta.icon className="h-4 w-4 text-primary" />
+                  {sectionMeta.no}. {sectionMeta.label} — विभागनिहाय फिल्टर / Section filters
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <SurveyFilterPanel
+                  rows={scoped}
+                  filters={filters}
+                  onChange={setFilters}
+                  only={sectionGroups}
+                  title="या विभागाचे फिल्टर"
+                />
+              </CardContent>
+            </Card>
+          )}
           <Section id={section} ctx={ctx} />
         </div>
       </div>
