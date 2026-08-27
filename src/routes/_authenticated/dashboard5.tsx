@@ -452,10 +452,10 @@ function Geographic({ rows }: Ctx) {
         </ChartCard>
       </G>
 
-      <DataTable title="State-wise Survey Summary" rows={stateRows} columns={[...cols, { key: "villages", label: "Villages" }, { key: "talukas", label: "Talukas" }, { key: "districts", label: "Districts" }]} />
-      <DataTable title="District-wise Survey Count" rows={districts} columns={cols} />
-      <DataTable title="Taluka-wise Survey Count" rows={talukas} columns={cols} />
-      <DataTable title="Village-wise Survey Count (Drill-down)" rows={villagesDrill} columns={cols} />
+      <DataTable exports={false} title="State-wise Survey Summary" rows={stateRows} columns={[...cols, { key: "villages", label: "Villages" }, { key: "talukas", label: "Talukas" }, { key: "districts", label: "Districts" }]} />
+      <DataTable exports={false} title="District-wise Survey Count" rows={districts} columns={cols} />
+      <DataTable exports={false} title="Taluka-wise Survey Count" rows={talukas} columns={cols} />
+      <DataTable exports={false} title="Village-wise Survey Count (Drill-down)" rows={villagesDrill} columns={cols} />
     </div>
   );
 }

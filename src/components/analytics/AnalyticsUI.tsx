@@ -14,7 +14,10 @@ import { Progress } from "@/components/ui/progress";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { FileSpreadsheet, FileText, Printer, ChevronsUpDown, Search } from "lucide-react";
+import { FileSpreadsheet, FileText, Printer, ChevronsUpDown, Search, Maximize2 } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import type { Datum } from "@/lib/analytics";
 
 export const CHART_COLORS = [
@@ -286,11 +289,13 @@ export function StackedBar({ data, columns }: { data: any[]; columns: string[] }
 export type Col = { key: string; label: string };
 
 export function DataTable({
-  title, columns, rows, pageSize = 10,
-}: { title: string; columns: Col[]; rows: any[]; pageSize?: number }) {
+  title, columns, rows, pageSize = 10, exports = true,
+}: { title: string; columns: Col[]; rows: any[]; pageSize?: number; exports?: boolean }) {
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null);
   const [page, setPage] = useState(0);
+  const [open, setOpen] = useState(false);
+
 
   const filtered = useMemo(() => {
     let out = rows;
@@ -334,6 +339,35 @@ export function DataTable({
     doc.save(`${title.replace(/[^\w-]+/g, "_")}.pdf`);
   };
 
+  const head = (
+    <TableHeader>
+      <TableRow>
+        {columns.map((c) => (
+          <TableHead
+            key={c.key}
+            className="whitespace-nowrap text-xs cursor-pointer select-none"
+            onClick={() => setSort((s) => (s?.key === c.key ? { key: c.key, dir: s.dir === 1 ? -1 : 1 } : { key: c.key, dir: -1 }))}
+          >
+            <span className="inline-flex items-center gap-1">{c.label}<ChevronsUpDown className="h-3 w-3 opacity-40" /></span>
+          </TableHead>
+        ))}
+      </TableRow>
+    </TableHeader>
+  );
+
+  const body = (data: any[]) => (
+    <TableBody>
+      {data.length === 0 && (
+        <TableRow><TableCell colSpan={columns.length} className="text-center text-xs text-muted-foreground py-6">माहिती उपलब्ध नाही / No data</TableCell></TableRow>
+      )}
+      {data.map((r, i) => (
+        <TableRow key={i}>
+          {columns.map((c) => <TableCell key={c.key} className="text-xs whitespace-nowrap">{String(r[c.key] ?? "—")}</TableCell>)}
+        </TableRow>
+      ))}
+    </TableBody>
+  );
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -344,38 +378,24 @@ export function DataTable({
               <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
               <Input value={q} onChange={(e) => { setQ(e.target.value); setPage(0); }} placeholder="शोधा / Search" className="h-8 w-40 pl-7 text-xs" />
             </div>
-            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={doExcel}><FileSpreadsheet className="h-3.5 w-3.5 mr-1" />Excel</Button>
-            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={doPdf}><FileText className="h-3.5 w-3.5 mr-1" />PDF</Button>
-            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => window.print()}><Printer className="h-3.5 w-3.5 mr-1" />Print</Button>
+            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setOpen(true)}>
+              <Maximize2 className="h-3.5 w-3.5 mr-1" />सर्व पहा / View all
+            </Button>
+            {exports && (
+              <>
+                <Button size="sm" variant="outline" className="h-8 text-xs" onClick={doExcel}><FileSpreadsheet className="h-3.5 w-3.5 mr-1" />Excel</Button>
+                <Button size="sm" variant="outline" className="h-8 text-xs" onClick={doPdf}><FileText className="h-3.5 w-3.5 mr-1" />PDF</Button>
+                <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => window.print()}><Printer className="h-3.5 w-3.5 mr-1" />Print</Button>
+              </>
+            )}
           </div>
         </div>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto rounded-md border">
           <Table>
-            <TableHeader>
-              <TableRow>
-                {columns.map((c) => (
-                  <TableHead
-                    key={c.key}
-                    className="whitespace-nowrap text-xs cursor-pointer select-none"
-                    onClick={() => setSort((s) => (s?.key === c.key ? { key: c.key, dir: s.dir === 1 ? -1 : 1 } : { key: c.key, dir: -1 }))}
-                  >
-                    <span className="inline-flex items-center gap-1">{c.label}<ChevronsUpDown className="h-3 w-3 opacity-40" /></span>
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {view.length === 0 && (
-                <TableRow><TableCell colSpan={columns.length} className="text-center text-xs text-muted-foreground py-6">माहिती उपलब्ध नाही / No data</TableCell></TableRow>
-              )}
-              {view.map((r, i) => (
-                <TableRow key={i}>
-                  {columns.map((c) => <TableCell key={c.key} className="text-xs whitespace-nowrap">{String(r[c.key] ?? "—")}</TableCell>)}
-                </TableRow>
-              ))}
-            </TableBody>
+            {head}
+            {body(view)}
           </Table>
         </div>
         {pages > 1 && (
@@ -389,9 +409,31 @@ export function DataTable({
           </div>
         )}
       </CardContent>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle className="text-base">{title}</DialogTitle>
+            <DialogDescription className="text-xs">
+              {filtered.length} नोंदी / records — संपूर्ण माहिती / complete data
+            </DialogDescription>
+          </DialogHeader>
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="शोधा / Search" className="h-8 w-56 pl-7 text-xs" />
+          </div>
+          <div className="max-h-[65vh] overflow-auto rounded-md border">
+            <Table>
+              {head}
+              {body(filtered)}
+            </Table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
+
 
 export function CompletionList({ items }: { items: Datum[] }) {
   return (
