@@ -22,11 +22,21 @@ import {
   LayoutDashboard, MapPin, Users, GraduationCap, Briefcase, Sprout, Droplets,
   Tractor, Home, Package, Sun, Target, HeartPulse, Trophy, Landmark, Store,
   UserRound, BriefcaseBusiness, HandHeart, UserCog, TrendingUp, CheckCircle2,
-  Shuffle, Table2, RotateCcw, Filter, ChevronDown, CalendarRange,
+  Shuffle, Table2, RotateCcw, Filter, ChevronDown, CalendarRange, Gauge,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard5")({
   component: Dashboard5,
+  head: () => ({
+    meta: [
+      { title: "कोहळी समाज माहिती व विश्लेषण — Kohali Samaj Information & Analytics" },
+      { name: "description", content: "कोहळी समाज विकास मंडळ, नागपूर — कुटुंब सर्वेक्षण माहिती व विश्लेषण डॅशबोर्ड." },
+      { property: "og:title", content: "कोहळी समाज माहिती व विश्लेषण — Kohali Samaj Information & Analytics" },
+      { property: "og:description", content: "Community family survey information and analytics dashboard for Kohali Samaj." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
 });
 
 const SECTIONS = [
@@ -154,6 +164,30 @@ function Dashboard5() {
 
   return (
     <div className="space-y-4">
+      <Card className="border-primary/40 bg-gradient-to-r from-primary/10 via-background to-primary/5">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shrink-0 shadow-sm">
+              <Gauge className="h-6 w-6" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                कोहळी समाज माहिती व विश्लेषण
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Kohali Samaj Information & Analytics — कोहळी समाज विकास मंडळ, नागपूर
+              </p>
+            </div>
+            <div className="sm:ml-auto flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+              <span className="hidden sm:inline">विभाग:</span>
+              <Badge variant="secondary" className="font-normal">
+                {sectionMeta.no}. {sectionMeta.label}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <KpiGrid>
         <Kpi icon={Table2} label="Total Survey Submitted" value={head.families} />
         <Kpi icon={Home} tone="green" label="Total Families" value={head.families} />
