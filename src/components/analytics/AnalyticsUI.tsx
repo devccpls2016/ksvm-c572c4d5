@@ -133,17 +133,19 @@ export function BarCh({
         barCategoryGap="20%"
       >
         <CartesianGrid strokeDasharray="3 3" opacity={0.35} />
-        {horizontal ? (
-          <>
-            <XAxis type="number" fontSize={10} allowDecimals={false} />
-            <YAxis type="category" dataKey="name" fontSize={10} width={yWidth} interval={0} tickLine={false} />
-          </>
-        ) : (
-          <>
-            <XAxis dataKey="name" fontSize={10} interval={0} angle={-25} textAnchor="end" height={Math.min(110, 40 + longest * 4)} />
-            <YAxis fontSize={10} allowDecimals={false} />
-          </>
-        )}
+        <XAxis
+          {...(horizontal
+            ? { type: "number" as const, allowDecimals: false }
+            : { dataKey: "name", interval: 0 as const, angle: -25, textAnchor: "end", height: Math.min(110, 40 + longest * 4) })}
+          fontSize={10}
+        />
+        <YAxis
+          {...(horizontal
+            ? { type: "category" as const, dataKey: "name", width: yWidth, interval: 0 as const, tickLine: false }
+            : { allowDecimals: false })}
+          fontSize={10}
+        />
+
         <Tooltip {...tipStyle} formatter={(v: any) => [v, unit]} />
         <Bar dataKey="value" name={unit} fill={color} radius={horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]} maxBarSize={horizontal ? 22 : 44}>
           {multi && top.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
