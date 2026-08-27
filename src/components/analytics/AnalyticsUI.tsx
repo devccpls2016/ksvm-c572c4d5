@@ -203,6 +203,21 @@ export function PieCh({ data, donut, unit = "संख्या / Count" }: { da
   const clean = data.filter((d) => d.value > 0);
   if (!clean.length) return <Empty />;
   const total = clean.reduce((a, b) => a + b.value, 0);
+  const single = clean.length === 1;
+  const label = (e: any) => {
+    const share = Math.round((e.value / total) * 1000) / 10;
+    if (share < 4) return "";
+    const rIn = e.innerRadius || 0;
+    const r = rIn + (e.outerRadius - rIn) * (donut ? 0.5 : 0.62);
+    const rad = -(e.midAngle * Math.PI) / 180;
+    const x = e.cx + r * Math.cos(rad);
+    const y = e.cy + r * Math.sin(rad);
+    return (
+      <text x={single && donut ? e.cx : x} y={single && donut ? e.cy : y} textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600} fill={single && donut ? "currentColor" : "#fff"} className={single && donut ? "fill-foreground" : ""}>
+        {`${e.value} (${share}%)`}
+      </text>
+    );
+  };
   return (
     <ResponsiveContainer>
       <PieChart margin={{ top: 6, bottom: 6, left: 6, right: 6 }}>
@@ -210,12 +225,11 @@ export function PieCh({ data, donut, unit = "संख्या / Count" }: { da
           data={clean}
           dataKey="value"
           nameKey="name"
-          outerRadius="72%"
-          innerRadius={donut ? "44%" : 0}
-          paddingAngle={clean.length > 1 ? 1.5 : 0}
+          outerRadius="74%"
+          innerRadius={donut ? "46%" : 0}
+          paddingAngle={single ? 0 : 1.5}
           labelLine={false}
-          label={(e: any) => `${e.value} (${Math.round((e.value / total) * 1000) / 10}%)`}
-          fontSize={10}
+          label={label as any}
         >
           {clean.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="hsl(var(--background))" strokeWidth={1} />)}
         </Pie>
@@ -225,6 +239,7 @@ export function PieCh({ data, donut, unit = "संख्या / Count" }: { da
     </ResponsiveContainer>
   );
 }
+
 
 export function LineCh({ data }: { data: Datum[] }) {
   if (!data.length) return <Empty />;
