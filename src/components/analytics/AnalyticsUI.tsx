@@ -123,18 +123,20 @@ export function BarCh({
   if (!data.length) return <Empty />;
   const top = data.slice(0, limit);
   const longest = Math.max(...top.map((d) => d.name.length));
+  const yWidth = horizontal ? Math.min(180, Math.max(90, (Number.isFinite(longest) ? longest : 10) * 7)) : undefined;
   return (
     <ResponsiveContainer>
       <BarChart
         data={top}
         layout={horizontal ? "vertical" : "horizontal"}
-        margin={{ left: horizontal ? 4 : 0, right: horizontal ? 28 : 8, top: 14, bottom: 4 }}
+        margin={{ left: 0, right: horizontal ? 30 : 8, top: 14, bottom: 4 }}
+        barCategoryGap="20%"
       >
         <CartesianGrid strokeDasharray="3 3" opacity={0.35} />
         {horizontal ? (
           <>
             <XAxis type="number" fontSize={10} allowDecimals={false} />
-            <YAxis type="category" dataKey="name" fontSize={10} width={Math.min(190, Math.max(90, longest * 7))} interval={0} />
+            <YAxis type="category" dataKey="name" fontSize={10} width={yWidth} interval={0} tickLine={false} />
           </>
         ) : (
           <>
@@ -143,10 +145,10 @@ export function BarCh({
           </>
         )}
         <Tooltip {...tipStyle} formatter={(v: any) => [v, unit]} />
-        <Bar dataKey="value" name={unit} fill={color} radius={horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]} maxBarSize={44}>
+        <Bar dataKey="value" name={unit} fill={color} radius={horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]} maxBarSize={horizontal ? 22 : 44}>
           {multi && top.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
           {labels && (
-            <LabelList dataKey="value" position={horizontal ? "right" : "top"} fontSize={10} fill="currentColor" className="fill-foreground" />
+            <LabelList dataKey="value" position={horizontal ? "right" : "top"} fontSize={10} className="fill-foreground" />
           )}
         </Bar>
       </BarChart>
