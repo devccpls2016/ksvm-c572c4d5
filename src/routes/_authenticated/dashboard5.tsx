@@ -299,30 +299,6 @@ function Overview({ rows, people, appUsers }: Ctx) {
 
   return (
     <div className="space-y-4">
-      <KpiGrid>
-        <Kpi icon={LayoutDashboard} label="Total Survey Submitted" value={rows.length} />
-        <Kpi icon={Home} tone="green" label="Total Families" value={rows.length} />
-        <Kpi icon={Users} tone="violet" label="Total Family Members" value={people.length} />
-        <Kpi icon={UserCog} tone="amber" label="Total Survey Users" value={appUsers.length} />
-        <Kpi icon={MapPin} tone="cyan" label="Villages Covered" value={villages} />
-        <Kpi icon={MapPin} tone="cyan" label="Talukas Covered" value={talukas} />
-        <Kpi icon={MapPin} tone="cyan" label="Districts Covered" value={districts} />
-        <Kpi icon={Users} tone="pink" label="Average Family Size" value={avg} />
-      </KpiGrid>
-      <KpiGrid>
-        <Kpi label="Total Male" value={male} tone="primary" />
-        <Kpi label="Total Female" value={female} tone="pink" />
-        <Kpi label="Other Gender" value={other} tone="violet" />
-        <Kpi label="Married Members" value={ms("विवाहित") - ms("अविवाहित")} tone="green" />
-        <Kpi label="Unmarried Members" value={ms("अविवाहित")} tone="amber" />
-        <Kpi label="Widow Members" value={ms("विधवा") + ms("विधुर")} tone="red" />
-        <Kpi label="Divorced Members" value={ms("घटस्फोटित")} tone="red" />
-        <Kpi label="Children (0–14)" value={band((a) => a <= 14)} tone="lime" />
-        <Kpi label="Youth (15–24)" value={band((a) => a >= 15 && a <= 24)} tone="cyan" />
-        <Kpi label="Adults (25–59)" value={band((a) => a >= 25 && a <= 59)} tone="primary" />
-        <Kpi label="Senior Citizens (60+)" value={band((a) => a >= 60)} tone="violet" />
-        <Kpi label="Farmer Families" value={rows.filter((r) => r.has_farmland).length} tone="green" />
-      </KpiGrid>
       <G>
         <ChartCard title="लिंग वितरण / Gender Distribution">
           <PieCh donut data={[{ name: "पुरुष", value: male }, { name: "स्त्री", value: female }, { name: "इतर", value: other }]} />
