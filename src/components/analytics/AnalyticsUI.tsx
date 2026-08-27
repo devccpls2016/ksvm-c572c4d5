@@ -87,8 +87,9 @@ export function SectionHeader({ title, subtitle, icon: Icon }: { title: string; 
 /* ------------------------------------------------------------------ charts */
 
 export function ChartCard({
-  title, subtitle, children, wide, actions, h = 300,
-}: { title: string; subtitle?: string; children: React.ReactNode; wide?: boolean; actions?: React.ReactNode; h?: number }) {
+  title, subtitle, children, wide, actions, h = 300, expand,
+}: { title: string; subtitle?: string; children: React.ReactNode; wide?: boolean; actions?: React.ReactNode; h?: number; expand?: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
   return (
     <Card className={wide ? "md:col-span-2" : ""}>
       <CardHeader className="pb-2 flex-row items-start justify-between gap-2 space-y-0">
@@ -96,9 +97,27 @@ export function ChartCard({
           <CardTitle className="text-sm font-semibold leading-tight">{title}</CardTitle>
           {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{subtitle}</p>}
         </div>
-        {actions}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {actions}
+          {expand && (
+            <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" onClick={() => setOpen(true)}>
+              <Maximize2 className="h-3 w-3 mr-1" />सर्व पहा / View more
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="pt-2" style={{ height: h }}>{children}</CardContent>
+      {expand && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="max-w-6xl">
+            <DialogHeader>
+              <DialogTitle className="text-base">{title}</DialogTitle>
+              {subtitle && <DialogDescription className="text-xs">{subtitle} — संपूर्ण माहिती / complete data</DialogDescription>}
+            </DialogHeader>
+            <div className="h-[68vh]">{expand}</div>
+          </DialogContent>
+        </Dialog>
+      )}
     </Card>
   );
 }
