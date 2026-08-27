@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard5")({
-  component: Dashboard2,
+  component: Dashboard5,
 });
 
 const SECTIONS = [
@@ -84,7 +84,7 @@ const SECTION_FILTERS: Record<string, string[]> = {
   reports: ["loc", "fam", "edu", "occ", "agri", "house", "ben", "pos", "biz"],
 };
 
-function Dashboard2() {
+function Dashboard5() {
   const { role, user } = useAuth();
   const isAdmin = role === "admin";
   const [all, setAll] = useState<A.Row[]>([]);
