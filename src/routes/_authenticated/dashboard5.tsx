@@ -285,17 +285,11 @@ function Section({ id, ctx }: { id: string; ctx: Ctx }) {
 
 /* ============================================================ 01 Overview */
 
-function Overview({ rows, people, appUsers }: Ctx) {
+function Overview({ rows, people }: Ctx) {
   const male = people.filter((p) => p.gender === "पुरुष").length;
   const female = people.filter((p) => p.gender === "स्त्री").length;
   const other = people.filter((p) => p.gender && p.gender !== "पुरुष" && p.gender !== "स्त्री").length;
-  const ms = (k: string) => people.filter((p) => p.marital_status.includes(k)).length;
   const ages = people.map((p) => p.age).filter((a): a is number => typeof a === "number");
-  const band = (f: (a: number) => boolean) => ages.filter(f).length;
-  const villages = A.uniq(rows, (r) => A.txt(r.village)).length;
-  const talukas = A.uniq(rows, (r) => A.txt(r.taluka)).length;
-  const districts = A.uniq(rows, (r) => A.txt(r.district)).length;
-  const avg = rows.length ? (people.length / rows.length).toFixed(1) : "0";
 
   return (
     <div className="space-y-4">
