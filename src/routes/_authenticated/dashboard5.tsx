@@ -22,7 +22,7 @@ import {
   LayoutDashboard, MapPin, Users, GraduationCap, Briefcase, Sprout, Droplets,
   Tractor, Home, Package, Sun, Target, HeartPulse, Trophy, Landmark, Store,
   UserRound, BriefcaseBusiness, HandHeart, UserCog, TrendingUp, CheckCircle2,
-  Shuffle, Table2, RotateCcw, Filter, ChevronDown, CalendarRange,
+  Shuffle, Table2, RotateCcw, Filter, ChevronDown, CalendarRange, Gauge,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard5")({
