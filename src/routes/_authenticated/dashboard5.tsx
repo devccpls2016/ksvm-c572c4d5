@@ -94,9 +94,6 @@ function Dashboard5() {
 
   const [section, setSection] = useState("overview");
   const [filters, setFilters] = useState<SurveyFilters>({ ...emptyFilters });
-  const [showAll, setShowAll] = useState(false);
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
 
   useEffect(() => {
     supabase.from("surveys").select("*").order("created_at", { ascending: false }).then(({ data }) => {
@@ -111,23 +108,45 @@ function Dashboard5() {
     [all, isAdmin, user?.id],
   );
 
-  const rows = useMemo(() => {
-    return scoped.filter((r) => {
-      if (from && new Date(r.created_at) < new Date(from)) return false;
-      if (to) {
-        const end = new Date(to); end.setHours(23, 59, 59, 999);
-        if (new Date(r.created_at) > end) return false;
-      }
-      return matchSurvey(r, filters);
-    });
-  }, [scoped, filters, from, to]);
+  const rows = useMemo(() => scoped.filter((r) => matchSurvey(r, filters)), [scoped, filters]);
 
   const people = useMemo(() => A.allPersons(rows), [rows]);
 
+  const head = useMemo(() => {
+    const families = rows.length;
+    const members = people.length;
+    const gender = (g: string) => people.filter((p) => (p.gender || "").includes(g)).length;
+    const marital = (m: string) => people.filter((p) => (p.marital_status || "").includes(m)).length;
+    const marriage = (m: string) => people.filter((p) => (p.marriage_type || "").includes(m)).length;
+    const uniqCount = (get: (r: A.Row) => string) =>
+      new Set(rows.map(get).map((v) => A.txt(v)).filter(Boolean)).size;
+    const userScope = (s: string) => appUsers.filter((u) => u.access_scope === s).length;
+    return {
+      families,
+      members,
+      avgSize: families ? (members / families).toFixed(1) : "0",
+      states: new Set(rows.map((r) => A.stateOf(r)).filter(Boolean)).size,
+      districts: uniqCount((r) => r.district),
+      talukas: uniqCount((r) => r.taluka),
+      villages: uniqCount((r) => r.village),
+      users: appUsers.length,
+      uDistrict: userScope("district"),
+      uTaluka: userScope("taluka"),
+      uVillage: userScope("village"),
+      male: gender("पुरुष"),
+      female: gender("स्त्री"),
+      other: people.filter((p) => p.gender && !p.gender.includes("पुरुष") && !p.gender.includes("स्त्री")).length,
+      married: marital("विवाहित") - marital("अविवाहित"),
+      unmarried: marital("अविवाहित"),
+      widow: marital("विधवा") + marital("विधुर"),
+      divorced: marital("घटस्फोट"),
+      sameCaste: marriage("जातीय") - marriage("आंतरजातीय"),
+      interCaste: marriage("आंतरजातीय"),
+    };
+  }, [rows, people, appUsers]);
+
   if (loading) return <div className="text-muted-foreground">लोड होत आहे...</div>;
 
-  const reset = () => { setFilters({ ...emptyFilters }); setFrom(""); setTo(""); };
-  const activeCount = countActive(filters) + (from ? 1 : 0) + (to ? 1 : 0);
   const sectionGroups = SECTION_FILTERS[section] ?? ["loc"];
   const sectionMeta = SECTIONS.find((s) => s.id === section)!;
 
