@@ -154,55 +154,33 @@ function Dashboard5() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl bg-gradient-to-r from-primary to-primary/70 text-primary-foreground p-5 shadow-sm">
-        <h1 className="text-xl md:text-2xl font-bold">📊 Community Survey Analytics</h1>
-        <p className="text-xs md:text-sm opacity-90 mt-1">
-          कोहळी समाज विकास मंडळ, नागपूर — Executive KPIs · Category Analytics · Drill-down
-        </p>
-      </div>
+      <KpiGrid>
+        <Kpi icon={Table2} label="Total Survey Submitted" value={head.families} />
+        <Kpi icon={Home} tone="green" label="Total Families" value={head.families} />
+        <Kpi icon={Users} tone="violet" label="Total Family Members" value={head.members} />
+        <Kpi icon={Users} tone="amber" label="Average Family Size" value={head.avgSize} />
 
-      {/* Global filters */}
-      <Card className="print:hidden">
-        <CardContent className="p-3 space-y-3">
-          <div className="flex flex-wrap items-end gap-2">
-            <div className="space-y-1">
-              <div className="text-[10px] text-muted-foreground flex items-center gap-1"><CalendarRange className="h-3 w-3" />From</div>
-              <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-8 w-36 text-xs" />
-            </div>
-            <div className="space-y-1">
-              <div className="text-[10px] text-muted-foreground">To</div>
-              <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-8 w-36 text-xs" />
-            </div>
-            <Button
-              variant={showAll ? "default" : "outline"}
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => setShowAll((v) => !v)}
-            >
-              <Filter className="h-3.5 w-3.5 mr-1" />सर्व फिल्टर / All filters
-              <ChevronDown className={`h-3.5 w-3.5 ml-1 transition-transform ${showAll ? "rotate-180" : ""}`} />
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={reset}>
-              <RotateCcw className="h-3.5 w-3.5 mr-1" />Reset
-            </Button>
-            <div className="ml-auto flex items-center gap-2">
-              {activeCount > 0 && <Badge className="text-xs">{activeCount} फिल्टर सक्रिय</Badge>}
-              <Badge variant="secondary" className="text-xs">{rows.length} कुटुंबे / families</Badge>
-              <Badge variant="secondary" className="text-xs">{people.length} सदस्य / members</Badge>
-            </div>
-          </div>
-          {showAll && (
-            <div className="border-t pt-3">
-              <SurveyFilterPanel
-                rows={scoped}
-                filters={filters}
-                onChange={setFilters}
-                title="सर्व फिल्टर (All fields)"
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        <Kpi icon={MapPin} label="States Covered" value={head.states} />
+        <Kpi icon={MapPin} tone="green" label="Districts Covered" value={head.districts} />
+        <Kpi icon={MapPin} tone="violet" label="Talukas Covered" value={head.talukas} />
+        <Kpi icon={MapPin} tone="amber" label="Villages Covered" value={head.villages} />
+
+        <Kpi icon={UserCog} label="Total Survey Users" value={head.users} />
+        <Kpi icon={UserCog} tone="green" label="Districts Survey Users" value={head.uDistrict} />
+        <Kpi icon={UserCog} tone="violet" label="Talukas Survey Users" value={head.uTaluka} />
+        <Kpi icon={UserCog} tone="amber" label="Villages Survey Users" value={head.uVillage} />
+
+        <Kpi icon={UserRound} label="Total Male" value={head.male} />
+        <Kpi icon={UserRound} tone="pink" label="Total Female" value={head.female} />
+        <Kpi icon={UserRound} tone="cyan" label="Other Gender" value={head.other} />
+        <Kpi icon={HandHeart} tone="green" label="Married Members" value={head.married} />
+        <Kpi icon={HandHeart} tone="amber" label="Unmarried Members" value={head.unmarried} />
+        <Kpi icon={HandHeart} tone="violet" label="Widow Members" value={head.widow} />
+        <Kpi icon={HandHeart} tone="red" label="Divorced Members" value={head.divorced} />
+
+        <Kpi icon={Shuffle} tone="lime" label="Same-caste Marriage" value={head.sameCaste} />
+        <Kpi icon={Shuffle} tone="cyan" label="Inter-caste Marriage" value={head.interCaste} />
+      </KpiGrid>
 
       <div className="grid lg:grid-cols-[240px_1fr] gap-4">
         {/* Section nav */}
