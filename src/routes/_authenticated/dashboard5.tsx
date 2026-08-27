@@ -164,6 +164,30 @@ function Dashboard5() {
 
   return (
     <div className="space-y-4">
+      <Card className="border-primary/40 bg-gradient-to-r from-primary/10 via-background to-primary/5">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shrink-0 shadow-sm">
+              <Gauge className="h-6 w-6" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                कोहळी समाज माहिती व विश्लेषण
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Kohali Samaj Information & Analytics — कोहळी समाज विकास मंडळ, नागपूर
+              </p>
+            </div>
+            <div className="sm:ml-auto flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+              <span className="hidden sm:inline">विभाग:</span>
+              <Badge variant="secondary" className="font-normal">
+                {sectionMeta.no}. {sectionMeta.label}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <KpiGrid>
         <Kpi icon={Table2} label="Total Survey Submitted" value={head.families} />
         <Kpi icon={Home} tone="green" label="Total Families" value={head.families} />
