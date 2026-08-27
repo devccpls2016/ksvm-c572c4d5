@@ -12,7 +12,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Kpi, KpiGrid, ChartCard, BarCh, PieCh, LineCh, StackedBar, DataTable,
+  Kpi, KpiGrid, ChartCard, BarCh, PieCh, LineCh, StackedBar, DataTable, GroupedBar,
   SectionHeader, CompletionList, Empty,
 } from "@/components/analytics/AnalyticsUI";
 import * as A from "@/lib/analytics";
@@ -315,6 +315,12 @@ function Overview({ rows, people }: Ctx) {
 
 function Geographic({ rows }: Ctx) {
   const states = A.locationRollup(rows, (r) => A.stateOf(r));
+  const districts = A.locationRollup(rows, (r) => A.txt(r.district));
+  const talukas = A.locationRollup(rows, (r) => A.txt(r.taluka));
+  const villages = A.locationRollup(rows, (r) => A.txt(r.village));
+  const villagesDrill = A.locationRollup(rows, (r) => `${A.txt(r.district)} › ${A.txt(r.taluka)} › ${A.txt(r.village)}`);
+  const pincodes = A.groupCount(rows, (r) => A.txt(r.pincode));
+
   const cols = [
     { key: "name", label: "Name" }, { key: "families", label: "Families" },
     { key: "members", label: "Members" }, { key: "male", label: "Male" },
@@ -330,6 +336,23 @@ function Geographic({ rows }: Ctx) {
     };
   });
 
+  const genderSeries = [
+    { key: "पुरुष", label: "पुरुष / Male", color: "#2563eb" },
+    { key: "स्त्री", label: "स्त्री / Female", color: "#ec4899" },
+  ];
+  const gender = (list: A.LocRow[], limit = 12) =>
+    list.slice(0, limit).map((d) => ({ name: d.name, "पुरुष": d.male, "स्त्री": d.female }));
+
+  const famVsMem = (list: A.LocRow[], limit = 12) =>
+    list.slice(0, limit).map((d) => ({ name: d.name, "कुटुंबे": d.families, "सदस्य": d.members }));
+  const famMemSeries = [
+    { key: "कुटुंबे", label: "कुटुंबे / Families", color: "#10b981" },
+    { key: "सदस्य", label: "सदस्य / Members", color: "#f59e0b" },
+  ];
+
+  const avgSize = (list: A.LocRow[], limit = 12) =>
+    list.slice(0, limit).map((d) => ({ name: d.name, value: d.families ? Math.round((d.members / d.families) * 10) / 10 : 0 }));
+
   return (
     <div className="space-y-4">
       <KpiGrid>
@@ -338,16 +361,101 @@ function Geographic({ rows }: Ctx) {
         <Kpi icon={MapPin} tone="amber" label="Talukas Covered" value={A.uniq(rows, (r) => A.txt(r.taluka)).length} />
         <Kpi icon={MapPin} tone="violet" label="Villages Covered" value={A.uniq(rows, (r) => A.txt(r.village)).length} />
       </KpiGrid>
+
       <G>
-        <ChartCard title="राज्यनिहाय / State-wise Families"><PieCh data={states.map((s) => ({ name: s.name, value: s.families }))} /></ChartCard>
-        <ChartCard title="पिनकोडनिहाय / Pincode-wise"><BarCh data={A.groupCount(rows, (r) => A.txt(r.pincode))} color="#8b5cf6" /></ChartCard>
-        <ChartCard title="जिल्हानिहाय / District-wise"><BarCh data={A.groupCount(rows, (r) => A.txt(r.district))} color="#2563eb" /></ChartCard>
-        <ChartCard title="तालुकानिहाय / Taluka-wise"><BarCh data={A.groupCount(rows, (r) => A.txt(r.taluka))} color="#10b981" /></ChartCard>
+        <ChartCard
+          title="राज्यनिहाय कुटुंबे / State-wise Families"
+          subtitle="फील्ड: राज्य (State) · मूल्य: कुटुंब संख्या व टक्केवारी"
+        >
+          <PieCh donut unit="कुटुंबे / families" data={states.map((s) => ({ name: s.name, value: s.families }))} />
+        </ChartCard>
+        <ChartCard
+          title="राज्यनिहाय सदस्य / State-wise Members"
+          subtitle="फील्ड: राज्य (State) · मूल्य: एकूण कुटुंब सदस्य"
+        >
+          <PieCh unit="सदस्य / members" data={states.map((s) => ({ name: s.name, value: s.members }))} />
+        </ChartCard>
+
+        <ChartCard
+          title="जिल्हानिहाय कुटुंबे / District-wise Families"
+          subtitle="फील्ड: जिल्हा (District) · मूल्य: कुटुंब संख्या (उतरत्या क्रमाने, टॉप १२)"
+          h={340}
+        >
+          <BarCh horizontal multi limit={12} unit="कुटुंबे / families" data={districts.map((d) => ({ name: d.name, value: d.families }))} />
+        </ChartCard>
+        <ChartCard
+          title="जिल्हानिहाय पुरुष व स्त्री / District-wise Male vs Female"
+          subtitle="फील्ड: जिल्हा (District) · मालिका: पुरुष सदस्य, स्त्री सदस्य"
+          h={340}
+        >
+          <GroupedBar data={gender(districts)} series={genderSeries} />
+        </ChartCard>
+
+        <ChartCard
+          title="जिल्हानिहाय कुटुंबे व सदस्य / District: Families vs Members"
+          subtitle="फील्ड: जिल्हा (District) · मालिका: कुटुंब संख्या, सदस्य संख्या"
+          h={340}
+        >
+          <GroupedBar data={famVsMem(districts)} series={famMemSeries} />
+        </ChartCard>
+        <ChartCard
+          title="जिल्हानिहाय सरासरी कुटुंब आकार / Avg Family Size by District"
+          subtitle="फील्ड: जिल्हा (District) · मूल्य: सदस्य ÷ कुटुंबे"
+          h={340}
+        >
+          <BarCh multi limit={12} unit="सरासरी सदस्य / avg members" data={avgSize(districts)} />
+        </ChartCard>
+
+        <ChartCard
+          title="तालुकानिहाय कुटुंबे / Taluka-wise Families"
+          subtitle="फील्ड: तालुका (Taluka) · मूल्य: कुटुंब संख्या (टॉप १२)"
+          h={360}
+        >
+          <BarCh horizontal multi limit={12} unit="कुटुंबे / families" data={talukas.map((d) => ({ name: d.name, value: d.families }))} />
+        </ChartCard>
+        <ChartCard
+          title="तालुकानिहाय पुरुष व स्त्री / Taluka-wise Male vs Female"
+          subtitle="फील्ड: तालुका (Taluka) · मालिका: पुरुष, स्त्री सदस्य (स्टॅक्ड)"
+          h={360}
+        >
+          <GroupedBar stacked horizontal data={gender(talukas, 10)} series={genderSeries} />
+        </ChartCard>
+
+        <ChartCard
+          title="गावनिहाय कुटुंबे / Village-wise Families"
+          subtitle="फील्ड: गाव (Village) · मूल्य: कुटुंब संख्या (टॉप १२)"
+          h={360}
+        >
+          <BarCh horizontal multi limit={12} unit="कुटुंबे / families" data={villages.map((d) => ({ name: d.name, value: d.families }))} />
+        </ChartCard>
+        <ChartCard
+          title="गावनिहाय सदस्य (जिल्हा › तालुका › गाव) / Village Members Drill-down"
+          subtitle="फील्ड: जिल्हा › तालुका › गाव · मूल्य: सदस्य संख्या (टॉप १०)"
+          h={360}
+        >
+          <BarCh horizontal multi limit={10} unit="सदस्य / members" data={villagesDrill.map((d) => ({ name: d.name, value: d.members }))} />
+        </ChartCard>
+
+        <ChartCard
+          title="पिनकोडनिहाय कुटुंबे / Pincode-wise Families"
+          subtitle="फील्ड: पिनकोड (Pincode) · मूल्य: कुटुंब संख्या"
+          h={320}
+        >
+          <BarCh multi limit={15} unit="कुटुंबे / families" data={pincodes} />
+        </ChartCard>
+        <ChartCard
+          title="सर्वेक्षण वाटा / Survey Share by District (%)"
+          subtitle="फील्ड: जिल्हा (District) · मूल्य: एकूण सर्वेक्षणातील टक्केवारी"
+          h={320}
+        >
+          <BarCh multi limit={12} unit="% सर्वेक्षण" data={districts.map((d) => ({ name: d.name, value: d.pctOfTotal }))} />
+        </ChartCard>
       </G>
+
       <DataTable title="State-wise Survey Summary" rows={stateRows} columns={[...cols, { key: "villages", label: "Villages" }, { key: "talukas", label: "Talukas" }, { key: "districts", label: "Districts" }]} />
-      <DataTable title="District-wise Survey Count" rows={A.locationRollup(rows, (r) => A.txt(r.district))} columns={cols} />
-      <DataTable title="Taluka-wise Survey Count" rows={A.locationRollup(rows, (r) => A.txt(r.taluka))} columns={cols} />
-      <DataTable title="Village-wise Survey Count (Drill-down)" rows={A.locationRollup(rows, (r) => `${A.txt(r.district)} › ${A.txt(r.taluka)} › ${A.txt(r.village)}`)} columns={cols} />
+      <DataTable title="District-wise Survey Count" rows={districts} columns={cols} />
+      <DataTable title="Taluka-wise Survey Count" rows={talukas} columns={cols} />
+      <DataTable title="Village-wise Survey Count (Drill-down)" rows={villagesDrill} columns={cols} />
     </div>
   );
 }
