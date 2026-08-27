@@ -12,7 +12,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Kpi, KpiGrid, ChartCard, BarCh, PieCh, LineCh, StackedBar, DataTable,
+  Kpi, KpiGrid, ChartCard, BarCh, PieCh, LineCh, StackedBar, DataTable, GroupedBar,
   SectionHeader, CompletionList, Empty,
 } from "@/components/analytics/AnalyticsUI";
 import * as A from "@/lib/analytics";
