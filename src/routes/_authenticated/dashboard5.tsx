@@ -366,12 +366,14 @@ function Geographic({ rows }: Ctx) {
         <ChartCard
           title="राज्यनिहाय कुटुंबे / State-wise Families"
           subtitle="फील्ड: राज्य (State) · मूल्य: कुटुंब संख्या व टक्केवारी"
+          expand={<PieCh donut unit="कुटुंबे / families" data={states.map((s) => ({ name: s.name, value: s.families }))} />}
         >
           <PieCh donut unit="कुटुंबे / families" data={states.map((s) => ({ name: s.name, value: s.families }))} />
         </ChartCard>
         <ChartCard
           title="राज्यनिहाय सदस्य / State-wise Members"
           subtitle="फील्ड: राज्य (State) · मूल्य: एकूण कुटुंब सदस्य"
+          expand={<PieCh unit="सदस्य / members" data={states.map((s) => ({ name: s.name, value: s.members }))} />}
         >
           <PieCh unit="सदस्य / members" data={states.map((s) => ({ name: s.name, value: s.members }))} />
         </ChartCard>
@@ -380,6 +382,7 @@ function Geographic({ rows }: Ctx) {
           title="जिल्हानिहाय कुटुंबे / District-wise Families"
           subtitle="फील्ड: जिल्हा (District) · मूल्य: कुटुंब संख्या (उतरत्या क्रमाने, टॉप १२)"
           h={340}
+          expand={<BarCh horizontal multi limit={999} unit="कुटुंबे / families" data={districts.map((d) => ({ name: d.name, value: d.families }))} />}
         >
           <BarCh horizontal multi limit={12} unit="कुटुंबे / families" data={districts.map((d) => ({ name: d.name, value: d.families }))} />
         </ChartCard>
@@ -387,6 +390,7 @@ function Geographic({ rows }: Ctx) {
           title="जिल्हानिहाय पुरुष व स्त्री / District-wise Male vs Female"
           subtitle="फील्ड: जिल्हा (District) · मालिका: पुरुष सदस्य, स्त्री सदस्य"
           h={340}
+          expand={<GroupedBar data={gender(districts, 999)} series={genderSeries} />}
         >
           <GroupedBar data={gender(districts)} series={genderSeries} />
         </ChartCard>
@@ -395,6 +399,7 @@ function Geographic({ rows }: Ctx) {
           title="जिल्हानिहाय कुटुंबे व सदस्य / District: Families vs Members"
           subtitle="फील्ड: जिल्हा (District) · मालिका: कुटुंब संख्या, सदस्य संख्या"
           h={340}
+          expand={<GroupedBar data={famVsMem(districts, 999)} series={famMemSeries} />}
         >
           <GroupedBar data={famVsMem(districts)} series={famMemSeries} />
         </ChartCard>
@@ -402,6 +407,7 @@ function Geographic({ rows }: Ctx) {
           title="जिल्हानिहाय सरासरी कुटुंब आकार / Avg Family Size by District"
           subtitle="फील्ड: जिल्हा (District) · मूल्य: सदस्य ÷ कुटुंबे"
           h={340}
+          expand={<BarCh multi limit={999} unit="सरासरी सदस्य / avg members" data={avgSize(districts, 999)} />}
         >
           <BarCh multi limit={12} unit="सरासरी सदस्य / avg members" data={avgSize(districts)} />
         </ChartCard>
@@ -410,6 +416,7 @@ function Geographic({ rows }: Ctx) {
           title="तालुकानिहाय कुटुंबे / Taluka-wise Families"
           subtitle="फील्ड: तालुका (Taluka) · मूल्य: कुटुंब संख्या (टॉप १२)"
           h={360}
+          expand={<BarCh horizontal multi limit={999} unit="कुटुंबे / families" data={talukas.map((d) => ({ name: d.name, value: d.families }))} />}
         >
           <BarCh horizontal multi limit={12} unit="कुटुंबे / families" data={talukas.map((d) => ({ name: d.name, value: d.families }))} />
         </ChartCard>
@@ -417,6 +424,7 @@ function Geographic({ rows }: Ctx) {
           title="तालुकानिहाय पुरुष व स्त्री / Taluka-wise Male vs Female"
           subtitle="फील्ड: तालुका (Taluka) · मालिका: पुरुष, स्त्री सदस्य (स्टॅक्ड)"
           h={360}
+          expand={<GroupedBar stacked horizontal data={gender(talukas, 999)} series={genderSeries} />}
         >
           <GroupedBar stacked horizontal data={gender(talukas, 10)} series={genderSeries} />
         </ChartCard>
@@ -425,6 +433,7 @@ function Geographic({ rows }: Ctx) {
           title="गावनिहाय कुटुंबे / Village-wise Families"
           subtitle="फील्ड: गाव (Village) · मूल्य: कुटुंब संख्या (टॉप १२)"
           h={360}
+          expand={<BarCh horizontal multi limit={999} unit="कुटुंबे / families" data={villages.map((d) => ({ name: d.name, value: d.families }))} />}
         >
           <BarCh horizontal multi limit={12} unit="कुटुंबे / families" data={villages.map((d) => ({ name: d.name, value: d.families }))} />
         </ChartCard>
@@ -432,6 +441,7 @@ function Geographic({ rows }: Ctx) {
           title="गावनिहाय सदस्य (जिल्हा › तालुका › गाव) / Village Members Drill-down"
           subtitle="फील्ड: जिल्हा › तालुका › गाव · मूल्य: सदस्य संख्या (टॉप १०)"
           h={360}
+          expand={<BarCh horizontal multi limit={999} unit="सदस्य / members" data={villagesDrill.map((d) => ({ name: d.name, value: d.members }))} />}
         >
           <BarCh horizontal multi limit={10} unit="सदस्य / members" data={villagesDrill.map((d) => ({ name: d.name, value: d.members }))} />
         </ChartCard>
@@ -440,6 +450,7 @@ function Geographic({ rows }: Ctx) {
           title="पिनकोडनिहाय कुटुंबे / Pincode-wise Families"
           subtitle="फील्ड: पिनकोड (Pincode) · मूल्य: कुटुंब संख्या"
           h={320}
+          expand={<BarCh multi limit={999} unit="कुटुंबे / families" data={pincodes} />}
         >
           <BarCh multi limit={15} unit="कुटुंबे / families" data={pincodes} />
         </ChartCard>
@@ -447,6 +458,7 @@ function Geographic({ rows }: Ctx) {
           title="सर्वेक्षण वाटा / Survey Share by District (%)"
           subtitle="फील्ड: जिल्हा (District) · मूल्य: एकूण सर्वेक्षणातील टक्केवारी"
           h={320}
+          expand={<BarCh multi limit={999} unit="% सर्वेक्षण" data={districts.map((d) => ({ name: d.name, value: d.pctOfTotal }))} />}
         >
           <BarCh multi limit={12} unit="% सर्वेक्षण" data={districts.map((d) => ({ name: d.name, value: d.pctOfTotal }))} />
         </ChartCard>
