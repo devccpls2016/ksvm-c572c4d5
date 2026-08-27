@@ -84,15 +84,18 @@ export function SectionHeader({ title, subtitle, icon: Icon }: { title: string; 
 /* ------------------------------------------------------------------ charts */
 
 export function ChartCard({
-  title, children, wide, actions,
-}: { title: string; children: React.ReactNode; wide?: boolean; actions?: React.ReactNode }) {
+  title, subtitle, children, wide, actions, h = 300,
+}: { title: string; subtitle?: string; children: React.ReactNode; wide?: boolean; actions?: React.ReactNode; h?: number }) {
   return (
     <Card className={wide ? "md:col-span-2" : ""}>
-      <CardHeader className="pb-2 flex-row items-center justify-between gap-2 space-y-0">
-        <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+      <CardHeader className="pb-2 flex-row items-start justify-between gap-2 space-y-0">
+        <div className="min-w-0">
+          <CardTitle className="text-sm font-semibold leading-tight">{title}</CardTitle>
+          {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{subtitle}</p>}
+        </div>
         {actions}
       </CardHeader>
-      <CardContent className="h-[280px] pt-2">{children}</CardContent>
+      <CardContent className="pt-2" style={{ height: h }}>{children}</CardContent>
     </Card>
   );
 }
@@ -105,41 +108,118 @@ export function Empty({ label = "निवडलेल्या फिल्ट�
   );
 }
 
-export function BarCh({ data, color = CHART_COLORS[0], horizontal }: { data: Datum[]; color?: string; horizontal?: boolean }) {
+const tipStyle = {
+  contentStyle: { fontSize: 11, borderRadius: 8, border: "1px solid hsl(var(--border))" },
+  labelStyle: { fontWeight: 600 },
+} as const;
+
+/** Bar / column chart with value labels on every bar so each record is identifiable. */
+export function BarCh({
+  data, color = CHART_COLORS[0], horizontal, multi, unit = "संख्या / Count", limit = 15, labels = true,
+}: {
+  data: Datum[]; color?: string; horizontal?: boolean; multi?: boolean;
+  unit?: string; limit?: number; labels?: boolean;
+}) {
   if (!data.length) return <Empty />;
-  const top = data.slice(0, 15);
+  const top = data.slice(0, limit);
+  const longest = Math.max(...top.map((d) => d.name.length));
   return (
     <ResponsiveContainer>
-      <BarChart data={top} layout={horizontal ? "vertical" : "horizontal"} margin={{ left: horizontal ? 60 : 0, right: 8, top: 4, bottom: 4 }}>
-        <CartesianGrid strokeDasharray="3 3" opacity={0.4} />
+      <BarChart
+        data={top}
+        layout={horizontal ? "vertical" : "horizontal"}
+        margin={{ left: horizontal ? 4 : 0, right: horizontal ? 28 : 8, top: 14, bottom: 4 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" opacity={0.35} />
         {horizontal ? (
           <>
             <XAxis type="number" fontSize={10} allowDecimals={false} />
-            <YAxis type="category" dataKey="name" fontSize={10} width={110} />
+            <YAxis type="category" dataKey="name" fontSize={10} width={Math.min(190, Math.max(90, longest * 7))} interval={0} />
           </>
         ) : (
           <>
-            <XAxis dataKey="name" fontSize={10} interval={0} angle={-20} textAnchor="end" height={54} />
+            <XAxis dataKey="name" fontSize={10} interval={0} angle={-25} textAnchor="end" height={Math.min(110, 40 + longest * 4)} />
             <YAxis fontSize={10} allowDecimals={false} />
           </>
         )}
-        <Tooltip />
-        <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} />
+        <Tooltip {...tipStyle} formatter={(v: any) => [v, unit]} />
+        <Bar dataKey="value" name={unit} fill={color} radius={horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]} maxBarSize={44}>
+          {multi && top.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+          {labels && (
+            <LabelList dataKey="value" position={horizontal ? "right" : "top"} fontSize={10} fill="currentColor" className="fill-foreground" />
+          )}
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
 }
 
-export function PieCh({ data, donut }: { data: Datum[]; donut?: boolean }) {
-  const clean = data.filter((d) => d.value > 0);
-  if (!clean.length) return <Empty />;
+/** Grouped (clustered) bars — e.g. Male vs Female per district. */
+export function GroupedBar({
+  data, series, horizontal, limit = 12, stacked,
+}: {
+  data: any[]; series: { key: string; label?: string; color?: string }[];
+  horizontal?: boolean; limit?: number; stacked?: boolean;
+}) {
+  if (!data.length) return <Empty />;
+  const top = data.slice(0, limit);
+  const longest = Math.max(...top.map((d) => String(d.name ?? "").length));
   return (
     <ResponsiveContainer>
-      <PieChart>
-        <Pie data={clean} dataKey="value" nameKey="name" outerRadius={90} innerRadius={donut ? 52 : 0} label={(e: any) => e.value}>
-          {clean.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+      <BarChart data={top} layout={horizontal ? "vertical" : "horizontal"} margin={{ left: 4, right: 20, top: 14, bottom: 4 }}>
+        <CartesianGrid strokeDasharray="3 3" opacity={0.35} />
+        {horizontal ? (
+          <>
+            <XAxis type="number" fontSize={10} allowDecimals={false} />
+            <YAxis type="category" dataKey="name" fontSize={10} width={Math.min(190, Math.max(90, longest * 7))} interval={0} />
+          </>
+        ) : (
+          <>
+            <XAxis dataKey="name" fontSize={10} interval={0} angle={-25} textAnchor="end" height={Math.min(110, 40 + longest * 4)} />
+            <YAxis fontSize={10} allowDecimals={false} />
+          </>
+        )}
+        <Tooltip {...tipStyle} />
+        <Legend wrapperStyle={{ fontSize: 11 }} />
+        {series.map((s, i) => (
+          <Bar
+            key={s.key}
+            dataKey={s.key}
+            name={s.label ?? s.key}
+            stackId={stacked ? "a" : undefined}
+            fill={s.color ?? CHART_COLORS[i % CHART_COLORS.length]}
+            radius={stacked ? undefined : horizontal ? [0, 3, 3, 0] : [3, 3, 0, 0]}
+            maxBarSize={26}
+          >
+            <LabelList dataKey={s.key} position={stacked ? "inside" : horizontal ? "right" : "top"} fontSize={9} className="fill-foreground" formatter={(v: any) => (v ? v : "")} />
+          </Bar>
+        ))}
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function PieCh({ data, donut, unit = "संख्या / Count" }: { data: Datum[]; donut?: boolean; unit?: string }) {
+  const clean = data.filter((d) => d.value > 0);
+  if (!clean.length) return <Empty />;
+  const total = clean.reduce((a, b) => a + b.value, 0);
+  return (
+    <ResponsiveContainer>
+      <PieChart margin={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+        <Pie
+          data={clean}
+          dataKey="value"
+          nameKey="name"
+          outerRadius="72%"
+          innerRadius={donut ? "44%" : 0}
+          paddingAngle={clean.length > 1 ? 1.5 : 0}
+          labelLine={false}
+          label={(e: any) => `${e.value} (${Math.round((e.value / total) * 1000) / 10}%)`}
+          fontSize={10}
+        >
+          {clean.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="hsl(var(--background))" strokeWidth={1} />)}
         </Pie>
-        <Tooltip />
+        <Tooltip {...tipStyle} formatter={(v: any, n: any) => [`${v} ${unit} · ${Math.round((Number(v) / total) * 1000) / 10}%`, n]} />
         <Legend wrapperStyle={{ fontSize: 11 }} />
       </PieChart>
     </ResponsiveContainer>
@@ -154,7 +234,7 @@ export function LineCh({ data }: { data: Datum[] }) {
         <CartesianGrid strokeDasharray="3 3" opacity={0.4} />
         <XAxis dataKey="name" fontSize={10} interval={Math.max(0, Math.floor(data.length / 10))} />
         <YAxis fontSize={10} allowDecimals={false} />
-        <Tooltip />
+        <Tooltip {...tipStyle} />
         <Line type="monotone" dataKey="value" stroke={CHART_COLORS[0]} strokeWidth={2} dot={false} />
       </LineChart>
     </ResponsiveContainer>
@@ -166,10 +246,10 @@ export function StackedBar({ data, columns }: { data: any[]; columns: string[] }
   return (
     <ResponsiveContainer>
       <BarChart data={data.slice(0, 15)} margin={{ left: 0, right: 8, top: 4, bottom: 4 }}>
-        <CartesianGrid strokeDasharray="3 3" opacity={0.4} />
-        <XAxis dataKey="name" fontSize={10} interval={0} angle={-20} textAnchor="end" height={54} />
+        <CartesianGrid strokeDasharray="3 3" opacity={0.35} />
+        <XAxis dataKey="name" fontSize={10} interval={0} angle={-25} textAnchor="end" height={64} />
         <YAxis fontSize={10} allowDecimals={false} />
-        <Tooltip />
+        <Tooltip {...tipStyle} />
         <Legend wrapperStyle={{ fontSize: 11 }} />
         {columns.slice(0, 10).map((c, i) => (
           <Bar key={c} dataKey={c} stackId="a" fill={CHART_COLORS[i % CHART_COLORS.length]} />
@@ -178,6 +258,7 @@ export function StackedBar({ data, columns }: { data: any[]; columns: string[] }
     </ResponsiveContainer>
   );
 }
+
 
 /* ------------------------------------------------------------------ tables */
 
