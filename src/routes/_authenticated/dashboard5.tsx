@@ -27,6 +27,16 @@ import {
 
 export const Route = createFileRoute("/_authenticated/dashboard5")({
   component: Dashboard5,
+  head: () => ({
+    meta: [
+      { title: "कोहळी समाज माहिती व विश्लेषण — Kohali Samaj Information & Analytics" },
+      { name: "description", content: "कोहळी समाज विकास मंडळ, नागपूर — कुटुंब सर्वेक्षण माहिती व विश्लेषण डॅशबोर्ड." },
+      { property: "og:title", content: "कोहळी समाज माहिती व विश्लेषण — Kohali Samaj Information & Analytics" },
+      { property: "og:description", content: "Community family survey information and analytics dashboard for Kohali Samaj." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
 });
 
 const SECTIONS = [
