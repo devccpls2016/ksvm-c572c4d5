@@ -178,12 +178,6 @@ function Dashboard5() {
                 Kohali Samaj Information & Analytics — कोहळी समाज विकास मंडळ, नागपूर
               </p>
             </div>
-            <div className="sm:ml-auto flex items-center gap-2 text-xs text-muted-foreground shrink-0">
-              <span className="hidden sm:inline">विभाग:</span>
-              <Badge variant="secondary" className="font-normal">
-                {sectionMeta.no}. {sectionMeta.label}
-              </Badge>
-            </div>
           </div>
         </CardContent>
       </Card>
