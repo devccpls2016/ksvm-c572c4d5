@@ -25,7 +25,7 @@ import {
   Shuffle, Table2, RotateCcw, Filter, ChevronDown, CalendarRange,
 } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/dashboard2")({
+export const Route = createFileRoute("/_authenticated/dashboard5")({
   component: Dashboard2,
 });
 
