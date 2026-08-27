@@ -14,7 +14,10 @@ import { Progress } from "@/components/ui/progress";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { FileSpreadsheet, FileText, Printer, ChevronsUpDown, Search } from "lucide-react";
+import { FileSpreadsheet, FileText, Printer, ChevronsUpDown, Search, Maximize2 } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import type { Datum } from "@/lib/analytics";
 
 export const CHART_COLORS = [
