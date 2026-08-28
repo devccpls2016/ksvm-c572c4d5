@@ -830,6 +830,7 @@ function Education({ rows, people }: Ctx) {
 
       <DataTable
         title="Education Detail Report"
+        exports={false}
         columns={[{ key: "name", label: "Education Level" }, { key: "value", label: "Members" }, { key: "male", label: "Male" }, { key: "female", label: "Female" }, { key: "share", label: "Share %" }]}
         rows={levelData.map((d) => ({
           ...d,
