@@ -114,7 +114,7 @@ export function ChartCard({
               <DialogTitle className="text-base">{title}</DialogTitle>
               {subtitle && <DialogDescription className="text-xs">{subtitle} — संपूर्ण माहिती / complete data</DialogDescription>}
             </DialogHeader>
-            <div className="h-[68vh]">{expand}</div>
+            <div className="max-h-[72vh] overflow-y-auto pr-1">{expand}</div>
           </DialogContent>
         </Dialog>
       )}
