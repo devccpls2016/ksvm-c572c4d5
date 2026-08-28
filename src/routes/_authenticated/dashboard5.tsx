@@ -513,6 +513,8 @@ function Family({ rows, people }: Ctx) {
     स्त्री: people.filter((p) => p.gender === "स्त्री" && typeof p.age === "number" && b.test(p.age)).length,
   }));
   const married = people.filter((p) => p.marital_status.includes("विवाहित") && !p.marital_status.includes("अविवाहित"));
+  const genderRollup = (loc: (r: A.Row) => string) =>
+    A.locationRollup(rows, loc).map((d) => ({ name: d.name, पुरुष: d.male, स्त्री: d.female }));
 
   return (
     <div className="space-y-4">
@@ -536,7 +538,10 @@ function Family({ rows, people }: Ctx) {
         <ChartCard title="लिंग × वयोगट / Gender × Age Group"><StackedBar data={genderByAge} columns={["पुरुष", "स्त्री"]} /></ChartCard>
         <ChartCard title="कुटुंब आकार / Family Size Distribution"><BarCh data={sizeData} color="#8b5cf6" /></ChartCard>
         <ChartCard title="गावनिहाय सदस्य / Members by Village"><BarCh horizontal data={A.locationRollup(rows, (r) => A.txt(r.village)).map((v) => ({ name: v.name, value: v.members }))} color="#06b6d4" /></ChartCard>
-        <ChartCard title="जिल्हानिहाय लिंग / Gender by District"><StackedBar columns={["पुरुष", "स्त्री"]} data={A.locationRollup(rows, (r) => A.txt(r.district)).map((d) => ({ name: d.name, पुरुष: d.male, स्त्री: d.female }))} /></ChartCard>
+        <ChartCard title="गावनिहाय लिंग / Gender by Village"><StackedBar columns={["पुरुष", "स्त्री"]} data={genderRollup((r) => A.txt(r.village))} /></ChartCard>
+        <ChartCard title="तालुकानिहाय लिंग / Gender by Taluka"><StackedBar columns={["पुरुष", "स्त्री"]} data={genderRollup((r) => A.txt(r.taluka))} /></ChartCard>
+        <ChartCard title="जिल्हानिहाय लिंग / Gender by District"><StackedBar columns={["पुरुष", "स्त्री"]} data={genderRollup((r) => A.txt(r.district))} /></ChartCard>
+        <ChartCard title="राज्यनिहाय लिंग / Gender by State"><StackedBar columns={["पुरुष", "स्त्री"]} data={genderRollup((r) => A.stateOf(r))} /></ChartCard>
       </G>
       <DataTable
         title="Family Size by Village"
