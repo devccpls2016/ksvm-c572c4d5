@@ -530,19 +530,15 @@ function Family({ rows, people }: Ctx) {
       </KpiGrid>
       <G>
         <ChartCard title="लिंग वितरण / Gender Distribution"><PieCh donut data={[{ name: "पुरुष", value: male }, { name: "स्त्री", value: female }]} /></ChartCard>
-        <ChartCard title="वयोगट / Age Group"><BarCh data={A.AGE_BANDS.map((b) => ({ name: b.name, value: people.filter((p) => typeof p.age === "number" && b.test(p.age)).length }))} /></ChartCard>
-        <ChartCard title="लिंग × वयोगट / Gender × Age Group"><StackedBar data={genderByAge} columns={["पुरुष", "स्त्री"]} /></ChartCard>
         <ChartCard title="वैवाहिक स्थिती / Marital Status"><PieCh data={A.groupCount(people as any, (p: any) => p.marital_status || "—")} /></ChartCard>
         <ChartCard title="विवाहाचा प्रकार / Marriage Type"><PieCh data={A.groupCount(married as any, (p: any) => p.marriage_type || "नमूद नाही")} /></ChartCard>
+        <ChartCard title="वयोगट / Age Group"><BarCh data={A.AGE_BANDS.map((b) => ({ name: b.name, value: people.filter((p) => typeof p.age === "number" && b.test(p.age)).length }))} /></ChartCard>
+        <ChartCard title="लिंग × वयोगट / Gender × Age Group"><StackedBar data={genderByAge} columns={["पुरुष", "स्त्री"]} /></ChartCard>
         <ChartCard title="कुटुंब आकार / Family Size Distribution"><BarCh data={sizeData} color="#8b5cf6" /></ChartCard>
         <ChartCard title="गावनिहाय सदस्य / Members by Village"><BarCh horizontal data={A.locationRollup(rows, (r) => A.txt(r.village)).map((v) => ({ name: v.name, value: v.members }))} color="#06b6d4" /></ChartCard>
         <ChartCard title="जिल्हानिहाय लिंग / Gender by District"><StackedBar columns={["पुरुष", "स्त्री"]} data={A.locationRollup(rows, (r) => A.txt(r.district)).map((d) => ({ name: d.name, पुरुष: d.male, स्त्री: d.female }))} /></ChartCard>
+        <ChartCard title="Family Size by Village"><BarCh horizontal data={A.locationRollup(rows, (r) => A.txt(r.village)).map((v) => ({ name: v.name, value: v.families ? Number((v.members / v.families).toFixed(1)) : 0 }))} color="#f59e0b" unit="सरासरी आकार / Avg size" /></ChartCard>
       </G>
-      <DataTable
-        title="Family Size by Village"
-        columns={[{ key: "name", label: "Village" }, { key: "families", label: "Families" }, { key: "members", label: "Members" }, { key: "avg", label: "Avg Size" }]}
-        rows={A.locationRollup(rows, (r) => A.txt(r.village)).map((v) => ({ ...v, avg: v.families ? (v.members / v.families).toFixed(1) : 0 }))}
-      />
     </div>
   );
 }
