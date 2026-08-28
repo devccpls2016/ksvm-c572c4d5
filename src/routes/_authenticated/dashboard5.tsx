@@ -633,6 +633,19 @@ function Education({ rows, people }: Ctx) {
     स्त्री: withEdu.filter((p) => A.eduLevel(p.education) === l.name && p.gender === "स्त्री").length,
   }));
 
+  const instTypeData = A.groupCount(withEdu as any, (p: any) => A.eduInstitution(p.education)).filter((d) => d.name !== "—");
+
+  const eduByInst = A.EDU_LEVELS.map((l) => {
+    const sub = withEdu.filter((p) => A.eduLevel(p.education) === l.name);
+    const o: any = { name: l.name.split(" / ")[0]! };
+    sub.forEach((p) => {
+      const k = A.eduInstitution(p.education);
+      if (k !== "—") o[k] = (o[k] || 0) + 1;
+    });
+    A.INSTITUTION_TYPES.forEach((t) => { o[t] = o[t] || 0; });
+    return o;
+  });
+
   const eduKpis = [
     { label: "निरक्षर – Illiterate", key: "निरक्षर / Illiterate", tone: "red" },
     { label: "पूर्व-प्राथमिक – Pre-Primary", key: "पूर्व-प्राथमिक", tone: "amber" },
