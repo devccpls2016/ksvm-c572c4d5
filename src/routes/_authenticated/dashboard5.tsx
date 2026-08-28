@@ -671,7 +671,6 @@ function Education({ rows, people }: Ctx) {
         <ChartCard title="शिक्षण शाखा / Education Stream"><PieCh data={A.groupCount(withEdu as any, (p: any) => A.eduStream(p.education)).filter((d) => d.name !== "—")} /></ChartCard>
         <ChartCard
           title="अभ्यासक्रम / Course"
-          subtitle="निवडलेले अभ्यासक्रम व त्यांची वितरण संख्या / Selected courses and their distribution"
           expand={
             <div className="space-y-4">
               <BarCh horizontal color="#8b5cf6" data={A.groupCount(withEdu as any, (p: any) => A.eduCourse(p.education)).filter((d) => d.name !== "—")} />
