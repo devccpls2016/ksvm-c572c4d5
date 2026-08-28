@@ -537,8 +537,22 @@ function Family({ rows, people }: Ctx) {
         <ChartCard title="कुटुंब आकार / Family Size Distribution"><BarCh data={sizeData} color="#8b5cf6" /></ChartCard>
         <ChartCard title="गावनिहाय सदस्य / Members by Village"><BarCh horizontal data={A.locationRollup(rows, (r) => A.txt(r.village)).map((v) => ({ name: v.name, value: v.members }))} color="#06b6d4" /></ChartCard>
         <ChartCard title="जिल्हानिहाय लिंग / Gender by District"><StackedBar columns={["पुरुष", "स्त्री"]} data={A.locationRollup(rows, (r) => A.txt(r.district)).map((d) => ({ name: d.name, पुरुष: d.male, स्त्री: d.female }))} /></ChartCard>
-        <ChartCard title="Family Size by Village"><BarCh horizontal data={A.locationRollup(rows, (r) => A.txt(r.village)).map((v) => ({ name: v.name, value: v.families ? Number((v.members / v.families).toFixed(1)) : 0 }))} color="#f59e0b" unit="सरासरी आकार / Avg size" /></ChartCard>
       </G>
+      <DataTable
+        title="Family Size by Village"
+        columns={[
+          { key: "name", label: "गाव / Village" },
+          { key: "families", label: "कुटुंबे / Families" },
+          { key: "members", label: "सदस्य / Members" },
+          { key: "avgSize", label: "सरासरी आकार / Avg Size" },
+        ]}
+        rows={A.locationRollup(rows, (r) => A.txt(r.village)).map((v) => ({
+          name: v.name,
+          families: v.families,
+          members: v.members,
+          avgSize: v.families ? Number((v.members / v.families).toFixed(1)) : 0,
+        }))}
+      />
     </div>
   );
 }
