@@ -633,15 +633,25 @@ function Education({ rows, people }: Ctx) {
     स्त्री: withEdu.filter((p) => A.eduLevel(p.education) === l.name && p.gender === "स्त्री").length,
   }));
 
+  const eduKpis = [
+    { label: "निरक्षर – Illiterate", key: "निरक्षर / Illiterate", tone: "red" },
+    { label: "पूर्व-प्राथमिक – Pre-Primary", key: "पूर्व-प्राथमिक", tone: "amber" },
+    { label: "प्राथमिक – Primary", key: "प्राथमिक", tone: "green" },
+    { label: "माध्यमिक – Secondary", key: "माध्यमिक", tone: "cyan" },
+    { label: "उच्च माध्यमिक – Higher Secondary", key: "उच्च माध्यमिक", tone: "violet" },
+    { label: "पदविका / डिप्लोमा – Diploma", key: "पदविका / Diploma", tone: "pink" },
+    { label: "पदवी – Graduate", key: "पदवी / Graduate", tone: "primary" },
+    { label: "पदव्युत्तर – Postgraduate", key: "पदव्युत्तर / Postgraduate", tone: "lime" },
+    { label: "डॉक्टरेट / पीएच.डी. – Doctorate", key: "डॉक्टरेट / Ph.D.", tone: "amber" },
+    { label: "इतर – Other", key: "इतर / Other", tone: "red" },
+  ];
+
   return (
     <div className="space-y-4">
       <KpiGrid>
-        <Kpi icon={GraduationCap} label="Total Graduates" value={level("पदवी / Graduate")} />
-        <Kpi icon={GraduationCap} tone="green" label="Total Postgraduates" value={level("पदव्युत्तर / Postgraduate")} />
-        <Kpi icon={GraduationCap} tone="amber" label="Diploma Holders" value={level("पदविका / Diploma")} />
-        <Kpi icon={GraduationCap} tone="violet" label="Ph.D. Holders" value={level("डॉक्टरेट / Ph.D.")} />
-        <Kpi icon={GraduationCap} tone="red" label="Illiterate" value={level("निरक्षर / Illiterate")} />
-        <Kpi tone="cyan" label="Education Data Recorded" value={withEdu.length} hint={`${A.pct(withEdu.length, people.length)}% of members`} />
+        {eduKpis.map((k) => (
+          <Kpi key={k.label} icon={GraduationCap} tone={k.tone as any} label={k.label} value={level(k.key)} />
+        ))}
       </KpiGrid>
       <G>
         <ChartCard title="शिक्षण स्तर / Education Level"><BarCh horizontal data={levelData} color="#2563eb" /></ChartCard>
