@@ -676,18 +676,6 @@ function Education({ rows, people }: Ctx) {
           <BarCh horizontal color="#8b5cf6" data={A.groupCount(withEdu as any, (p: any) => A.eduCourse(p.education)).filter((d) => d.name !== "—")} />
         </ChartCard>
         <ChartCard title="शिक्षण × लिंग / Education × Gender"><StackedBar data={eduByGender} columns={["पुरुष", "स्त्री"]} /></ChartCard>
-        <ChartCard title="शिक्षण × वयोगट / Education × Age Group">
-          <StackedBar
-            columns={A.AGE_BANDS.map((b) => b.name)}
-            data={A.EDU_LEVELS.map((l) => ({
-              name: l.name.split(" / ")[0]!,
-              ...A.AGE_BANDS.reduce<Record<string, number>>((a, b) => {
-                a[b.name] = withEdu.filter((p) => A.eduLevel(p.education) === l.name && typeof p.age === "number" && b.test(p.age)).length;
-                return a;
-              }, {}),
-            }))}
-          />
-        </ChartCard>
         <ChartCard title="गावनिहाय पदवीधर / Graduates by Village">
           <BarCh horizontal color="#10b981" data={A.groupCount(withEdu.filter((p) => ["पदवी / Graduate", "पदव्युत्तर / Postgraduate", "डॉक्टरेट / Ph.D."].includes(A.eduLevel(p.education))) as any, (p: any) => A.txt(p.row.village))} />
         </ChartCard>
