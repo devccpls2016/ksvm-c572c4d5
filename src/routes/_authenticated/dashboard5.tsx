@@ -667,13 +667,53 @@ function Education({ rows, people }: Ctx) {
         ))}
       </KpiGrid>
       <G>
-        <ChartCard title="शिक्षण स्तर / Education Level"><BarCh horizontal data={levelData} color="#2563eb" /></ChartCard>
-        <ChartCard title="शिक्षण शाखा / Education Stream"><PieCh data={A.groupCount(withEdu as any, (p: any) => A.eduStream(p.education)).filter((d) => d.name !== "—")} /></ChartCard>
+        <ChartCard
+          title="शिक्षण स्तर / Education Level"
+          expand={
+            <div className="space-y-4">
+              <BarCh horizontal limit={999} color="#2563eb" data={levelData} />
+              <DataTable
+                title="शिक्षण स्तर तपशील / Education Level Details"
+                exports={false}
+                columns={[
+                  { key: "name", label: "शिक्षण स्तर / Education Level" },
+                  { key: "value", label: "संख्या / Count" },
+                  { key: "share", label: "टक्केवारी / Share %" },
+                ]}
+                rows={levelData.map((d) => ({ ...d, share: A.pct(d.value, withEdu.length) }))}
+              />
+            </div>
+          }
+        >
+          <BarCh horizontal data={levelData} color="#2563eb" />
+        </ChartCard>
+        <ChartCard
+          title="शिक्षण शाखा / Education Stream"
+          expand={
+            <div className="space-y-4">
+              <PieCh data={A.groupCount(withEdu as any, (p: any) => A.eduStream(p.education)).filter((d) => d.name !== "—")} />
+              <DataTable
+                title="शिक्षण शाखा तपशील / Education Stream Details"
+                exports={false}
+                columns={[
+                  { key: "name", label: "शिक्षण शाखा / Education Stream" },
+                  { key: "value", label: "संख्या / Count" },
+                  { key: "share", label: "टक्केवारी / Share %" },
+                ]}
+                rows={A.groupCount(withEdu as any, (p: any) => A.eduStream(p.education))
+                  .filter((d) => d.name !== "—")
+                  .map((d) => ({ ...d, share: A.pct(d.value, withEdu.length) }))}
+              />
+            </div>
+          }
+        >
+          <PieCh data={A.groupCount(withEdu as any, (p: any) => A.eduStream(p.education)).filter((d) => d.name !== "—")} />
+        </ChartCard>
         <ChartCard
           title="अभ्यासक्रम / Course"
           expand={
             <div className="space-y-4">
-              <BarCh horizontal color="#8b5cf6" data={A.groupCount(withEdu as any, (p: any) => A.eduCourse(p.education)).filter((d) => d.name !== "—")} />
+              <BarCh horizontal limit={999} color="#8b5cf6" data={A.groupCount(withEdu as any, (p: any) => A.eduCourse(p.education)).filter((d) => d.name !== "—")} />
               <DataTable
                 title="अभ्यासक्रम तपशील / Course Details"
                 exports={false}
@@ -687,7 +727,27 @@ function Education({ rows, people }: Ctx) {
         >
           <BarCh horizontal color="#8b5cf6" data={A.groupCount(withEdu as any, (p: any) => A.eduCourse(p.education)).filter((d) => d.name !== "—")} />
         </ChartCard>
-        <ChartCard title="शिक्षण × लिंग / Education × Gender"><StackedBar data={eduByGender} columns={["पुरुष", "स्त्री"]} /></ChartCard>
+        <ChartCard
+          title="शिक्षण × लिंग / Education × Gender"
+          expand={
+            <div className="space-y-4">
+              <StackedBar data={eduByGender} columns={["पुरुष", "स्त्री"]} />
+              <DataTable
+                title="शिक्षण × लिंग तपशील / Education × Gender Details"
+                exports={false}
+                columns={[
+                  { key: "name", label: "शिक्षण स्तर / Education Level" },
+                  { key: "पुरुष", label: "पुरुष / Male" },
+                  { key: "स्त्री", label: "स्त्री / Female" },
+                  { key: "total", label: "एकूण / Total" },
+                ]}
+                rows={eduByGender.map((r: any) => ({ ...r, total: (r["पुरुष"] || 0) + (r["स्त्री"] || 0) }))}
+              />
+            </div>
+          }
+        >
+          <StackedBar data={eduByGender} columns={["पुरुष", "स्त्री"]} />
+        </ChartCard>
         <ChartCard
           title="संस्था प्रकार / Institution Type"
           expand={
@@ -724,7 +784,38 @@ function Education({ rows, people }: Ctx) {
         >
           <StackedBar data={eduByInst} columns={A.INSTITUTION_TYPES} />
         </ChartCard>
-        <ChartCard title="शिक्षण × व्यवसाय / Education × Occupation">
+        <ChartCard
+          title="शिक्षण × व्यवसाय / Education × Occupation"
+          expand={
+            <div className="space-y-4">
+              <StackedBar
+                columns={[...new Set(withEdu.map((p) => A.occGroup(p.occupation)))].slice(0, 8)}
+                data={A.EDU_LEVELS.map((l) => {
+                  const sub = withEdu.filter((p) => A.eduLevel(p.education) === l.name);
+                  const o: any = { name: l.name.split(" / ")[0]! };
+                  sub.forEach((p) => { const k = A.occGroup(p.occupation); o[k] = (o[k] || 0) + 1; });
+                  return o;
+                })}
+              />
+              <DataTable
+                title="शिक्षण × व्यवसाय तपशील / Education × Occupation Details"
+                exports={false}
+                columns={[
+                  { key: "name", label: "शिक्षण स्तर / Education Level" },
+                  ...[...new Set(withEdu.map((p) => A.occGroup(p.occupation)))].slice(0, 8).map((k) => ({ key: k, label: k })),
+                  { key: "total", label: "एकूण / Total" },
+                ]}
+                rows={A.EDU_LEVELS.map((l) => {
+                  const sub = withEdu.filter((p) => A.eduLevel(p.education) === l.name);
+                  const o: any = { name: l.name.split(" / ")[0]! };
+                  sub.forEach((p) => { const k = A.occGroup(p.occupation); o[k] = (o[k] || 0) + 1; });
+                  o.total = Object.values(o).reduce((a: number, b: any) => a + (typeof b === "number" ? b : 0), 0);
+                  return o;
+                })}
+              />
+            </div>
+          }
+        >
           <StackedBar
             columns={[...new Set(withEdu.map((p) => A.occGroup(p.occupation)))].slice(0, 8)}
             data={A.EDU_LEVELS.map((l) => {
