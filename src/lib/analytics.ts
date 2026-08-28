@@ -215,6 +215,27 @@ export const eduCourse = (e: string) => {
   return course;
 };
 
+export const INSTITUTION_TYPES = [
+  "सरकारी / Government",
+  "खाजगी / Private",
+  "अनुदानित / Aided",
+  "विना-अनुदानित / Unaided",
+  "स्वायत्त / Autonomous",
+];
+
+export const eduInstitution = (e: string) => {
+  if (!e) return "—";
+  const parts = e.split("|").map((s) => s.trim());
+  const inst = parts[3] || "";
+  if (!inst || inst === "—") return "—";
+  if (has(inst, "सरकारी", "government")) return INSTITUTION_TYPES[0]!;
+  if (has(inst, "विना-अनुदानित", "विना अनुदानित", "unaided")) return INSTITUTION_TYPES[3]!;
+  if (has(inst, "अनुदानित", "aided")) return INSTITUTION_TYPES[2]!;
+  if (has(inst, "खाजगी", "private")) return INSTITUTION_TYPES[1]!;
+  if (has(inst, "स्वायत्त", "autonomous")) return INSTITUTION_TYPES[4]!;
+  return "इतर / Other";
+};
+
 
 export const PROFESSIONS: { name: string; match: (o: string) => boolean }[] = [
   { name: "डॉक्टर / Doctors", match: (o) => has(o, "वैद्यकीय", "डॉक्टर", "doctor") },
