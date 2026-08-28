@@ -690,7 +690,6 @@ function Education({ rows, people }: Ctx) {
         <ChartCard title="शिक्षण × लिंग / Education × Gender"><StackedBar data={eduByGender} columns={["पुरुष", "स्त्री"]} /></ChartCard>
         <ChartCard
           title="संस्था प्रकार / Institution Type"
-          subtitle="सरकारी, खाजगी, अनुदानित, विना-अनुदानित व स्वायत्त संस्थांमधील विद्यार्थी वितरण / Distribution of students across Government, Private, Aided, Unaided and Autonomous institutions"
           expand={
             <div className="space-y-4">
               <PieCh data={instTypeData} />
