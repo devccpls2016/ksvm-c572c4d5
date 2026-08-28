@@ -207,6 +207,15 @@ export const eduStream = (e: string) => {
   return "इतर / Other";
 };
 
+export const eduCourse = (e: string) => {
+  if (!e) return "—";
+  const parts = e.split("|").map((s) => s.trim());
+  const course = parts[2] || "";
+  if (!course || course === "—") return "—";
+  return course;
+};
+
+
 export const PROFESSIONS: { name: string; match: (o: string) => boolean }[] = [
   { name: "डॉक्टर / Doctors", match: (o) => has(o, "वैद्यकीय", "डॉक्टर", "doctor") },
   { name: "अभियंता / Engineers", match: (o) => has(o, "अभियंता", "engineer") },
