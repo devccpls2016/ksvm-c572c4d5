@@ -671,7 +671,6 @@ function Education({ rows, people }: Ctx) {
         <ChartCard title="शिक्षण शाखा / Education Stream"><PieCh data={A.groupCount(withEdu as any, (p: any) => A.eduStream(p.education)).filter((d) => d.name !== "—")} /></ChartCard>
         <ChartCard
           title="अभ्यासक्रम / Course"
-          subtitle="निवडलेले अभ्यासक्रम व त्यांची वितरण संख्या / Selected courses and their distribution"
           expand={
             <div className="space-y-4">
               <BarCh horizontal color="#8b5cf6" data={A.groupCount(withEdu as any, (p: any) => A.eduCourse(p.education)).filter((d) => d.name !== "—")} />
@@ -691,7 +690,6 @@ function Education({ rows, people }: Ctx) {
         <ChartCard title="शिक्षण × लिंग / Education × Gender"><StackedBar data={eduByGender} columns={["पुरुष", "स्त्री"]} /></ChartCard>
         <ChartCard
           title="संस्था प्रकार / Institution Type"
-          subtitle="सरकारी, खाजगी, अनुदानित, विना-अनुदानित व स्वायत्त संस्थांमधील विद्यार्थी वितरण / Distribution of students across Government, Private, Aided, Unaided and Autonomous institutions"
           expand={
             <div className="space-y-4">
               <PieCh data={instTypeData} />
@@ -708,7 +706,6 @@ function Education({ rows, people }: Ctx) {
         </ChartCard>
         <ChartCard
           title="शिक्षण × संस्था प्रकार / Education × Institution Analysis"
-          subtitle="प्रत्येक शिक्षण स्तरावरील संस्था प्रकार वितरण / Institution type distribution at each education level"
           expand={
             <div className="space-y-4">
               <StackedBar data={eduByInst} columns={A.INSTITUTION_TYPES} />
