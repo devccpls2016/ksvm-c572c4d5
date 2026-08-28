@@ -13,7 +13,7 @@ const ADMIN_ITEMS = [
   { title: "Dashboard 2", url: "/dashboard2", icon: BarChart3 },
   { title: "Dashboard 3", url: "/dashboard3", icon: PieChart },
   { title: "Dashboard 4", url: "/dashboard4", icon: Gauge },
-  { title: "कोहळी माहिती व विश्लेषण", url: "/dashboard5", icon: Gauge },
+  { title: "Final Dashbaord of vertical bar", url: "/dashboard5", icon: Gauge },
   { title: "New Survey", url: "/new", icon: PlusCircle },
   { title: "All Survey", url: "/surveys", icon: ClipboardList },
   { title: "Create Survey User", url: "/users", icon: UserPlus },
