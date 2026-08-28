@@ -531,20 +531,76 @@ function Family({ rows, people }: Ctx) {
         <Kpi icon={Shuffle} tone="cyan" label="Inter-caste Marriage" value={people.filter((p) => p.marriage_type.includes("आंतरजातीय")).length} />
       </KpiGrid>
       <G>
-        <ChartCard title="लिंग वितरण / Gender Distribution"><PieCh donut data={[{ name: "पुरुष", value: male }, { name: "स्त्री", value: female }]} /></ChartCard>
-        <ChartCard title="वैवाहिक स्थिती / Marital Status"><PieCh data={A.groupCount(people as any, (p: any) => p.marital_status || "—")} /></ChartCard>
-        <ChartCard title="विवाहाचा प्रकार / Marriage Type"><PieCh data={A.groupCount(married as any, (p: any) => p.marriage_type || "नमूद नाही")} /></ChartCard>
-        <ChartCard title="वयोगट / Age Group"><BarCh data={A.AGE_BANDS.map((b) => ({ name: b.name, value: people.filter((p) => typeof p.age === "number" && b.test(p.age)).length }))} /></ChartCard>
-        <ChartCard title="लिंग × वयोगट / Gender × Age Group"><StackedBar data={genderByAge} columns={["पुरुष", "स्त्री"]} /></ChartCard>
-        <ChartCard title="कुटुंब आकार / Family Size Distribution"><BarCh data={sizeData} color="#8b5cf6" /></ChartCard>
-        <ChartCard title="गावनिहाय सदस्य / Members by Village"><BarCh horizontal data={A.locationRollup(rows, (r) => A.txt(r.village)).map((v) => ({ name: v.name, value: v.members }))} color="#06b6d4" /></ChartCard>
-        <ChartCard title="गावनिहाय लिंग / Gender by Village"><StackedBar columns={["पुरुष", "स्त्री"]} data={genderRollup((r) => A.txt(r.village))} /></ChartCard>
-        <ChartCard title="तालुकानिहाय लिंग / Gender by Taluka"><StackedBar columns={["पुरुष", "स्त्री"]} data={genderRollup((r) => A.txt(r.taluka))} /></ChartCard>
-        <ChartCard title="जिल्हानिहाय लिंग / Gender by District"><StackedBar columns={["पुरुष", "स्त्री"]} data={genderRollup((r) => A.txt(r.district))} /></ChartCard>
-        <ChartCard title="राज्यनिहाय लिंग / Gender by State"><StackedBar columns={["पुरुष", "स्त्री"]} data={genderRollup((r) => A.stateOf(r))} /></ChartCard>
+        <ChartCard
+          title="लिंग वितरण / Gender Distribution"
+          expand={<PieCh donut unit="सदस्य / members" data={[{ name: "पुरुष", value: male }, { name: "स्त्री", value: female }]} />}
+        >
+          <PieCh donut data={[{ name: "पुरुष", value: male }, { name: "स्त्री", value: female }]} />
+        </ChartCard>
+        <ChartCard
+          title="वैवाहिक स्थिती / Marital Status"
+          expand={<PieCh unit="सदस्य / members" data={A.groupCount(people as any, (p: any) => p.marital_status || "—")} />}
+        >
+          <PieCh data={A.groupCount(people as any, (p: any) => p.marital_status || "—")} />
+        </ChartCard>
+        <ChartCard
+          title="विवाहाचा प्रकार / Marriage Type"
+          expand={<PieCh unit="विवाह / marriages" data={A.groupCount(married as any, (p: any) => p.marriage_type || "नमूद नाही")} />}
+        >
+          <PieCh data={A.groupCount(married as any, (p: any) => p.marriage_type || "नमूद नाही")} />
+        </ChartCard>
+        <ChartCard
+          title="वयोगट / Age Group"
+          expand={<BarCh multi limit={999} unit="सदस्य / members" data={A.AGE_BANDS.map((b) => ({ name: b.name, value: people.filter((p) => typeof p.age === "number" && b.test(p.age)).length }))} />}
+        >
+          <BarCh data={A.AGE_BANDS.map((b) => ({ name: b.name, value: people.filter((p) => typeof p.age === "number" && b.test(p.age)).length }))} />
+        </ChartCard>
+        <ChartCard
+          title="लिंग × वयोगट / Gender × Age Group"
+          expand={<GroupedBar stacked limit={999} data={genderByAge} series={[{ key: "पुरुष" }, { key: "स्त्री" }]} />}
+        >
+          <StackedBar data={genderByAge} columns={["पुरुष", "स्त्री"]} />
+        </ChartCard>
+        <ChartCard
+          title="कुटुंब आकार / Family Size Distribution"
+          expand={<BarCh limit={999} unit="कुटुंबे / families" data={sizeData} color="#8b5cf6" />}
+        >
+          <BarCh data={sizeData} color="#8b5cf6" />
+        </ChartCard>
+        <ChartCard
+          title="गावनिहाय सदस्य / Members by Village"
+          expand={<BarCh horizontal limit={999} unit="सदस्य / members" data={A.locationRollup(rows, (r) => A.txt(r.village)).map((v) => ({ name: v.name, value: v.members }))} color="#06b6d4" />}
+        >
+          <BarCh horizontal data={A.locationRollup(rows, (r) => A.txt(r.village)).map((v) => ({ name: v.name, value: v.members }))} color="#06b6d4" />
+        </ChartCard>
+        <ChartCard
+          title="गावनिहाय लिंग / Gender by Village"
+          expand={<GroupedBar stacked horizontal limit={999} data={genderRollup((r) => A.txt(r.village))} series={[{ key: "पुरुष" }, { key: "स्त्री" }]} />}
+        >
+          <StackedBar columns={["पुरुष", "स्त्री"]} data={genderRollup((r) => A.txt(r.village))} />
+        </ChartCard>
+        <ChartCard
+          title="तालुकानिहाय लिंग / Gender by Taluka"
+          expand={<GroupedBar stacked horizontal limit={999} data={genderRollup((r) => A.txt(r.taluka))} series={[{ key: "पुरुष" }, { key: "स्त्री" }]} />}
+        >
+          <StackedBar columns={["पुरुष", "स्त्री"]} data={genderRollup((r) => A.txt(r.taluka))} />
+        </ChartCard>
+        <ChartCard
+          title="जिल्हानिहाय लिंग / Gender by District"
+          expand={<GroupedBar stacked horizontal limit={999} data={genderRollup((r) => A.txt(r.district))} series={[{ key: "पुरुष" }, { key: "स्त्री" }]} />}
+        >
+          <StackedBar columns={["पुरुष", "स्त्री"]} data={genderRollup((r) => A.txt(r.district))} />
+        </ChartCard>
+        <ChartCard
+          title="राज्यनिहाय लिंग / Gender by State"
+          expand={<GroupedBar stacked horizontal limit={999} data={genderRollup((r) => A.stateOf(r))} series={[{ key: "पुरुष" }, { key: "स्त्री" }]} />}
+        >
+          <StackedBar columns={["पुरुष", "स्त्री"]} data={genderRollup((r) => A.stateOf(r))} />
+        </ChartCard>
       </G>
       <DataTable
         title="Family Size by Village"
+        exports={false}
         columns={[
           { key: "name", label: "गाव / Village" },
           { key: "families", label: "कुटुंबे / Families" },
