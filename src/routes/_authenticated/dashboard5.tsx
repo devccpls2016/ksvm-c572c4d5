@@ -671,7 +671,7 @@ function Education({ rows, people }: Ctx) {
           title="शिक्षण स्तर / Education Level"
           expand={
             <div className="space-y-4">
-              <BarCh horizontal limit={999} color="#2563eb" data={levelData} />
+              <div className="h-[420px]"><BarCh horizontal limit={999} color="#2563eb" data={levelData} /></div>
               <DataTable
                 title="शिक्षण स्तर तपशील / Education Level Details"
                 exports={false}
@@ -691,7 +691,7 @@ function Education({ rows, people }: Ctx) {
           title="शिक्षण शाखा / Education Stream"
           expand={
             <div className="space-y-4">
-              <PieCh data={A.groupCount(withEdu as any, (p: any) => A.eduStream(p.education)).filter((d) => d.name !== "—")} />
+              <div className="h-[420px]"><PieCh data={A.groupCount(withEdu as any, (p: any) => A.eduStream(p.education)).filter((d) => d.name !== "—")} /></div>
               <DataTable
                 title="शिक्षण शाखा तपशील / Education Stream Details"
                 exports={false}
@@ -713,7 +713,7 @@ function Education({ rows, people }: Ctx) {
           title="अभ्यासक्रम / Course"
           expand={
             <div className="space-y-4">
-              <BarCh horizontal limit={999} color="#8b5cf6" data={A.groupCount(withEdu as any, (p: any) => A.eduCourse(p.education)).filter((d) => d.name !== "—")} />
+              <div className="h-[420px]"><BarCh horizontal limit={999} color="#8b5cf6" data={A.groupCount(withEdu as any, (p: any) => A.eduCourse(p.education)).filter((d) => d.name !== "—")} /></div>
               <DataTable
                 title="अभ्यासक्रम तपशील / Course Details"
                 exports={false}
@@ -731,7 +731,7 @@ function Education({ rows, people }: Ctx) {
           title="शिक्षण × लिंग / Education × Gender"
           expand={
             <div className="space-y-4">
-              <StackedBar data={eduByGender} columns={["पुरुष", "स्त्री"]} />
+              <div className="h-[420px]"><StackedBar data={eduByGender} columns={["पुरुष", "स्त्री"]} /></div>
               <DataTable
                 title="शिक्षण × लिंग तपशील / Education × Gender Details"
                 exports={false}
@@ -752,7 +752,7 @@ function Education({ rows, people }: Ctx) {
           title="संस्था प्रकार / Institution Type"
           expand={
             <div className="space-y-4">
-              <PieCh data={instTypeData} />
+              <div className="h-[420px]"><PieCh data={instTypeData} /></div>
               <DataTable
                 title="संस्था प्रकार तपशील / Institution Type Details"
                 exports={false}
@@ -768,7 +768,7 @@ function Education({ rows, people }: Ctx) {
           title="शिक्षण × संस्था प्रकार / Education × Institution Analysis"
           expand={
             <div className="space-y-4">
-              <StackedBar data={eduByInst} columns={A.INSTITUTION_TYPES} />
+              <div className="h-[420px]"><StackedBar data={eduByInst} columns={A.INSTITUTION_TYPES} /></div>
               <DataTable
                 title="शिक्षण × संस्था प्रकार तपशील / Education × Institution Details"
                 exports={false}
@@ -788,15 +788,17 @@ function Education({ rows, people }: Ctx) {
           title="शिक्षण × व्यवसाय / Education × Occupation"
           expand={
             <div className="space-y-4">
-              <StackedBar
-                columns={[...new Set(withEdu.map((p) => A.occGroup(p.occupation)))].slice(0, 8)}
-                data={A.EDU_LEVELS.map((l) => {
-                  const sub = withEdu.filter((p) => A.eduLevel(p.education) === l.name);
-                  const o: any = { name: l.name.split(" / ")[0]! };
-                  sub.forEach((p) => { const k = A.occGroup(p.occupation); o[k] = (o[k] || 0) + 1; });
-                  return o;
-                })}
-              />
+              <div className="h-[420px]">
+                <StackedBar
+                  columns={[...new Set(withEdu.map((p) => A.occGroup(p.occupation)))].slice(0, 8)}
+                  data={A.EDU_LEVELS.map((l) => {
+                    const sub = withEdu.filter((p) => A.eduLevel(p.education) === l.name);
+                    const o: any = { name: l.name.split(" / ")[0]! };
+                    sub.forEach((p) => { const k = A.occGroup(p.occupation); o[k] = (o[k] || 0) + 1; });
+                    return o;
+                  })}
+                />
+              </div>
               <DataTable
                 title="शिक्षण × व्यवसाय तपशील / Education × Occupation Details"
                 exports={false}
