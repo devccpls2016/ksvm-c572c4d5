@@ -706,7 +706,6 @@ function Education({ rows, people }: Ctx) {
         </ChartCard>
         <ChartCard
           title="शिक्षण × संस्था प्रकार / Education × Institution Analysis"
-          subtitle="प्रत्येक शिक्षण स्तरावरील संस्था प्रकार वितरण / Institution type distribution at each education level"
           expand={
             <div className="space-y-4">
               <StackedBar data={eduByInst} columns={A.INSTITUTION_TYPES} />
