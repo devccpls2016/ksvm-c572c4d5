@@ -676,8 +676,43 @@ function Education({ rows, people }: Ctx) {
           <BarCh horizontal color="#8b5cf6" data={A.groupCount(withEdu as any, (p: any) => A.eduCourse(p.education)).filter((d) => d.name !== "—")} />
         </ChartCard>
         <ChartCard title="शिक्षण × लिंग / Education × Gender"><StackedBar data={eduByGender} columns={["पुरुष", "स्त्री"]} /></ChartCard>
-        <ChartCard title="गावनिहाय पदवीधर / Graduates by Village">
-          <BarCh horizontal color="#10b981" data={A.groupCount(withEdu.filter((p) => ["पदवी / Graduate", "पदव्युत्तर / Postgraduate", "डॉक्टरेट / Ph.D."].includes(A.eduLevel(p.education))) as any, (p: any) => A.txt(p.row.village))} />
+        <ChartCard
+          title="संस्था प्रकार / Institution Type"
+          subtitle="सरकारी, खाजगी, अनुदानित, विना-अनुदानित व स्वायत्त संस्थांमधील विद्यार्थी वितरण / Distribution of students across Government, Private, Aided, Unaided and Autonomous institutions"
+          expand={
+            <div className="space-y-4">
+              <PieCh data={instTypeData} />
+              <DataTable
+                title="संस्था प्रकार तपशील / Institution Type Details"
+                exports={false}
+                columns={[{ key: "name", label: "संस्था प्रकार / Institution Type" }, { key: "value", label: "संख्या / Count" }, { key: "share", label: "टक्केवारी / Share %" }]}
+                rows={instTypeData.map((d) => ({ ...d, share: A.pct(d.value, withEdu.length) }))}
+              />
+            </div>
+          }
+        >
+          <PieCh data={instTypeData} />
+        </ChartCard>
+        <ChartCard
+          title="शिक्षण × संस्था प्रकार / Education × Institution Analysis"
+          subtitle="प्रत्येक शिक्षण स्तरावरील संस्था प्रकार वितरण / Institution type distribution at each education level"
+          expand={
+            <div className="space-y-4">
+              <StackedBar data={eduByInst} columns={A.INSTITUTION_TYPES} />
+              <DataTable
+                title="शिक्षण × संस्था प्रकार तपशील / Education × Institution Details"
+                exports={false}
+                columns={[
+                  { key: "name", label: "शिक्षण स्तर / Education Level" },
+                  ...A.INSTITUTION_TYPES.map((t) => ({ key: t, label: t })),
+                  { key: "total", label: "एकूण / Total" },
+                ]}
+                rows={eduByInst.map((r: any) => ({ ...r, total: A.INSTITUTION_TYPES.reduce((a, c) => a + (r[c] || 0), 0) }))}
+              />
+            </div>
+          }
+        >
+          <StackedBar data={eduByInst} columns={A.INSTITUTION_TYPES} />
         </ChartCard>
         <ChartCard title="शिक्षण × व्यवसाय / Education × Occupation">
           <StackedBar
