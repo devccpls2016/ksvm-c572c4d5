@@ -656,6 +656,25 @@ function Education({ rows, people }: Ctx) {
       <G>
         <ChartCard title="शिक्षण स्तर / Education Level"><BarCh horizontal data={levelData} color="#2563eb" /></ChartCard>
         <ChartCard title="शिक्षण शाखा / Education Stream"><PieCh data={A.groupCount(withEdu as any, (p: any) => A.eduStream(p.education)).filter((d) => d.name !== "—")} /></ChartCard>
+        <ChartCard
+          title="अभ्यासक्रम / Course"
+          subtitle="निवडलेले अभ्यासक्रम व त्यांची वितरण संख्या / Selected courses and their distribution"
+          expand={
+            <div className="space-y-4">
+              <BarCh horizontal color="#8b5cf6" data={A.groupCount(withEdu as any, (p: any) => A.eduCourse(p.education)).filter((d) => d.name !== "—")} />
+              <DataTable
+                title="अभ्यासक्रम तपशील / Course Details"
+                exports={false}
+                columns={[{ key: "name", label: "अभ्यासक्रम / Course" }, { key: "value", label: "संख्या / Count" }, { key: "share", label: "टक्केवारी / Share %" }]}
+                rows={A.groupCount(withEdu as any, (p: any) => A.eduCourse(p.education))
+                  .filter((d) => d.name !== "—")
+                  .map((d) => ({ ...d, share: A.pct(d.value, withEdu.length) }))}
+              />
+            </div>
+          }
+        >
+          <BarCh horizontal color="#8b5cf6" data={A.groupCount(withEdu as any, (p: any) => A.eduCourse(p.education)).filter((d) => d.name !== "—")} />
+        </ChartCard>
         <ChartCard title="शिक्षण × लिंग / Education × Gender"><StackedBar data={eduByGender} columns={["पुरुष", "स्त्री"]} /></ChartCard>
         <ChartCard title="शिक्षण × वयोगट / Education × Age Group">
           <StackedBar
@@ -684,6 +703,7 @@ function Education({ rows, people }: Ctx) {
           />
         </ChartCard>
       </G>
+
       <DataTable
         title="Education Detail Report"
         columns={[{ key: "name", label: "Education Level" }, { key: "value", label: "Members" }, { key: "male", label: "Male" }, { key: "female", label: "Female" }, { key: "share", label: "Share %" }]}
