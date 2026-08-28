@@ -517,10 +517,16 @@ function Family({ rows, people }: Ctx) {
   return (
     <div className="space-y-4">
       <KpiGrid>
-        <Kpi label="Male" value={male} />
-        <Kpi label="Female" value={female} tone="pink" />
-        <Kpi label="Average Family Size" value={rows.length ? (people.length / rows.length).toFixed(1) : 0} tone="green" />
-        <Kpi label="Largest Family" value={sizes.length ? Math.max(...sizes) : 0} tone="amber" />
+        <Kpi icon={Home} label="Total Families" value={rows.length} />
+        <Kpi icon={Users} tone="violet" label="Total Family Members" value={people.length} />
+        <Kpi icon={UserRound} tone="cyan" label="Male" value={male} />
+        <Kpi icon={UserRound} tone="pink" label="Female" value={female} />
+        <Kpi icon={UserRound} tone="amber" label="Other" value={people.filter((p) => p.gender && p.gender !== "पुरुष" && p.gender !== "स्त्री").length} />
+        <Kpi icon={Users} tone="green" label="Average Family Size" value={rows.length ? (people.length / rows.length).toFixed(1) : 0} />
+        <Kpi icon={HandHeart} tone="red" label="Married" value={people.filter((p) => p.marital_status.includes("विवाहित") && !p.marital_status.includes("अविवाहित")).length} />
+        <Kpi icon={HandHeart} tone="amber" label="Unmarried" value={people.filter((p) => p.marital_status.includes("अविवाहित")).length} />
+        <Kpi icon={Shuffle} tone="lime" label="Same-caste Marriage" value={people.filter((p) => p.marriage_type.includes("जातीय") && !p.marriage_type.includes("आंतरजातीय")).length} />
+        <Kpi icon={Shuffle} tone="cyan" label="Inter-caste Marriage" value={people.filter((p) => p.marriage_type.includes("आंतरजातीय")).length} />
       </KpiGrid>
       <G>
         <ChartCard title="लिंग वितरण / Gender Distribution"><PieCh donut data={[{ name: "पुरुष", value: male }, { name: "स्त्री", value: female }]} /></ChartCard>
