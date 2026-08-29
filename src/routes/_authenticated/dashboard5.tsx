@@ -788,6 +788,18 @@ function Occupation({ rows, people }: Ctx) {
   const withOcc = people.filter((p) => p.occupation);
   const g = (k: string) => withOcc.filter((p) => A.occGroup(p.occupation) === k).length;
   const data = A.groupCount(withOcc as any, (p: any) => A.occGroup(p.occupation));
+  const villageOcc = useMemo(() => {
+    const topVillages = A.groupCount(withOcc as any, (p: any) => A.txt(p.row.village)).slice(0, 60).map((v) => v.name);
+    const cats = data.map((d) => d.name);
+    const rows = topVillages.map((v) => {
+      const r: Record<string, any> = { name: v };
+      for (const c of cats) {
+        r[c.split(" / ")[0]!] = withOcc.filter((p) => A.txt(p.row.village) === v && A.occGroup(p.occupation) === c).length;
+      }
+      return r;
+    });
+    return { rows, series: cats.map((c, i) => ({ key: c.split(" / ")[0]!, label: c, color: CHART_COLORS[i % CHART_COLORS.length] })) };
+  }, [withOcc, data]);
   const jobHolders = withOcc.filter((p) => !["बेरोजगार / Unemployed", "निवृत्त / Pensioner", "—"].includes(A.occGroup(p.occupation))).length;
   const seekingJobs = g("बेरोजगार / Unemployed");
   const skillTraining = withOcc.filter((p) => A.occGroup(p.occupation) === "बेरोजगार / Unemployed" && p.age != null && p.age >= 15 && p.age <= 44).length;
