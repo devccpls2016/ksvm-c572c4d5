@@ -798,7 +798,7 @@ function Occupation({ rows, people }: Ctx) {
       }
       return r;
     });
-    return { rows, series: cats.map((c, i) => ({ key: c.split(" / ")[0]!, label: c, color: CHART_COLORS[i % CHART_COLORS.length] })) };
+    return { rows, series: cats.map((c) => ({ key: c.split(" / ")[0]!, label: c })) };
   }, [withOcc, data]);
   const jobHolders = withOcc.filter((p) => !["बेरोजगार / Unemployed", "निवृत्त / Pensioner", "—"].includes(A.occGroup(p.occupation))).length;
   const seekingJobs = g("बेरोजगार / Unemployed");
