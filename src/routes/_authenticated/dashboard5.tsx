@@ -789,21 +789,38 @@ function Occupation({ rows, people }: Ctx) {
   const g = (k: string) => withOcc.filter((p) => A.occGroup(p.occupation) === k).length;
   const data = A.groupCount(withOcc as any, (p: any) => A.occGroup(p.occupation));
   const jobHolders = withOcc.filter((p) => !["बेरोजगार / Unemployed", "निवृत्त / Pensioner", "—"].includes(A.occGroup(p.occupation))).length;
+  const seekingJobs = g("बेरोजगार / Unemployed");
+  const skillTraining = withOcc.filter((p) => A.occGroup(p.occupation) === "बेरोजगार / Unemployed" && p.age != null && p.age >= 15 && p.age <= 44).length;
+  const businessOpp = rows.filter((r) => (r.employment_info || {}).has_entrepreneur === true || (r.employment_info || {}).has_side_business === true).length;
+  const loanRequired = rows.filter((r) => Object.values(r.farming_tools_details || {}).some((t: any) => t && t.needs_loan === true)).length;
 
   return (
     <div className="space-y-4">
       <KpiGrid>
         <Kpi icon={Briefcase} label="Total Job Holders" value={jobHolders} />
-        <Kpi tone="green" label="Government Employees" value={g("सरकारी कर्मचारी")} />
-        <Kpi tone="cyan" label="Private Employees" value={g("खाजगी कर्मचारी")} />
-        <Kpi tone="amber" label="Self Employed" value={g("स्वरोजगार / Self Employed")} />
-        <Kpi tone="violet" label="Business Owners" value={g("व्यवसाय / Business Owner")} />
-        <Kpi tone="lime" label="Farmers" value={g("शेतकरी / Farmer")} />
-        <Kpi tone="lime" label="Farm Labour" value={g("शेतमजूर / Farm Labour")} />
-        <Kpi tone="red" label="Unemployed" value={g("बेरोजगार / Unemployed")} />
-        <Kpi tone="pink" label="Retired / Pensioner" value={g("निवृत्त / Pensioner")} />
-        <Kpi tone="primary" label="NRI" value={g("परदेशस्थ / NRI")} />
-        <Kpi tone="amber" label="Agriculture + Business" value={g("शेती + व्यवसाय")} />
+        <Kpi tone="lime" label="शेतकरी (Farmer)" value={g("शेतकरी / Farmer")} />
+        <Kpi tone="lime" label="शेती + व्यवसाय (Agriculture + Business)" value={g("शेती + व्यवसाय")} />
+        <Kpi tone="lime" label="कृषी मजूर / शेतमजूर (Farm Labour)" value={g("शेतमजूर / Farm Labour")} />
+        <Kpi tone="amber" label="स्वरोजगार (Self Employed)" value={g("स्वरोजगार / Self Employed")} />
+        <Kpi tone="violet" label="व्यवसाय (Business Owner)" value={g("व्यवसाय / Business Owner")} />
+        <Kpi tone="amber" label="मानधनधारक पदाधिकारी (Honorarium Based Position)" value={withOcc.filter((p) => A.txt(p.occupation).includes("मानधन")).length} />
+        <Kpi tone="green" label="सरकारी कर्मचारी (Government Employee)" value={g("सरकारी कर्मचारी")} />
+        <Kpi tone="cyan" label="खाजगी कर्मचारी (Private Employee)" value={g("खाजगी कर्मचारी")} />
+        <Kpi tone="cyan" label="शिक्षण क्षेत्र (Education Sector)" value={g("शिक्षण क्षेत्र")} />
+        <Kpi tone="pink" label="वैद्यकीय क्षेत्र (Medical Sector)" value={g("वैद्यकीय क्षेत्र")} />
+        <Kpi tone="pink" label="महिला व बाल विकास (Women & Child Development)" value={g("महिला व बालविकास")} />
+        <Kpi tone="primary" label="अभियंता (Engineering Sector)" value={g("अभियंता / Engineering")} />
+        <Kpi tone="green" label="बँकिंग व वित्तीय क्षेत्र (Banking & Finance)" value={g("बँकिंग व वित्तीय")} />
+        <Kpi tone="violet" label="न्यायव्यवस्था (Judiciary)" value={g("न्यायालयीन / Judiciary")} />
+        <Kpi tone="red" label="संरक्षण व सुरक्षा सेवा (Defence & Security)" value={g("संरक्षण व सुरक्षा")} />
+        <Kpi tone="pink" label="निवृत्त / पेन्शनधारक (Retired / Pensioner)" value={g("निवृत्त / Pensioner")} />
+        <Kpi tone="red" label="बेरोजगार (Unemployed)" value={g("बेरोजगार / Unemployed")} />
+        <Kpi tone="primary" label="परदेशस्थ (NRI)" value={g("परदेशस्थ / NRI")} />
+        <Kpi tone="amber" label="इतर (Other)" value={g("इतर / Other")} />
+        <Kpi tone="red" label="Members Seeking Jobs" value={seekingJobs} />
+        <Kpi tone="cyan" label="Skill Training Required" value={skillTraining} />
+        <Kpi tone="green" label="Business Opportunity" value={businessOpp} />
+        <Kpi tone="violet" label="Loan Required" value={loanRequired} />
       </KpiGrid>
       <G>
         <ChartCard title="व्यवसाय श्रेणी / Occupation Category"><BarCh horizontal data={data} color="#2563eb" /></ChartCard>
