@@ -77,7 +77,6 @@ const SECTION_FILTERS: Record<string, string[]> = {
   equipment: ["loc", "agri"],
   housing: ["loc", "house"],
   assets: ["loc", "house", "agri"],
-  solar: ["loc", "house"],
   benefits: ["loc", "ben", "fam"],
   medical: ["loc", "ben"],
   sports: ["loc", "ben"],
@@ -286,7 +285,6 @@ function Section({ id, ctx }: { id: string; ctx: Ctx }) {
       case "equipment": return <Equipment {...ctx} />;
       case "housing": return <Housing {...ctx} />;
       case "assets": return <Assets {...ctx} />;
-      case "solar": return <Solar {...ctx} />;
       case "benefits": return <Benefits {...ctx} />;
       case "medical": return <Medical {...ctx} />;
       case "sports": return <Sports {...ctx} />;
