@@ -1281,6 +1281,9 @@ function Assets({ rows }: Ctx) {
             {vehicleByVillage.length ? <GroupedBar data={vehicleByVillage} series={vehicleSeries} /> : <Empty />}
           </div>
         </ChartCard>
+        <ChartCard title="दोन चाकी वाहन / Two-wheelers by Village" expand={<div className="h-[70vh]"><GroupedBar data={twoWheelerByVillage} series={vehicleSeries} /></div>}>
+          {twoWheelerByVillage.length ? <GroupedBar data={twoWheelerByVillage} series={vehicleSeries} /> : <Empty />}
+        </ChartCard>
         <ChartCard title="सोलर स्थिती / Solar Status" expand={<div className="h-[70vh]"><PieCh donut data={solarStatus} /></div>}>
           <PieCh donut data={solarStatus} />
         </ChartCard>
