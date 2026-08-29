@@ -954,12 +954,6 @@ function Agriculture({ rows }: Ctx) {
         <ChartCard title="जमीन आकार वितरण / Landholding Distribution"><BarCh horizontal multi data={landData} color="#10b981" /></ChartCard>
         <ChartCard title="हंगामनिहाय क्षेत्र / Seasonal Area"><BarCh multi data={[{ name: "खरीप क्षेत्र (एकर)", value: sum("kharif_area") }, { name: "रब्बी क्षेत्र (एकर)", value: sum("rabi_area") }, { name: "उन्हाळी क्षेत्र (एकर)", value: sum("summer_area") }, { name: "घेतलेली पिके (कुटुंबे)", value: rows.filter((r) => Array.isArray(r.crops) && (r.crops as any[]).some((c) => A.txt(c?.season))).length }]} color="#f59e0b" /></ChartCard>
         <ChartCard title="सिंचित vs कोरडवाहू / Irrigated vs Dryland"><PieCh data={[{ name: "सिंचित", value: sum("irrigated_area") }, { name: "कोरडवाहू", value: sum("dryland_area") }]} /></ChartCard>
-        <ChartCard title="गावनिहाय जमीन / Landholding by Village">
-          <BarCh horizontal color="#8b5cf6" data={A.uniq(farm, (r) => A.txt(r.village)).map((v) => ({ name: v, value: Math.round(farm.filter((r) => A.txt(r.village) === v).reduce((a, r) => a + A.num(r.total_farmland), 0)) }))} />
-        </ChartCard>
-        <ChartCard title="तालुकानिहाय जमीन / Landholding by Taluka">
-          <BarCh horizontal color="#06b6d4" data={A.uniq(farm, (r) => A.txt(r.taluka)).map((t) => ({ name: t, value: Math.round(farm.filter((r) => A.txt(r.taluka) === t).reduce((a, r) => a + A.num(r.total_farmland), 0)) }))} />
-        </ChartCard>
       </G>
       <DataTable
         title="Agriculture Report by Village"
