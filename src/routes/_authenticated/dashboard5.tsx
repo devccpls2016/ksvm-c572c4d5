@@ -980,6 +980,12 @@ function CropIrrigation({ rows }: Ctx) {
   const cropTypes = A.countMulti(rows, (r) => (Array.isArray(r.major_crop_types) ? r.major_crop_types : []));
   const seasons = A.countMulti(rows, (r) => (Array.isArray(r.crops) ? r.crops.map((c: any) => A.txt(c?.season)) : []));
   const irrSources = A.countMulti(rows, (r) => (Array.isArray(r.irrigation_sources) ? r.irrigation_sources : []));
+  const irrEn: Record<string, string> = { tubewell: "Tubewell / Borewell", well: "Well", farm_pond: "Farm Pond", pond: "Lake / Pond", river: "River", canal: "Canal" };
+  const irrData = A.IRRIGATION_KEYS.map((k) => ({
+    name: `${k.label} / ${irrEn[k.key]}`,
+    families: rows.filter((r) => (((r.irrigation_details || {}) as any)[k.key]?.count ?? 0) > 0 || (r.irrigation_sources || []).some((s: string) => s.includes(k.label.split(" / ")[0]!))).length,
+    count: rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any)[k.key]?.count), 0),
+  })).filter((d) => d.families > 0 || d.count > 0);
   const det = (key: string, f: (d: any) => boolean) => rows.filter((r) => f(((r.irrigation_details || {}) as any)[key] || {})).length;
   const electric = A.IRRIGATION_KEYS.reduce((a, k) => a + det(k.key, (d) => !!d.electric), 0);
   const solar = A.IRRIGATION_KEYS.reduce((a, k) => a + det(k.key, (d) => !!d.solar), 0);
@@ -1004,7 +1010,17 @@ function CropIrrigation({ rows }: Ctx) {
       <G>
         <ChartCard title="मुख्य पीक प्रकार / Major Crop Types">{cropTypes.length ? <BarCh horizontal data={cropTypes} color="#84cc16" /> : <Empty />}</ChartCard>
         <ChartCard title="हंगाम वितरण / Crop Season">{seasons.length ? <PieCh data={seasons} /> : <Empty />}</ChartCard>
-        <ChartCard title="सिंचन साधन / Irrigation Sources">{irrSources.length ? <BarCh horizontal data={irrSources} color="#06b6d4" /> : <Empty />}</ChartCard>
+        <ChartCard
+          title="सिंचन साधन / Irrigation Sources"
+          subtitle="प्रत्येक साधनासाठी कुटुंबे व एकूण संख्या / Families and total quantity per source"
+          expand={<div className="h-[60vh]"><GroupedBar horizontal data={irrData} series={[{ key: "families", label: "कुटुंबे / Families", color: "#0ea5e9" }, { key: "count", label: "एकूण संख्या / Total Quantity", color: "#06b6d4" }]} /></div>}
+        >
+          {irrData.some((d) => d.families || d.count) ? (
+            <GroupedBar horizontal data={irrData} series={[{ key: "families", label: "कुटुंबे / Families", color: "#0ea5e9" }, { key: "count", label: "एकूण संख्या / Total Quantity", color: "#06b6d4" }]} />
+          ) : (
+            <Empty />
+          )}
+        </ChartCard>
         <ChartCard title="पंप प्रकार / Pump Type"><PieCh data={[{ name: "विद्युत पंप", value: electric }, { name: "सोलर पंप", value: solar }]} /></ChartCard>
         <ChartCard title="पीक × गाव / Crop × Village">
           <StackedBar
