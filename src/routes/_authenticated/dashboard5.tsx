@@ -906,6 +906,7 @@ function Occupation({ rows, people }: Ctx) {
       />
       <DataTable
         title="Employment Report by Village"
+        exports={false}
         columns={[
           { key: "name", label: "Village" }, { key: "govt", label: "Govt" }, { key: "priv", label: "Private" },
           { key: "self", label: "Self-employed" }, { key: "biz", label: "Business" },
