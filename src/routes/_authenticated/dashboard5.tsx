@@ -1197,6 +1197,19 @@ function Assets({ rows }: Ctx) {
   const qty = (name: string) => rows.reduce((a, r) => a + A.num((r.household_item_counts || {})[name]), 0);
   const table = owned.map((o) => ({ name: o.name, families: o.value, pct: A.pct(o.value, rows.length), qty: qty(o.name) || o.value }));
 
+  const VEHICLE_OPTS = ["दोन चाकी वाहन", "चार चाकी वाहन", "सायकल", "ऑटो"];
+  const [vehicle, setVehicle] = useState("दोन चाकी वाहन");
+  const vehicleByVillage = A.uniq(rows, (r) => A.txt(r.village))
+    .map((v) => {
+      const sub = rows.filter((r) => A.txt(r.village) === v && (r.household_items || []).includes(vehicle));
+      return { name: v, value: sub.length, qty: sub.reduce((a, r) => a + (A.num((r.household_item_counts || {})[vehicle]) || 1), 0) };
+    })
+    .filter((d) => d.value > 0);
+  const vehicleSummary = [
+    { name: "कुटुंबे / Families", value: rows.filter((r) => (r.household_items || []).includes(vehicle)).length },
+    { name: "एकूण संख्या / Total quantity", value: qty(vehicle) || rows.filter((r) => (r.household_items || []).includes(vehicle)).length },
+  ];
+
   const installed = rows.filter((r) => r.solar_panel_installed).length;
   const wanted = rows.filter((r) => r.solar_panel_wanted).length;
   const notInstalled = rows.filter((r) => r.solar_panel_installed === false).length;
