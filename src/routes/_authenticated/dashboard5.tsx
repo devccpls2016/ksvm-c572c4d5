@@ -1168,10 +1168,10 @@ function Housing({ rows }: Ctx) {
         <Kpi tone="pink" label="Families Requiring Gharkul" value={c((r) => !!r.gharkul_wanted)} />
       </KpiGrid>
       <G>
-        <ChartCard title="घर मालकी / House Ownership"><PieCh donut data={[{ name: "स्वतःचे घर", value: c((r) => !!r.owns_house) }, { name: "घर नाही", value: c((r) => r.owns_house === false) }]} /></ChartCard>
-        <ChartCard title="घर प्रकार / House Type"><PieCh data={A.groupCount(rows.filter((r) => r.house_type), (r) => A.txt(r.house_type)).filter((d) => !d.name.includes("माती") && !d.name.toLowerCase().includes("kach"))} /></ChartCard>
-        <ChartCard title="राहण्याची स्थिती / Living Status"><BarCh data={A.groupCount(rows.filter((r) => r.living_status), (r) => A.txt(r.living_status))} color="#8b5cf6" /></ChartCard>
-        <ChartCard title="घरकुल / Gharkul"><PieCh data={[{ name: "मिळाले", value: c((r) => !!r.gharkul_received) }, { name: "आवश्यक", value: c((r) => !!r.gharkul_wanted) }, { name: "मिळाले नाही", value: c((r) => r.gharkul_received === false) }]} /></ChartCard>
+        <ChartCard title="घर मालकी / House Ownership" expand={<PieCh donut unit="कुटुंबे / families" data={[{ name: "स्वतःचे घर", value: c((r) => !!r.owns_house) }, { name: "घर नाही", value: c((r) => r.owns_house === false) }]} />}><PieCh donut data={[{ name: "स्वतःचे घर", value: c((r) => !!r.owns_house) }, { name: "घर नाही", value: c((r) => r.owns_house === false) }]} /></ChartCard>
+        <ChartCard title="घर प्रकार / House Type" expand={<PieCh unit="कुटुंबे / families" data={A.groupCount(rows.filter((r) => r.house_type), (r) => A.txt(r.house_type)).filter((d) => !d.name.includes("माती") && !d.name.toLowerCase().includes("kach"))} />}><PieCh data={A.groupCount(rows.filter((r) => r.house_type), (r) => A.txt(r.house_type)).filter((d) => !d.name.includes("माती") && !d.name.toLowerCase().includes("kach"))} /></ChartCard>
+        <ChartCard title="राहण्याची स्थिती / Living Status" expand={<BarCh multi limit={999} unit="कुटुंबे / families" data={A.groupCount(rows.filter((r) => r.living_status), (r) => A.txt(r.living_status))} color="#8b5cf6" />}><BarCh data={A.groupCount(rows.filter((r) => r.living_status), (r) => A.txt(r.living_status))} color="#8b5cf6" /></ChartCard>
+        <ChartCard title="घरकुल / Gharkul" expand={<PieCh unit="कुटुंबे / families" data={[{ name: "मिळाले", value: c((r) => !!r.gharkul_received) }, { name: "आवश्यक", value: c((r) => !!r.gharkul_wanted) }, { name: "मिळाले नाही", value: c((r) => r.gharkul_received === false) }]} />}><PieCh data={[{ name: "मिळाले", value: c((r) => !!r.gharkul_received) }, { name: "आवश्यक", value: c((r) => !!r.gharkul_wanted) }, { name: "मिळाले नाही", value: c((r) => r.gharkul_received === false) }]} /></ChartCard>
       </G>
       <DataTable
         title="Housing Report by Village"
@@ -1187,6 +1187,7 @@ function Housing({ rows }: Ctx) {
             need: sub.filter((r) => r.gharkul_wanted).length,
           };
         })}
+        exports={false}
       />
     </div>
   );
