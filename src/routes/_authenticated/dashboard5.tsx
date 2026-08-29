@@ -1169,7 +1169,7 @@ function Housing({ rows }: Ctx) {
       </KpiGrid>
       <G>
         <ChartCard title="घर मालकी / House Ownership"><PieCh donut data={[{ name: "स्वतःचे घर", value: c((r) => !!r.owns_house) }, { name: "घर नाही", value: c((r) => r.owns_house === false) }]} /></ChartCard>
-        <ChartCard title="घर प्रकार / House Type"><PieCh data={A.groupCount(rows.filter((r) => r.house_type), (r) => A.txt(r.house_type))} /></ChartCard>
+        <ChartCard title="घर प्रकार / House Type"><PieCh data={A.groupCount(rows.filter((r) => r.house_type), (r) => A.txt(r.house_type)).filter((d) => !d.name.includes("माती") && !d.name.toLowerCase().includes("kach"))} /></ChartCard>
         <ChartCard title="राहण्याची स्थिती / Living Status"><BarCh data={A.groupCount(rows.filter((r) => r.living_status), (r) => A.txt(r.living_status))} color="#8b5cf6" /></ChartCard>
         <ChartCard title="घरकुल / Gharkul"><PieCh data={[{ name: "मिळाले", value: c((r) => !!r.gharkul_received) }, { name: "आवश्यक", value: c((r) => !!r.gharkul_wanted) }, { name: "मिळाले नाही", value: c((r) => r.gharkul_received === false) }]} /></ChartCard>
       </G>
