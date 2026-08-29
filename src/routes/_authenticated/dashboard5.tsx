@@ -836,7 +836,6 @@ function Occupation({ rows, people }: Ctx) {
         >
           <BarCh horizontal multi data={data} limit={19} unit="सदस्य / Members" />
         </ChartCard>
-        <ChartCard title="नौकरी प्रकार / Job Type (Members)"><PieCh data={A.groupCount(people.filter((p) => p.job_type) as any, (p: any) => p.job_type)} /></ChartCard>
         <ChartCard title="व्यवसाय × लिंग / Occupation × Gender">
           <StackedBar columns={["पुरुष", "स्त्री"]} data={data.slice(0, 12).map((d) => ({
             name: d.name.split(" / ")[0]!,
@@ -844,8 +843,21 @@ function Occupation({ rows, people }: Ctx) {
             स्त्री: withOcc.filter((p) => A.occGroup(p.occupation) === d.name && p.gender === "स्त्री").length,
           }))} />
         </ChartCard>
-        <ChartCard title="गावनिहाय व्यवसाय / Occupation by Village">
-          <BarCh horizontal color="#f59e0b" data={A.groupCount(withOcc as any, (p: any) => A.txt(p.row.village))} />
+        <ChartCard
+          wide
+          title="गावनिहाय व्यवसाय वितरण / Village-wise Occupation Distribution"
+          subtitle="प्रत्येक गावातील व्यवसाय श्रेणीनुसार सदस्य / Members per village by occupation category"
+          expand={
+            <div style={{ height: Math.max(420, villageOcc.rows.length * 30) }}>
+              <GroupedBar horizontal stacked limit={60} data={villageOcc.rows} series={villageOcc.series} />
+            </div>
+          }
+        >
+          {villageOcc.rows.length ? (
+            <GroupedBar horizontal stacked limit={10} data={villageOcc.rows} series={villageOcc.series} />
+          ) : (
+            <Empty />
+          )}
         </ChartCard>
       </G>
       <DataTable
