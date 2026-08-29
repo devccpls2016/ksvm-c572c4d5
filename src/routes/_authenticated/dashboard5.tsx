@@ -1228,6 +1228,12 @@ function Assets({ rows }: Ctx) {
     { name: "बिगर शेतकरी", value: rows.filter((r) => !r.has_farmland && r.solar_panel_installed).length },
   ];
 
+  const assetOrder = [
+    "मोबाईल", "टीव्ही", "फ्रिज", "गॅस शेगडी", "कॉम्प्युटर",
+    "सायकल", "ऑटो", "चार चाकी वाहन", "दोन चाकी वाहन",
+  ];
+  const orderedAssets = assetOrder.map((name) => table.find((t) => t.name === name) || { name, families: 0, pct: 0, qty: 0 });
+
   return (
     <div className="space-y-6">
       <SectionHeader
@@ -1236,7 +1242,7 @@ function Assets({ rows }: Ctx) {
       />
       {/* ---------------- all KPIs in one place ---------------- */}
       <KpiGrid>
-        {table.slice(0, 8).map((t) => <Kpi key={t.name} label={t.name} value={t.families} tone="cyan" />)}
+        {orderedAssets.map((t) => <Kpi key={t.name} label={t.name} value={t.families} tone="cyan" />)}
         <Kpi icon={Sun} tone="amber" label="Solar Installed" value={installed} />
         <Kpi tone="red" label="Not Installed" value={notInstalled} />
         <Kpi tone="green" label="Solar Required" value={wanted} />
