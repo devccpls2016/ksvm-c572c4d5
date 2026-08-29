@@ -1062,8 +1062,7 @@ function CropIrrigation({ rows }: Ctx) {
         columns={[{ key: "name", label: "Source" }, { key: "families", label: "Families" }, { key: "count", label: "Total Units" }, { key: "electric", label: "Electric" }, { key: "solar", label: "Solar" }]}
         rows={A.IRRIGATION_KEYS.map((k) => ({
           name: k.label,
-          families: rows.filter((r) => (((r.irrigation_details || {}) as any)[k.key]?.count ?? 0) || ((r.irrigation_sources || []).some((s: string) => s.includes(k.label.split(" / ")[0]!)))).length,
-          count: rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any)[k.key]?.count), 0),
+          ...irrStats(k.key, k.label.split(" / ")[0]!),
           electric: det(k.key, (d) => !!d.electric),
           solar: det(k.key, (d) => !!d.solar),
         }))}
