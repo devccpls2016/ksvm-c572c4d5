@@ -244,7 +244,7 @@ function Dashboard5() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <sectionMeta.icon className="h-4 w-4 text-primary" />
-                  {sectionMeta.no}. {sectionMeta.label} — विभागनिहाय फिल्टर / Section filters
+                  {section === "assets" ? "" : `${sectionMeta.no}. `}{sectionMeta.label} — विभागनिहाय फिल्टर / Section filters
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
