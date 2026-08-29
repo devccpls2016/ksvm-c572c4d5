@@ -887,6 +887,7 @@ function Occupation({ rows, people }: Ctx) {
       </G>
       <DataTable
         title="Occupation Detail Report"
+        exports={false}
         columns={[
           { key: "name", label: "Occupation" }, { key: "value", label: "Members" },
           { key: "male", label: "Male" }, { key: "female", label: "Female" },
