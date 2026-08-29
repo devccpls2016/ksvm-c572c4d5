@@ -249,11 +249,10 @@ export function PieCh({ data, donut, unit = "संख्या / Count" }: { da
     const rad = -(e.midAngle * Math.PI) / 180;
     const x = e.cx + r * Math.cos(rad);
     const y = e.cy + r * Math.sin(rad);
-    const fillColor = e.fill || CHART_COLORS[0];
-    const textFill = single && donut ? "currentColor" : contrastText(fillColor);
-    const outline = textFill === "#ffffff" ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.7)";
+    const textFill = single && donut ? "currentColor" : "#111827";
+    const outline = "rgba(255,255,255,0.9)";
     return (
-      <text x={single && donut ? e.cx : x} y={single && donut ? e.cy : y} textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600} fill={textFill} stroke={outline} strokeWidth={0.5} paintOrder="stroke" className={single && donut ? "fill-foreground" : ""}>
+      <text x={single && donut ? e.cx : x} y={single && donut ? e.cy : y} textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={700} fill={textFill} stroke={outline} strokeWidth={0.6} paintOrder="stroke" className={single && donut ? "fill-foreground" : ""}>
         {`${e.value} (${share}%)`}
       </text>
     );
