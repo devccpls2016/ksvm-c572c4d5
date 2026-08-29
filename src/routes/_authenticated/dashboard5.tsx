@@ -947,11 +947,12 @@ function Agriculture({ rows }: Ctx) {
         <Kpi tone="pink" label="Rabi Area (धान सोडून)" value={sum("rabi_area")} />
         <Kpi tone="amber" label="Summer Area (धानासह)" value={sum("summer_area")} />
         <Kpi tone="green" label="Contract / Share Cropping" value={rows.filter((r) => (r.farm_management || {}).has_contract_or_share).length} />
+        <Kpi icon={Sprout} tone="lime" label="घेतलेली पिके (Crops grown)" value={rows.filter((r) => Array.isArray(r.crops) && (r.crops as any[]).some((c) => A.txt(c?.season))).length} />
       </KpiGrid>
       <G>
         <ChartCard title="शेतजमीन / Farmland"><PieCh donut data={[{ name: "शेती आहे", value: farm.length }, { name: "शेती नाही", value: rows.filter((r) => r.has_farmland === false).length }]} /></ChartCard>
-        <ChartCard title="जमीन आकार वितरण / Landholding Distribution"><BarCh data={landData} color="#10b981" /></ChartCard>
-        <ChartCard title="हंगामनिहाय क्षेत्र / Seasonal Area"><BarCh data={[{ name: "खरीप", value: sum("kharif_area") }, { name: "रब्बी", value: sum("rabi_area") }, { name: "उन्हाळी", value: sum("summer_area") }]} color="#f59e0b" /></ChartCard>
+        <ChartCard title="जमीन आकार वितरण / Landholding Distribution"><BarCh horizontal multi data={landData} color="#10b981" /></ChartCard>
+        <ChartCard title="हंगामनिहाय क्षेत्र / Seasonal Area"><BarCh multi data={[{ name: "खरीप क्षेत्र (एकर)", value: sum("kharif_area") }, { name: "रब्बी क्षेत्र (एकर)", value: sum("rabi_area") }, { name: "उन्हाळी क्षेत्र (एकर)", value: sum("summer_area") }, { name: "घेतलेली पिके (कुटुंबे)", value: rows.filter((r) => Array.isArray(r.crops) && (r.crops as any[]).some((c) => A.txt(c?.season))).length }]} color="#f59e0b" /></ChartCard>
         <ChartCard title="सिंचित vs कोरडवाहू / Irrigated vs Dryland"><PieCh data={[{ name: "सिंचित", value: sum("irrigated_area") }, { name: "कोरडवाहू", value: sum("dryland_area") }]} /></ChartCard>
         <ChartCard title="गावनिहाय जमीन / Landholding by Village">
           <BarCh horizontal color="#8b5cf6" data={A.uniq(farm, (r) => A.txt(r.village)).map((v) => ({ name: v, value: Math.round(farm.filter((r) => A.txt(r.village) === v).reduce((a, r) => a + A.num(r.total_farmland), 0)) }))} />

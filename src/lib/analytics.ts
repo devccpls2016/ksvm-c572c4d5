@@ -129,9 +129,15 @@ export const FAMILY_SIZE_BANDS = ["1–2", "3–5", "6–8", "9–10", "10+"];
 export const familySizeBand = (n: number) =>
   n <= 2 ? "1–2" : n <= 5 ? "3–5" : n <= 8 ? "6–8" : n <= 10 ? "9–10" : "10+";
 
-export const LAND_BANDS = ["1 एकरपेक्षा कमी", "1–5 एकर", "5–10 एकर", "10–20 एकर", "20+ एकर"];
+export const LAND_BANDS = [
+  "अत्यल्प भूधारक (2.5 एकर पेक्षा कमी)",
+  "अल्प भूधारक (2.5–5 एकर)",
+  "अर्ध-मध्यम / Semi-Medium (5–10 एकर)",
+  "मध्यम / Medium (10–25 एकर)",
+  "मोठे / Large (25 एकर पेक्षा जास्त)",
+];
 export const landBand = (acres: number) =>
-  acres < 1 ? LAND_BANDS[0]! : acres <= 5 ? LAND_BANDS[1]! : acres <= 10 ? LAND_BANDS[2]! : acres <= 20 ? LAND_BANDS[3]! : LAND_BANDS[4]!;
+  acres < 2.5 ? LAND_BANDS[0]! : acres < 5 ? LAND_BANDS[1]! : acres < 10 ? LAND_BANDS[2]! : acres < 25 ? LAND_BANDS[3]! : LAND_BANDS[4]!;
 
 export const familySize = (r: Row) => 1 + (Array.isArray(r.members) ? r.members.length : 0);
 
