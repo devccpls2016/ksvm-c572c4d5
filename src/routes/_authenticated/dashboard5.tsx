@@ -824,6 +824,18 @@ function Occupation({ rows, people }: Ctx) {
       </KpiGrid>
       <G>
         <ChartCard title="व्यवसाय श्रेणी / Occupation Category"><BarCh horizontal data={data} color="#2563eb" /></ChartCard>
+        <ChartCard
+          wide
+          title="सर्व व्यवसाय श्रेणी — संपूर्ण वितरण / All Occupation Categories — Complete Distribution"
+          subtitle="प्रत्येक व्यवसाय श्रेणीतील सदस्य संख्या / Member count in each occupation category"
+          expand={
+            <div style={{ height: Math.max(420, data.length * 34) }}>
+              <BarCh horizontal multi data={data} limit={50} unit="सदस्य / Members" />
+            </div>
+          }
+        >
+          <BarCh horizontal multi data={data} limit={19} unit="सदस्य / Members" />
+        </ChartCard>
         <ChartCard title="नौकरी प्रकार / Job Type (Members)"><PieCh data={A.groupCount(people.filter((p) => p.job_type) as any, (p: any) => p.job_type)} /></ChartCard>
         <ChartCard title="व्यवसाय × लिंग / Occupation × Gender">
           <StackedBar columns={["पुरुष", "स्त्री"]} data={data.slice(0, 12).map((d) => ({
