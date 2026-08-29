@@ -244,7 +244,7 @@ function Dashboard5() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <sectionMeta.icon className="h-4 w-4 text-primary" />
-                  {sectionMeta.no}. {sectionMeta.label} — विभागनिहाय फिल्टर / Section filters
+                  {section === "assets" ? "" : `${sectionMeta.no}. `}{sectionMeta.label} — विभागनिहाय फिल्टर / Section filters
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
@@ -1233,17 +1233,14 @@ function Assets({ rows }: Ctx) {
       <SectionHeader
         icon={Package}
         title="घरगुती वस्तू व सोलर / Household Assets & Solar"
-        subtitle="कुटुंबांकडील वस्तू, मालकी टक्केवारी, सोलर पॅनेल स्थिती व मागणी"
       />
       {/* ---------------- all KPIs in one place ---------------- */}
       <KpiGrid>
-        {table.slice(0, 8).map((t) => <Kpi key={t.name} label={t.name} value={t.families} hint={`${t.pct}% कुटुंबे`} tone="cyan" />)}
+        {table.slice(0, 8).map((t) => <Kpi key={t.name} label={t.name} value={t.families} tone="cyan" />)}
         <Kpi icon={Sun} tone="amber" label="Solar Installed" value={installed} />
         <Kpi tone="red" label="Not Installed" value={notInstalled} />
         <Kpi tone="green" label="Solar Required" value={wanted} />
         <Kpi tone="violet" label="Solar Adoption %" value={`${A.pct(installed, rows.length)}%`} />
-        <Kpi tone="cyan" label="Solar Pumps (Irrigation)" value={solarPumps} />
-        <Kpi tone="lime" label="Farmer Solar Adoption" value={farmSolar} />
       </KpiGrid>
       {/* ---------------------- graphical cards ---------------------- */}
       <G>
