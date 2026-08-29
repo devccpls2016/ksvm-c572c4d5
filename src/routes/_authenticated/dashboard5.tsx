@@ -981,10 +981,22 @@ function CropIrrigation({ rows }: Ctx) {
   const seasons = A.countMulti(rows, (r) => (Array.isArray(r.crops) ? r.crops.map((c: any) => A.txt(c?.season)) : []));
   const irrSources = A.countMulti(rows, (r) => (Array.isArray(r.irrigation_sources) ? r.irrigation_sources : []));
   const irrEn: Record<string, string> = { tubewell: "Tubewell / Borewell", well: "Well", farm_pond: "Farm Pond", pond: "Lake / Pond", river: "River", canal: "Canal" };
+  // Single source of truth: a family has a source when its detail count > 0 OR
+  // the source appears in irrigation_sources (legacy). Quantity sums detail counts.
+  const irrStats = (key: string, marathiLabel: string) => {
+    let families = 0;
+    let count = 0;
+    for (const r of rows) {
+      const c = A.num(((r.irrigation_details || {}) as any)[key]?.count);
+      const hasSource = c > 0 || (r.irrigation_sources || []).some((s: string) => s.includes(marathiLabel));
+      if (hasSource) families += 1;
+      count += c;
+    }
+    return { families, count };
+  };
   const irrData = A.IRRIGATION_KEYS.map((k) => ({
     name: `${k.label} / ${irrEn[k.key]}`,
-    families: rows.filter((r) => (((r.irrigation_details || {}) as any)[k.key]?.count ?? 0) > 0 || (r.irrigation_sources || []).some((s: string) => s.includes(k.label.split(" / ")[0]!))).length,
-    count: rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any)[k.key]?.count), 0),
+    ...irrStats(k.key, k.label.split(" / ")[0]!),
   })).filter((d) => d.families > 0 || d.count > 0);
   const det = (key: string, f: (d: any) => boolean) => rows.filter((r) => f(((r.irrigation_details || {}) as any)[key] || {})).length;
   const electric = A.IRRIGATION_KEYS.reduce((a, k) => a + det(k.key, (d) => !!d.electric), 0);
