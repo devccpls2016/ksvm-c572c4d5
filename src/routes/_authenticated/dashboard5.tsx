@@ -1004,7 +1004,17 @@ function CropIrrigation({ rows }: Ctx) {
       <G>
         <ChartCard title="मुख्य पीक प्रकार / Major Crop Types">{cropTypes.length ? <BarCh horizontal data={cropTypes} color="#84cc16" /> : <Empty />}</ChartCard>
         <ChartCard title="हंगाम वितरण / Crop Season">{seasons.length ? <PieCh data={seasons} /> : <Empty />}</ChartCard>
-        <ChartCard title="सिंचन साधन / Irrigation Sources">{irrSources.length ? <BarCh horizontal data={irrSources} color="#06b6d4" /> : <Empty />}</ChartCard>
+        <ChartCard
+          title="सिंचन साधन / Irrigation Sources"
+          subtitle="प्रत्येक साधनासाठी कुटुंबे व एकूण संख्या / Families and total quantity per source"
+          expand={<div className="h-[60vh]"><GroupedBar horizontal data={irrData} series={[{ key: "families", label: "कुटुंबे / Families", color: "#0ea5e9" }, { key: "count", label: "एकूण संख्या / Total Quantity", color: "#06b6d4" }]} /></div>}
+        >
+          {irrData.some((d) => d.families || d.count) ? (
+            <GroupedBar horizontal data={irrData} series={[{ key: "families", label: "कुटुंबे / Families", color: "#0ea5e9" }, { key: "count", label: "एकूण संख्या / Total Quantity", color: "#06b6d4" }]} />
+          ) : (
+            <Empty />
+          )}
+        </ChartCard>
         <ChartCard title="पंप प्रकार / Pump Type"><PieCh data={[{ name: "विद्युत पंप", value: electric }, { name: "सोलर पंप", value: solar }]} /></ChartCard>
         <ChartCard title="पीक × गाव / Crop × Village">
           <StackedBar
