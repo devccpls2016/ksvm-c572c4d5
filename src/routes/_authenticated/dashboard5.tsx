@@ -1204,10 +1204,11 @@ function Assets({ rows }: Ctx) {
       const sub = rows.filter((r) => A.txt(r.village) === v && (r.household_items || []).includes(vehicle));
       return { name: v, value: sub.length, qty: sub.reduce((a, r) => a + (A.num((r.household_item_counts || {})[vehicle]) || 1), 0) };
     })
-    .filter((d) => d.value > 0);
-  const vehicleSummary = [
-    { name: "कुटुंबे / Families", value: rows.filter((r) => (r.household_items || []).includes(vehicle)).length },
-    { name: "एकूण संख्या / Total quantity", value: qty(vehicle) || rows.filter((r) => (r.household_items || []).includes(vehicle)).length },
+    .filter((d) => d.value > 0)
+    .map((d) => ({ name: d.name, "कुटुंबे": d.value, "एकूण संख्या": d.qty }));
+  const vehicleSeries = [
+    { key: "कुटुंबे", label: "कुटुंबे / Families", color: "#06b6d4" },
+    { key: "एकूण संख्या", label: "एकूण संख्या / Total quantity", color: "#8b5cf6" },
   ];
 
   const installed = rows.filter((r) => r.solar_panel_installed).length;
