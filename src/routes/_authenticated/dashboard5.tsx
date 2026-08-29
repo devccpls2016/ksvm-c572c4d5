@@ -1200,8 +1200,6 @@ function Assets({ rows }: Ctx) {
   const installed = rows.filter((r) => r.solar_panel_installed).length;
   const wanted = rows.filter((r) => r.solar_panel_wanted).length;
   const notInstalled = rows.filter((r) => r.solar_panel_installed === false).length;
-  const solarPumps = rows.filter((r) => A.IRRIGATION_KEYS.some((k) => ((r.irrigation_details || {}) as any)[k.key]?.solar)).length;
-  const farmSolar = rows.filter((r) => r.has_farmland && r.solar_panel_installed).length;
   const villages = A.uniq(rows, (r) => A.txt(r.village));
 
   const assetsByVillage = villages.slice(0, 15).map((v) => {
@@ -1217,15 +1215,6 @@ function Assets({ rows }: Ctx) {
     { name: "बसवले / Installed", value: installed },
     { name: "बसवले नाही / Not installed", value: notInstalled },
     { name: "आवश्यक / Required", value: wanted },
-  ];
-  const solarVsPump = [
-    { name: "सोलर पंप / Solar pump", value: solarPumps },
-    { name: "घरगुती पॅनेल / Home panel", value: installed },
-  ];
-  const solarAgri = [
-    { name: "शेतकरी - बसवले", value: farmSolar },
-    { name: "शेतकरी - आवश्यक", value: rows.filter((r) => r.has_farmland && r.solar_panel_wanted).length },
-    { name: "बिगर शेतकरी", value: rows.filter((r) => !r.has_farmland && r.solar_panel_installed).length },
   ];
 
   const assetOrder = [
