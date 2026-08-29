@@ -1126,15 +1126,24 @@ function Equipment({ rows }: Ctx) {
         <Kpi tone="cyan" label="Equipment Ownership Records" value={totalOwners} />
       </KpiGrid>
       <G>
-        <ChartCard title="साधन मालकी / Equipment Ownership"><BarCh data={stats.map((s) => ({ name: s.name, value: s.owners }))} color="#10b981" /></ChartCard>
-        <ChartCard title="खरेदीची इच्छा / Purchase Demand"><BarCh data={stats.map((s) => ({ name: s.name, value: s.wants }))} color="#f59e0b" /></ChartCard>
-        <ChartCard title="कर्जाची आवश्यकता / Loan Required"><BarCh data={stats.map((s) => ({ name: s.name, value: s.loan }))} color="#ef4444" /></ChartCard>
-        <ChartCard title="एकूण संख्या / Total Quantity"><PieCh data={stats.map((s) => ({ name: s.name, value: s.qty }))} /></ChartCard>
+        <ChartCard title="साधन मालकी / Equipment Ownership" expand={<BarCh data={stats.map((s) => ({ name: s.name, value: s.owners }))} color="#10b981" />}>
+          <BarCh data={stats.map((s) => ({ name: s.name, value: s.owners }))} color="#10b981" />
+        </ChartCard>
+        <ChartCard title="खरेदीची इच्छा / Purchase Demand" expand={<BarCh data={stats.map((s) => ({ name: s.name, value: s.wants }))} color="#f59e0b" />}>
+          <BarCh data={stats.map((s) => ({ name: s.name, value: s.wants }))} color="#f59e0b" />
+        </ChartCard>
+        <ChartCard title="कर्जाची आवश्यकता / Loan Required" expand={<BarCh data={stats.map((s) => ({ name: s.name, value: s.loan }))} color="#ef4444" />}>
+          <BarCh data={stats.map((s) => ({ name: s.name, value: s.loan }))} color="#ef4444" />
+        </ChartCard>
+        <ChartCard title="एकूण संख्या / Total Quantity" expand={<PieCh data={stats.map((s) => ({ name: s.name, value: s.qty }))} />}>
+          <PieCh data={stats.map((s) => ({ name: s.name, value: s.qty }))} />
+        </ChartCard>
       </G>
       <DataTable
         title="Farming Equipment Report"
         columns={[{ key: "name", label: "Equipment" }, { key: "owners", label: "Owner Families" }, { key: "qty", label: "Quantity" }, { key: "wants", label: "Required / Wants to Buy" }, { key: "loan", label: "Loan Required" }]}
         rows={stats}
+        exports={false}
       />
     </div>
   );
