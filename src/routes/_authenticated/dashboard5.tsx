@@ -1013,11 +1013,11 @@ function CropIrrigation({ rows }: Ctx) {
         <Kpi tone="cyan" label="Malguzari Ponds (कोहळी)" value={malguzari} />
         <Kpi tone="violet" label="Free Irrigation Water" value={freeWater} />
         <Kpi tone="lime" label="Crop Types Recorded" value={cropTypes.length} />
-        <Kpi tone="blue" label="Tubewell / Borewell" value={rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any).tubewell?.count), 0)} />
-        <Kpi tone="sky" label="Wells" value={rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any).well?.count), 0)} />
-        <Kpi tone="teal" label="Farm Ponds" value={rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any).farm_pond?.count), 0)} />
-        <Kpi tone="indigo" label="Lakes" value={rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any).pond?.count), 0)} />
-        <Kpi tone="orange" label="Canal / River Sources" value={rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any).canal?.count) + A.num(((r.irrigation_details || {}) as any).river?.count), 0)} />
+        <Kpi tone="blue" label="Tubewell / Borewell" value={irrStats("tubewell", "ट्युबवेल").count} />
+        <Kpi tone="sky" label="Wells" value={irrStats("well", "विहीर").count} />
+        <Kpi tone="teal" label="Farm Ponds" value={irrStats("farm_pond", "शेततळे").count} />
+        <Kpi tone="indigo" label="Lakes" value={irrStats("pond", "तलाव").count} />
+        <Kpi tone="orange" label="Canal / River Sources" value={irrStats("canal", "नहर").count + irrStats("river", "नदी").count} />
       </KpiGrid>
       <G>
         <ChartCard title="मुख्य पीक प्रकार / Major Crop Types">{cropTypes.length ? <BarCh horizontal data={cropTypes} color="#84cc16" /> : <Empty />}</ChartCard>
