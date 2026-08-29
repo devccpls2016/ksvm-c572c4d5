@@ -980,6 +980,12 @@ function CropIrrigation({ rows }: Ctx) {
   const cropTypes = A.countMulti(rows, (r) => (Array.isArray(r.major_crop_types) ? r.major_crop_types : []));
   const seasons = A.countMulti(rows, (r) => (Array.isArray(r.crops) ? r.crops.map((c: any) => A.txt(c?.season)) : []));
   const irrSources = A.countMulti(rows, (r) => (Array.isArray(r.irrigation_sources) ? r.irrigation_sources : []));
+  const irrEn: Record<string, string> = { tubewell: "Tubewell / Borewell", well: "Well", farm_pond: "Farm Pond", pond: "Lake / Pond", river: "River", canal: "Canal" };
+  const irrData = A.IRRIGATION_KEYS.map((k) => ({
+    name: `${k.label} / ${irrEn[k.key]}`,
+    families: rows.filter((r) => (((r.irrigation_details || {}) as any)[k.key]?.count ?? 0) > 0 || (r.irrigation_sources || []).some((s: string) => s.includes(k.label.split(" / ")[0]!))).length,
+    count: rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any)[k.key]?.count), 0),
+  })).filter((d) => d.families > 0 || d.count > 0);
   const det = (key: string, f: (d: any) => boolean) => rows.filter((r) => f(((r.irrigation_details || {}) as any)[key] || {})).length;
   const electric = A.IRRIGATION_KEYS.reduce((a, k) => a + det(k.key, (d) => !!d.electric), 0);
   const solar = A.IRRIGATION_KEYS.reduce((a, k) => a + det(k.key, (d) => !!d.solar), 0);
