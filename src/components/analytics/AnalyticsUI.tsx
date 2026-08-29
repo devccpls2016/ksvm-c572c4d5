@@ -259,12 +259,6 @@ export function PieCh({ data, donut, unit = "संख्या / Count" }: { da
     );
   };
   return (
-      <text x={single && donut ? e.cx : x} y={single && donut ? e.cy : y} textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600} fill={single && donut ? "currentColor" : "#fff"} className={single && donut ? "fill-foreground" : ""}>
-        {`${e.value} (${share}%)`}
-      </text>
-    );
-  };
-  return (
     <ResponsiveContainer>
       <PieChart margin={{ top: 6, bottom: 6, left: 6, right: 6 }}>
         <Pie
