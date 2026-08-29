@@ -76,7 +76,7 @@ const SECTION_FILTERS: Record<string, string[]> = {
   crop: ["loc", "agri"],
   equipment: ["loc", "agri"],
   housing: ["loc", "house"],
-  assets: ["loc", "house"],
+  assets: ["loc", "house", "agri"],
   solar: ["loc", "house"],
   benefits: ["loc", "ben", "fam"],
   medical: ["loc", "ben"],
