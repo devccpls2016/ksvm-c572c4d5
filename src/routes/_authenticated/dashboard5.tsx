@@ -1200,8 +1200,6 @@ function Assets({ rows }: Ctx) {
   const installed = rows.filter((r) => r.solar_panel_installed).length;
   const wanted = rows.filter((r) => r.solar_panel_wanted).length;
   const notInstalled = rows.filter((r) => r.solar_panel_installed === false).length;
-  const solarPumps = rows.filter((r) => A.IRRIGATION_KEYS.some((k) => ((r.irrigation_details || {}) as any)[k.key]?.solar)).length;
-  const farmSolar = rows.filter((r) => r.has_farmland && r.solar_panel_installed).length;
   const villages = A.uniq(rows, (r) => A.txt(r.village));
 
   const assetsByVillage = villages.slice(0, 15).map((v) => {
@@ -1217,15 +1215,6 @@ function Assets({ rows }: Ctx) {
     { name: "बसवले / Installed", value: installed },
     { name: "बसवले नाही / Not installed", value: notInstalled },
     { name: "आवश्यक / Required", value: wanted },
-  ];
-  const solarVsPump = [
-    { name: "सोलर पंप / Solar pump", value: solarPumps },
-    { name: "घरगुती पॅनेल / Home panel", value: installed },
-  ];
-  const solarAgri = [
-    { name: "शेतकरी - बसवले", value: farmSolar },
-    { name: "शेतकरी - आवश्यक", value: rows.filter((r) => r.has_farmland && r.solar_panel_wanted).length },
-    { name: "बिगर शेतकरी", value: rows.filter((r) => !r.has_farmland && r.solar_panel_installed).length },
   ];
 
   const assetOrder = [
@@ -1253,12 +1242,6 @@ function Assets({ rows }: Ctx) {
         <ChartCard title="वस्तूनिहाय कुटुंबे / Asset-wise Families" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} data={owned} /></div>}>
           {owned.length ? <BarCh horizontal data={owned} color="#06b6d4" /> : <Empty />}
         </ChartCard>
-        <ChartCard title="वस्तू संख्या / Asset Quantity" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} data={table.map((t) => ({ name: t.name, value: t.qty }))} /></div>}>
-          {table.length ? <BarCh horizontal data={table.map((t) => ({ name: t.name, value: t.qty }))} color="#8b5cf6" /> : <Empty />}
-        </ChartCard>
-        <ChartCard title="मालकी टक्केवारी / Asset Ownership %" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} unit="%" data={table.map((t) => ({ name: t.name, value: t.pct }))} /></div>}>
-          {table.length ? <BarCh data={table.map((t) => ({ name: t.name, value: t.pct }))} color="#10b981" /> : <Empty />}
-        </ChartCard>
         <ChartCard title="गावनिहाय वस्तू / Assets by Village" expand={<div className="h-[70vh]"><StackedBar columns={owned.slice(0, 6).map((o) => o.name)} data={assetsByVillage} /></div>}>
           <StackedBar columns={owned.slice(0, 6).map((o) => o.name)} data={assetsByVillage} />
         </ChartCard>
@@ -1267,12 +1250,6 @@ function Assets({ rows }: Ctx) {
         </ChartCard>
         <ChartCard title="गावनिहाय सोलर आवश्यकता / Solar Requirement by Village" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} data={solarByVillage} /></div>}>
           <BarCh horizontal color="#f59e0b" data={solarByVillage} />
-        </ChartCard>
-        <ChartCard title="सोलर पंप vs घरगुती पॅनेल / Solar Pump vs Home Panel" expand={<div className="h-[70vh]"><PieCh data={solarVsPump} /></div>}>
-          <PieCh data={solarVsPump} />
-        </ChartCard>
-        <ChartCard title="शेतकरी सोलर / Solar × Agriculture" expand={<div className="h-[70vh]"><BarCh multi data={solarAgri} /></div>}>
-          <BarCh data={solarAgri} color="#84cc16" />
         </ChartCard>
       </G>
       {/* ----------------------------- tables ----------------------------- */}
