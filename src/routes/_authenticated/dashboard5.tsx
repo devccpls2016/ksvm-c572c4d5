@@ -1206,6 +1206,14 @@ function Assets({ rows }: Ctx) {
     })
     .filter((d) => d.value > 0)
     .map((d) => ({ name: d.name, "कुटुंबे": d.value, "एकूण संख्या": d.qty }));
+  const twoWheelerByVillage = A.uniq(rows, (r) => A.txt(r.village))
+    .map((v) => {
+      const item = "दोन चाकी वाहन";
+      const sub = rows.filter((r) => A.txt(r.village) === v && (r.household_items || []).includes(item));
+      return { name: v, value: sub.length, qty: sub.reduce((a, r) => a + (A.num((r.household_item_counts || {})[item]) || 1), 0) };
+    })
+    .filter((d) => d.value > 0)
+    .map((d) => ({ name: d.name, "कुटुंबे": d.value, "एकूण संख्या": d.qty }));
   const vehicleSeries = [
     { key: "कुटुंबे", label: "कुटुंबे / Families", color: "#06b6d4" },
     { key: "एकूण संख्या", label: "एकूण संख्या / Total quantity", color: "#8b5cf6" },
@@ -1280,6 +1288,9 @@ function Assets({ rows }: Ctx) {
             </Select>
             {vehicleByVillage.length ? <GroupedBar data={vehicleByVillage} series={vehicleSeries} /> : <Empty />}
           </div>
+        </ChartCard>
+        <ChartCard title="दोन चाकी वाहन / Two-wheelers by Village" expand={<div className="h-[70vh]"><GroupedBar data={twoWheelerByVillage} series={vehicleSeries} /></div>}>
+          {twoWheelerByVillage.length ? <GroupedBar data={twoWheelerByVillage} series={vehicleSeries} /> : <Empty />}
         </ChartCard>
         <ChartCard title="सोलर स्थिती / Solar Status" expand={<div className="h-[70vh]"><PieCh donut data={solarStatus} /></div>}>
           <PieCh donut data={solarStatus} />
