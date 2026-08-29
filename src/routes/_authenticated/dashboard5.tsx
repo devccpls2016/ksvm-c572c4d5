@@ -1024,7 +1024,7 @@ function CropIrrigation({ rows }: Ctx) {
         <ChartCard title="हंगाम वितरण / Crop Season">{seasons.length ? <PieCh data={seasons} /> : <Empty />}</ChartCard>
         <ChartCard
           title="सिंचन साधन / Irrigation Sources"
-          subtitle="प्रत्येक साधनासाठी कुटुंबे व एकूण संख्या / Families and total quantity per source"
+          
           expand={<div className="h-[60vh]"><GroupedBar horizontal data={irrData} series={[{ key: "families", label: "कुटुंबे / Families", color: "#0ea5e9" }, { key: "count", label: "एकूण संख्या / Total Quantity", color: "#06b6d4" }]} /></div>}
         >
           {irrData.some((d) => d.families || d.count) ? (
