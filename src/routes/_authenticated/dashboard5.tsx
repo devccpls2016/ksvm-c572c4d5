@@ -76,7 +76,7 @@ const SECTION_FILTERS: Record<string, string[]> = {
   crop: ["loc", "agri"],
   equipment: ["loc", "agri"],
   housing: ["loc", "house"],
-  assets: ["loc", "house", "agri"],
+  assets: ["loc", "house"],
   benefits: ["loc", "ben", "fam"],
   medical: ["loc", "ben"],
   sports: ["loc", "ben"],
@@ -1230,67 +1230,50 @@ function Assets({ rows }: Ctx) {
 
   return (
     <div className="space-y-6">
-      {/* ---------------------------------------------- household assets */}
+      <SectionHeader
+        icon={Package}
+        title="घरगुती वस्तू व सोलर / Household Assets & Solar"
+        subtitle="कुटुंबांकडील वस्तू, मालकी टक्केवारी, सोलर पॅनेल स्थिती व मागणी"
+      />
+      {/* ---------------- all KPIs in one place ---------------- */}
+      <KpiGrid>
+        {table.slice(0, 8).map((t) => <Kpi key={t.name} label={t.name} value={t.families} hint={`${t.pct}% कुटुंबे`} tone="cyan" />)}
+        <Kpi icon={Sun} tone="amber" label="Solar Installed" value={installed} />
+        <Kpi tone="red" label="Not Installed" value={notInstalled} />
+        <Kpi tone="green" label="Solar Required" value={wanted} />
+        <Kpi tone="violet" label="Solar Adoption %" value={`${A.pct(installed, rows.length)}%`} />
+        <Kpi tone="cyan" label="Solar Pumps (Irrigation)" value={solarPumps} />
+        <Kpi tone="lime" label="Farmer Solar Adoption" value={farmSolar} />
+      </KpiGrid>
+      {/* ---------------------- graphical cards ---------------------- */}
+      <G>
+        <ChartCard title="वस्तूनिहाय कुटुंबे / Asset-wise Families" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} data={owned} /></div>}>
+          {owned.length ? <BarCh horizontal data={owned} color="#06b6d4" /> : <Empty />}
+        </ChartCard>
+        <ChartCard title="वस्तू संख्या / Asset Quantity" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} data={table.map((t) => ({ name: t.name, value: t.qty }))} /></div>}>
+          {table.length ? <BarCh horizontal data={table.map((t) => ({ name: t.name, value: t.qty }))} color="#8b5cf6" /> : <Empty />}
+        </ChartCard>
+        <ChartCard title="मालकी टक्केवारी / Asset Ownership %" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} unit="%" data={table.map((t) => ({ name: t.name, value: t.pct }))} /></div>}>
+          {table.length ? <BarCh data={table.map((t) => ({ name: t.name, value: t.pct }))} color="#10b981" /> : <Empty />}
+        </ChartCard>
+        <ChartCard title="गावनिहाय वस्तू / Assets by Village" expand={<div className="h-[70vh]"><StackedBar columns={owned.slice(0, 6).map((o) => o.name)} data={assetsByVillage} /></div>}>
+          <StackedBar columns={owned.slice(0, 6).map((o) => o.name)} data={assetsByVillage} />
+        </ChartCard>
+        <ChartCard title="सोलर स्थिती / Solar Status" expand={<div className="h-[70vh]"><PieCh donut data={solarStatus} /></div>}>
+          <PieCh donut data={solarStatus} />
+        </ChartCard>
+        <ChartCard title="गावनिहाय सोलर आवश्यकता / Solar Requirement by Village" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} data={solarByVillage} /></div>}>
+          <BarCh horizontal color="#f59e0b" data={solarByVillage} />
+        </ChartCard>
+        <ChartCard title="सोलर पंप vs घरगुती पॅनेल / Solar Pump vs Home Panel" expand={<div className="h-[70vh]"><PieCh data={solarVsPump} /></div>}>
+          <PieCh data={solarVsPump} />
+        </ChartCard>
+        <ChartCard title="शेतकरी सोलर / Solar × Agriculture" expand={<div className="h-[70vh]"><BarCh multi data={solarAgri} /></div>}>
+          <BarCh data={solarAgri} color="#84cc16" />
+        </ChartCard>
+      </G>
+      {/* ----------------------------- tables ----------------------------- */}
       <div className="space-y-4">
-        <SectionHeader
-          icon={Package}
-          title="घरगुती वस्तू / Household Assets"
-          subtitle="कुटुंबांकडील वस्तू, संख्या व मालकी टक्केवारी"
-        />
-        <KpiGrid>
-          {table.slice(0, 8).map((t) => <Kpi key={t.name} label={t.name} value={t.families} hint={`${t.pct}% कुटुंबे`} tone="cyan" />)}
-        </KpiGrid>
-        <G>
-          <ChartCard title="वस्तूनिहाय कुटुंबे / Asset-wise Families" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} data={owned} /></div>}>
-            {owned.length ? <BarCh horizontal data={owned} color="#06b6d4" /> : <Empty />}
-          </ChartCard>
-          <ChartCard title="वस्तू संख्या / Asset Quantity" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} data={table.map((t) => ({ name: t.name, value: t.qty }))} /></div>}>
-            {table.length ? <BarCh horizontal data={table.map((t) => ({ name: t.name, value: t.qty }))} color="#8b5cf6" /> : <Empty />}
-          </ChartCard>
-          <ChartCard title="मालकी टक्केवारी / Asset Ownership %" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} unit="%" data={table.map((t) => ({ name: t.name, value: t.pct }))} /></div>}>
-            {table.length ? <BarCh data={table.map((t) => ({ name: t.name, value: t.pct }))} color="#10b981" /> : <Empty />}
-          </ChartCard>
-          <ChartCard title="गावनिहाय वस्तू / Assets by Village" expand={<div className="h-[70vh]"><StackedBar columns={owned.slice(0, 6).map((o) => o.name)} data={assetsByVillage} /></div>}>
-            <StackedBar columns={owned.slice(0, 6).map((o) => o.name)} data={assetsByVillage} />
-          </ChartCard>
-        </G>
-        <DataTable
-          title="Household Assets Report"
-          columns={[{ key: "name", label: "Asset" }, { key: "families", label: "Families" }, { key: "pct", label: "Ownership %" }, { key: "qty", label: "Total Quantity" }]}
-          rows={table}
-          exports={false}
-        />
-      </div>
-
-      {/* -------------------------------------------------------- solar */}
-      <div className="space-y-4">
-        <SectionHeader
-          icon={Sun}
-          title="सोलर विश्लेषण / Solar Analytics"
-          subtitle="सोलर पॅनेल स्थिती, मागणी व सोलर पंप वापर"
-        />
-        <KpiGrid>
-          <Kpi icon={Sun} tone="amber" label="Solar Installed" value={installed} />
-          <Kpi tone="red" label="Not Installed" value={notInstalled} />
-          <Kpi tone="green" label="Solar Required" value={wanted} />
-          <Kpi tone="violet" label="Solar Adoption %" value={`${A.pct(installed, rows.length)}%`} />
-          <Kpi tone="cyan" label="Solar Pumps (Irrigation)" value={solarPumps} />
-          <Kpi tone="lime" label="Farmer Solar Adoption" value={farmSolar} />
-        </KpiGrid>
-        <G>
-          <ChartCard title="सोलर स्थिती / Solar Status" expand={<div className="h-[70vh]"><PieCh donut data={solarStatus} /></div>}>
-            <PieCh donut data={solarStatus} />
-          </ChartCard>
-          <ChartCard title="गावनिहाय सोलर आवश्यकता / Solar Requirement by Village" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} data={solarByVillage} /></div>}>
-            <BarCh horizontal color="#f59e0b" data={solarByVillage} />
-          </ChartCard>
-          <ChartCard title="सोलर पंप vs घरगुती पॅनेल / Solar Pump vs Home Panel" expand={<div className="h-[70vh]"><PieCh data={solarVsPump} /></div>}>
-            <PieCh data={solarVsPump} />
-          </ChartCard>
-          <ChartCard title="शेतकरी सोलर / Solar × Agriculture" expand={<div className="h-[70vh]"><BarCh multi data={solarAgri} /></div>}>
-            <BarCh data={solarAgri} color="#84cc16" />
-          </ChartCard>
-        </G>
         <DataTable
           title="Solar Report by Village"
           columns={[{ key: "name", label: "Village" }, { key: "families", label: "Families" }, { key: "installed", label: "Installed" }, { key: "required", label: "Required" }, { key: "pct", label: "Adoption %" }]}
