@@ -957,6 +957,7 @@ function Agriculture({ rows }: Ctx) {
       </G>
       <DataTable
         title="Agriculture Report by Village"
+        exports={false}
         columns={[
           { key: "name", label: "Village" }, { key: "farmers", label: "Farmers" }, { key: "land", label: "Land (Acre)" },
           { key: "irrigated", label: "Irrigated" }, { key: "dry", label: "Dryland" },
