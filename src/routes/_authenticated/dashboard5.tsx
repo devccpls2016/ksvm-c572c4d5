@@ -1275,6 +1275,12 @@ function Assets({ rows }: Ctx) {
       {/* ----------------------------- tables ----------------------------- */}
       <div className="space-y-4">
         <DataTable
+          title="Household Assets Report"
+          columns={[{ key: "name", label: "Asset" }, { key: "families", label: "Families" }, { key: "pct", label: "Ownership %" }, { key: "qty", label: "Total Quantity" }]}
+          rows={table}
+          exports={false}
+        />
+        <DataTable
           title="Solar Report by Village"
           columns={[{ key: "name", label: "Village" }, { key: "families", label: "Families" }, { key: "installed", label: "Installed" }, { key: "required", label: "Required" }, { key: "pct", label: "Adoption %" }]}
           rows={villages.map((v) => {
