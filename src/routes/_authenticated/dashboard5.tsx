@@ -835,7 +835,6 @@ function Occupation({ rows, people }: Ctx) {
         <Kpi tone="violet" label="Loan Required" value={loanRequired} />
       </KpiGrid>
       <G>
-        <ChartCard title="व्यवसाय श्रेणी / Occupation Category"><BarCh horizontal data={data} color="#2563eb" /></ChartCard>
         <ChartCard
           wide
           title="सर्व व्यवसाय श्रेणी — संपूर्ण वितरण / All Occupation Categories — Complete Distribution"
