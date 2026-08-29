@@ -1269,7 +1269,7 @@ function Assets({ rows }: Ctx) {
         <ChartCard title="गावनिहाय वस्तू / Assets by Village" expand={<div className="h-[70vh]"><StackedBar columns={owned.slice(0, 6).map((o) => o.name)} data={assetsByVillage} /></div>}>
           <StackedBar columns={owned.slice(0, 6).map((o) => o.name)} data={assetsByVillage} />
         </ChartCard>
-        <ChartCard title="वाहने / Vehicles" expand={<div className="h-[70vh]"><GroupedBar data={vehicleByVillage.map((d) => ({ name: d.name, "कुटुंबे": d.value, "एकूण संख्या": d.qty }))} /></div>}>
+        <ChartCard title="वाहने / Vehicles" expand={<div className="h-[70vh]"><GroupedBar data={vehicleByVillage} series={vehicleSeries} /></div>}>
           <div className="space-y-3">
             <Select value={vehicle} onValueChange={setVehicle}>
               <SelectTrigger className="h-9"><SelectValue placeholder="वाहन निवडा" /></SelectTrigger>
@@ -1277,7 +1277,7 @@ function Assets({ rows }: Ctx) {
                 {VEHICLE_OPTS.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
               </SelectContent>
             </Select>
-            {vehicleByVillage.length ? <GroupedBar data={vehicleByVillage.map((d) => ({ name: d.name, "कुटुंबे": d.value, "एकूण संख्या": d.qty }))} /> : <Empty />}
+            {vehicleByVillage.length ? <GroupedBar data={vehicleByVillage} series={vehicleSeries} /> : <Empty />}
           </div>
         </ChartCard>
         <ChartCard title="सोलर स्थिती / Solar Status" expand={<div className="h-[70vh]"><PieCh donut data={solarStatus} /></div>}>
