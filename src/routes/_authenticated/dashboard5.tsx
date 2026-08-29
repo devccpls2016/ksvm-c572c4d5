@@ -981,10 +981,22 @@ function CropIrrigation({ rows }: Ctx) {
   const seasons = A.countMulti(rows, (r) => (Array.isArray(r.crops) ? r.crops.map((c: any) => A.txt(c?.season)) : []));
   const irrSources = A.countMulti(rows, (r) => (Array.isArray(r.irrigation_sources) ? r.irrigation_sources : []));
   const irrEn: Record<string, string> = { tubewell: "Tubewell / Borewell", well: "Well", farm_pond: "Farm Pond", pond: "Lake / Pond", river: "River", canal: "Canal" };
+  // Single source of truth: a family has a source when its detail count > 0 OR
+  // the source appears in irrigation_sources (legacy). Quantity sums detail counts.
+  const irrStats = (key: string, marathiLabel: string) => {
+    let families = 0;
+    let count = 0;
+    for (const r of rows) {
+      const c = A.num(((r.irrigation_details || {}) as any)[key]?.count);
+      const hasSource = c > 0 || (r.irrigation_sources || []).some((s: string) => s.includes(marathiLabel));
+      if (hasSource) families += 1;
+      count += c;
+    }
+    return { families, count };
+  };
   const irrData = A.IRRIGATION_KEYS.map((k) => ({
     name: `${k.label} / ${irrEn[k.key]}`,
-    families: rows.filter((r) => (((r.irrigation_details || {}) as any)[k.key]?.count ?? 0) > 0 || (r.irrigation_sources || []).some((s: string) => s.includes(k.label.split(" / ")[0]!))).length,
-    count: rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any)[k.key]?.count), 0),
+    ...irrStats(k.key, k.label.split(" / ")[0]!),
   })).filter((d) => d.families > 0 || d.count > 0);
   const det = (key: string, f: (d: any) => boolean) => rows.filter((r) => f(((r.irrigation_details || {}) as any)[key] || {})).length;
   const electric = A.IRRIGATION_KEYS.reduce((a, k) => a + det(k.key, (d) => !!d.electric), 0);
@@ -1001,18 +1013,18 @@ function CropIrrigation({ rows }: Ctx) {
         <Kpi tone="cyan" label="Malguzari Ponds (कोहळी)" value={malguzari} />
         <Kpi tone="violet" label="Free Irrigation Water" value={freeWater} />
         <Kpi tone="lime" label="Crop Types Recorded" value={cropTypes.length} />
-        <Kpi tone="blue" label="Tubewell / Borewell" value={rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any).tubewell?.count), 0)} />
-        <Kpi tone="sky" label="Wells" value={rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any).well?.count), 0)} />
-        <Kpi tone="teal" label="Farm Ponds" value={rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any).farm_pond?.count), 0)} />
-        <Kpi tone="indigo" label="Lakes" value={rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any).pond?.count), 0)} />
-        <Kpi tone="orange" label="Canal / River Sources" value={rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any).canal?.count) + A.num(((r.irrigation_details || {}) as any).river?.count), 0)} />
+        <Kpi tone="blue" label="Tubewell / Borewell" value={irrStats("tubewell", "ट्युबवेल").count} />
+        <Kpi tone="sky" label="Wells" value={irrStats("well", "विहीर").count} />
+        <Kpi tone="teal" label="Farm Ponds" value={irrStats("farm_pond", "शेततळे").count} />
+        <Kpi tone="indigo" label="Lakes" value={irrStats("pond", "तलाव").count} />
+        <Kpi tone="orange" label="Canal / River Sources" value={irrStats("canal", "नहर").count + irrStats("river", "नदी").count} />
       </KpiGrid>
       <G>
         <ChartCard title="मुख्य पीक प्रकार / Major Crop Types">{cropTypes.length ? <BarCh horizontal data={cropTypes} color="#84cc16" /> : <Empty />}</ChartCard>
         <ChartCard title="हंगाम वितरण / Crop Season">{seasons.length ? <PieCh data={seasons} /> : <Empty />}</ChartCard>
         <ChartCard
           title="सिंचन साधन / Irrigation Sources"
-          subtitle="प्रत्येक साधनासाठी कुटुंबे व एकूण संख्या / Families and total quantity per source"
+          
           expand={<div className="h-[60vh]"><GroupedBar horizontal data={irrData} series={[{ key: "families", label: "कुटुंबे / Families", color: "#0ea5e9" }, { key: "count", label: "एकूण संख्या / Total Quantity", color: "#06b6d4" }]} /></div>}
         >
           {irrData.some((d) => d.families || d.count) ? (
@@ -1050,8 +1062,7 @@ function CropIrrigation({ rows }: Ctx) {
         columns={[{ key: "name", label: "Source" }, { key: "families", label: "Families" }, { key: "count", label: "Total Units" }, { key: "electric", label: "Electric" }, { key: "solar", label: "Solar" }]}
         rows={A.IRRIGATION_KEYS.map((k) => ({
           name: k.label,
-          families: rows.filter((r) => (((r.irrigation_details || {}) as any)[k.key]?.count ?? 0) || ((r.irrigation_sources || []).some((s: string) => s.includes(k.label.split(" / ")[0]!)))).length,
-          count: rows.reduce((a, r) => a + A.num(((r.irrigation_details || {}) as any)[k.key]?.count), 0),
+          ...irrStats(k.key, k.label.split(" / ")[0]!),
           electric: det(k.key, (d) => !!d.electric),
           solar: det(k.key, (d) => !!d.solar),
         }))}
