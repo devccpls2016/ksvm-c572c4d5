@@ -262,7 +262,14 @@ export function PieCh({ data, donut, unit = "संख्या / Count" }: { da
           {clean.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="hsl(var(--background))" strokeWidth={1} />)}
         </Pie>
         <Tooltip {...tipStyle} formatter={(v: any, n: any) => [`${v} ${unit} · ${Math.round((Number(v) / total) * 1000) / 10}%`, n]} />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
+        <Legend
+          wrapperStyle={{ fontSize: 11 }}
+          formatter={(value: any, entry: any) => {
+            const v = entry?.payload?.value ?? 0;
+            const share = total ? Math.round((v / total) * 1000) / 10 : 0;
+            return `${value}: ${v} (${share}%)`;
+          }}
+        />
       </PieChart>
     </ResponsiveContainer>
   );
