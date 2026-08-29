@@ -1197,10 +1197,12 @@ function Assets({ rows }: Ctx) {
   const qty = (name: string) => rows.reduce((a, r) => a + A.num((r.household_item_counts || {})[name]), 0);
   const table = owned.map((o) => ({ name: o.name, families: o.value, pct: A.pct(o.value, rows.length), qty: qty(o.name) || o.value }));
 
-  const vehicleByVillage = (name: string) => A.uniq(rows, (r) => A.txt(r.village))
+  const VEHICLE_OPTS = ["दोन चाकी वाहन", "चार चाकी वाहन", "सायकल", "ऑटो"];
+  const [vehicle, setVehicle] = useState("दोन चाकी वाहन");
+  const vehicleByVillage = A.uniq(rows, (r) => A.txt(r.village))
     .map((v) => {
-      const sub = rows.filter((r) => A.txt(r.village) === v && (r.household_items || []).includes(name));
-      return { name: v, value: sub.length, qty: sub.reduce((a, r) => a + (A.num((r.household_item_counts || {})[name]) || 1), 0) };
+      const sub = rows.filter((r) => A.txt(r.village) === v && (r.household_items || []).includes(vehicle));
+      return { name: v, value: sub.length, qty: sub.reduce((a, r) => a + (A.num((r.household_item_counts || {})[vehicle]) || 1), 0) };
     })
     .filter((d) => d.value > 0)
     .map((d) => ({ name: d.name, "कुटुंबे": d.value, "एकूण संख्या": d.qty }));
@@ -1208,8 +1210,6 @@ function Assets({ rows }: Ctx) {
     { key: "कुटुंबे", label: "कुटुंबे / Families", color: "#06b6d4" },
     { key: "एकूण संख्या", label: "एकूण संख्या / Total quantity", color: "#8b5cf6" },
   ];
-  const fourWheelerByVillage = vehicleByVillage("चार चाकी वाहन");
-  const twoWheelerByVillage = vehicleByVillage("दोन चाकी वाहन");
 
   const installed = rows.filter((r) => r.solar_panel_installed).length;
   const wanted = rows.filter((r) => r.solar_panel_wanted).length;
@@ -1270,11 +1270,16 @@ function Assets({ rows }: Ctx) {
         <ChartCard title="गावनिहाय वस्तू / Assets by Village" expand={<div className="h-[70vh]"><StackedBar columns={owned.slice(0, 6).map((o) => o.name)} data={assetsByVillage} /></div>}>
           <StackedBar columns={owned.slice(0, 6).map((o) => o.name)} data={assetsByVillage} />
         </ChartCard>
-        <ChartCard title="चार चाकी वाहन / Four-wheeler" expand={<div className="h-[70vh]"><GroupedBar data={fourWheelerByVillage} series={vehicleSeries} /></div>}>
-          {fourWheelerByVillage.length ? <GroupedBar data={fourWheelerByVillage} series={vehicleSeries} /> : <Empty />}
-        </ChartCard>
-        <ChartCard title="दोन चाकी वाहन / Two-wheeler" expand={<div className="h-[70vh]"><GroupedBar data={twoWheelerByVillage} series={vehicleSeries} /></div>}>
-          {twoWheelerByVillage.length ? <GroupedBar data={twoWheelerByVillage} series={vehicleSeries} /> : <Empty />}
+        <ChartCard title="वाहने / Vehicles" expand={<div className="h-[70vh]"><GroupedBar data={vehicleByVillage} series={vehicleSeries} /></div>}>
+          <div className="space-y-3">
+            <Select value={vehicle} onValueChange={setVehicle}>
+              <SelectTrigger className="h-9"><SelectValue placeholder="वाहन निवडा" /></SelectTrigger>
+              <SelectContent>
+                {VEHICLE_OPTS.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            {vehicleByVillage.length ? <GroupedBar data={vehicleByVillage} series={vehicleSeries} /> : <Empty />}
+          </div>
         </ChartCard>
         <ChartCard title="सोलर स्थिती / Solar Status" expand={<div className="h-[70vh]"><PieCh donut data={solarStatus} /></div>}>
           <PieCh donut data={solarStatus} />
