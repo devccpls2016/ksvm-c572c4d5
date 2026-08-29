@@ -1190,75 +1190,118 @@ function Housing({ rows }: Ctx) {
   );
 }
 
-/* ============================================================= 10 Assets */
+/* ============================== 10 Household Assets & Solar (merged) */
 
 function Assets({ rows }: Ctx) {
   const owned = A.countMulti(rows, (r) => (Array.isArray(r.household_items) ? r.household_items : []));
   const qty = (name: string) => rows.reduce((a, r) => a + A.num((r.household_item_counts || {})[name]), 0);
   const table = owned.map((o) => ({ name: o.name, families: o.value, pct: A.pct(o.value, rows.length), qty: qty(o.name) || o.value }));
-  return (
-    <div className="space-y-4">
-      <KpiGrid>
-        {table.slice(0, 8).map((t) => <Kpi key={t.name} label={t.name} value={t.families} hint={`${t.pct}% कुटुंबे`} tone="cyan" />)}
-      </KpiGrid>
-      <G>
-        <ChartCard title="वस्तूनिहाय कुटुंबे / Asset-wise Families">{owned.length ? <BarCh horizontal data={owned} color="#06b6d4" /> : <Empty />}</ChartCard>
-        <ChartCard title="वस्तू संख्या / Asset Quantity">{table.length ? <BarCh horizontal data={table.map((t) => ({ name: t.name, value: t.qty }))} color="#8b5cf6" /> : <Empty />}</ChartCard>
-        <ChartCard title="मालकी टक्केवारी / Asset Ownership %">{table.length ? <BarCh data={table.map((t) => ({ name: t.name, value: t.pct }))} color="#10b981" /> : <Empty />}</ChartCard>
-        <ChartCard title="गावनिहाय वस्तू / Assets by Village">
-          <StackedBar
-            columns={owned.slice(0, 6).map((o) => o.name)}
-            data={A.uniq(rows, (r) => A.txt(r.village)).slice(0, 15).map((v) => {
-              const sub = rows.filter((r) => A.txt(r.village) === v);
-              const o: any = { name: v };
-              owned.slice(0, 6).forEach((it) => { o[it.name] = sub.filter((r) => (r.household_items || []).includes(it.name)).length; });
-              return o;
-            })}
-          />
-        </ChartCard>
-      </G>
-      <DataTable title="Household Assets Report" columns={[{ key: "name", label: "Asset" }, { key: "families", label: "Families" }, { key: "pct", label: "Ownership %" }, { key: "qty", label: "Total Quantity" }]} rows={table} />
-    </div>
-  );
-}
 
-/* ============================================================== 11 Solar */
-
-function Solar({ rows }: Ctx) {
   const installed = rows.filter((r) => r.solar_panel_installed).length;
   const wanted = rows.filter((r) => r.solar_panel_wanted).length;
   const notInstalled = rows.filter((r) => r.solar_panel_installed === false).length;
   const solarPumps = rows.filter((r) => A.IRRIGATION_KEYS.some((k) => ((r.irrigation_details || {}) as any)[k.key]?.solar)).length;
   const farmSolar = rows.filter((r) => r.has_farmland && r.solar_panel_installed).length;
+  const villages = A.uniq(rows, (r) => A.txt(r.village));
+
+  const assetsByVillage = villages.slice(0, 15).map((v) => {
+    const sub = rows.filter((r) => A.txt(r.village) === v);
+    const o: any = { name: v };
+    owned.slice(0, 6).forEach((it) => { o[it.name] = sub.filter((r) => (r.household_items || []).includes(it.name)).length; });
+    return o;
+  });
+  const solarByVillage = villages
+    .map((v) => ({ name: v, value: rows.filter((r) => A.txt(r.village) === v && r.solar_panel_wanted).length }))
+    .filter((d) => d.value > 0);
+  const solarStatus = [
+    { name: "बसवले / Installed", value: installed },
+    { name: "बसवले नाही / Not installed", value: notInstalled },
+    { name: "आवश्यक / Required", value: wanted },
+  ];
+  const solarVsPump = [
+    { name: "सोलर पंप / Solar pump", value: solarPumps },
+    { name: "घरगुती पॅनेल / Home panel", value: installed },
+  ];
+  const solarAgri = [
+    { name: "शेतकरी - बसवले", value: farmSolar },
+    { name: "शेतकरी - आवश्यक", value: rows.filter((r) => r.has_farmland && r.solar_panel_wanted).length },
+    { name: "बिगर शेतकरी", value: rows.filter((r) => !r.has_farmland && r.solar_panel_installed).length },
+  ];
+
   return (
-    <div className="space-y-4">
-      <KpiGrid>
-        <Kpi icon={Sun} tone="amber" label="Solar Installed" value={installed} />
-        <Kpi tone="red" label="Not Installed" value={notInstalled} />
-        <Kpi tone="green" label="Solar Required" value={wanted} />
-        <Kpi tone="violet" label="Solar Adoption %" value={`${A.pct(installed, rows.length)}%`} />
-        <Kpi tone="cyan" label="Solar Pumps (Irrigation)" value={solarPumps} />
-        <Kpi tone="lime" label="Farmer Solar Adoption" value={farmSolar} />
-      </KpiGrid>
-      <G>
-        <ChartCard title="सोलर स्थिती / Solar Status"><PieCh donut data={[{ name: "बसवले", value: installed }, { name: "बसवले नाही", value: notInstalled }, { name: "आवश्यक", value: wanted }]} /></ChartCard>
-        <ChartCard title="गावनिहाय सोलर आवश्यकता / Solar Requirement by Village">
-          <BarCh horizontal color="#f59e0b" data={A.uniq(rows, (r) => A.txt(r.village)).map((v) => ({ name: v, value: rows.filter((r) => A.txt(r.village) === v && r.solar_panel_wanted).length })).filter((d) => d.value > 0)} />
-        </ChartCard>
-        <ChartCard title="सोलर पंप vs घरगुती पॅनेल"><PieCh data={[{ name: "सोलर पंप", value: solarPumps }, { name: "घरगुती सोलर पॅनेल", value: installed }]} /></ChartCard>
-        <ChartCard title="शेतकरी सोलर / Solar × Agriculture">
-          <BarCh data={[{ name: "शेतकरी - बसवले", value: farmSolar }, { name: "शेतकरी - आवश्यक", value: rows.filter((r) => r.has_farmland && r.solar_panel_wanted).length }, { name: "बिगर शेतकरी", value: rows.filter((r) => !r.has_farmland && r.solar_panel_installed).length }]} color="#84cc16" />
-        </ChartCard>
-      </G>
-      <DataTable
-        title="Solar Report by Village"
-        columns={[{ key: "name", label: "Village" }, { key: "families", label: "Families" }, { key: "installed", label: "Installed" }, { key: "required", label: "Required" }, { key: "pct", label: "Adoption %" }]}
-        rows={A.uniq(rows, (r) => A.txt(r.village)).map((v) => {
-          const sub = rows.filter((r) => A.txt(r.village) === v);
-          const inst = sub.filter((r) => r.solar_panel_installed).length;
-          return { name: v, families: sub.length, installed: inst, required: sub.filter((r) => r.solar_panel_wanted).length, pct: A.pct(inst, sub.length) };
-        })}
-      />
+    <div className="space-y-6">
+      {/* ---------------------------------------------- household assets */}
+      <div className="space-y-4">
+        <SectionHeader
+          icon={Package}
+          title="घरगुती वस्तू / Household Assets"
+          subtitle="कुटुंबांकडील वस्तू, संख्या व मालकी टक्केवारी"
+        />
+        <KpiGrid>
+          {table.slice(0, 8).map((t) => <Kpi key={t.name} label={t.name} value={t.families} hint={`${t.pct}% कुटुंबे`} tone="cyan" />)}
+        </KpiGrid>
+        <G>
+          <ChartCard title="वस्तूनिहाय कुटुंबे / Asset-wise Families" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} data={owned} /></div>}>
+            {owned.length ? <BarCh horizontal data={owned} color="#06b6d4" /> : <Empty />}
+          </ChartCard>
+          <ChartCard title="वस्तू संख्या / Asset Quantity" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} data={table.map((t) => ({ name: t.name, value: t.qty }))} /></div>}>
+            {table.length ? <BarCh horizontal data={table.map((t) => ({ name: t.name, value: t.qty }))} color="#8b5cf6" /> : <Empty />}
+          </ChartCard>
+          <ChartCard title="मालकी टक्केवारी / Asset Ownership %" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} unit="%" data={table.map((t) => ({ name: t.name, value: t.pct }))} /></div>}>
+            {table.length ? <BarCh data={table.map((t) => ({ name: t.name, value: t.pct }))} color="#10b981" /> : <Empty />}
+          </ChartCard>
+          <ChartCard title="गावनिहाय वस्तू / Assets by Village" expand={<div className="h-[70vh]"><StackedBar columns={owned.slice(0, 6).map((o) => o.name)} data={assetsByVillage} /></div>}>
+            <StackedBar columns={owned.slice(0, 6).map((o) => o.name)} data={assetsByVillage} />
+          </ChartCard>
+        </G>
+        <DataTable
+          title="Household Assets Report"
+          columns={[{ key: "name", label: "Asset" }, { key: "families", label: "Families" }, { key: "pct", label: "Ownership %" }, { key: "qty", label: "Total Quantity" }]}
+          rows={table}
+          exports={false}
+        />
+      </div>
+
+      {/* -------------------------------------------------------- solar */}
+      <div className="space-y-4">
+        <SectionHeader
+          icon={Sun}
+          title="सोलर विश्लेषण / Solar Analytics"
+          subtitle="सोलर पॅनेल स्थिती, मागणी व सोलर पंप वापर"
+        />
+        <KpiGrid>
+          <Kpi icon={Sun} tone="amber" label="Solar Installed" value={installed} />
+          <Kpi tone="red" label="Not Installed" value={notInstalled} />
+          <Kpi tone="green" label="Solar Required" value={wanted} />
+          <Kpi tone="violet" label="Solar Adoption %" value={`${A.pct(installed, rows.length)}%`} />
+          <Kpi tone="cyan" label="Solar Pumps (Irrigation)" value={solarPumps} />
+          <Kpi tone="lime" label="Farmer Solar Adoption" value={farmSolar} />
+        </KpiGrid>
+        <G>
+          <ChartCard title="सोलर स्थिती / Solar Status" expand={<div className="h-[70vh]"><PieCh donut data={solarStatus} /></div>}>
+            <PieCh donut data={solarStatus} />
+          </ChartCard>
+          <ChartCard title="गावनिहाय सोलर आवश्यकता / Solar Requirement by Village" expand={<div className="h-[70vh]"><BarCh horizontal multi limit={60} data={solarByVillage} /></div>}>
+            <BarCh horizontal color="#f59e0b" data={solarByVillage} />
+          </ChartCard>
+          <ChartCard title="सोलर पंप vs घरगुती पॅनेल / Solar Pump vs Home Panel" expand={<div className="h-[70vh]"><PieCh data={solarVsPump} /></div>}>
+            <PieCh data={solarVsPump} />
+          </ChartCard>
+          <ChartCard title="शेतकरी सोलर / Solar × Agriculture" expand={<div className="h-[70vh]"><BarCh multi data={solarAgri} /></div>}>
+            <BarCh data={solarAgri} color="#84cc16" />
+          </ChartCard>
+        </G>
+        <DataTable
+          title="Solar Report by Village"
+          columns={[{ key: "name", label: "Village" }, { key: "families", label: "Families" }, { key: "installed", label: "Installed" }, { key: "required", label: "Required" }, { key: "pct", label: "Adoption %" }]}
+          rows={villages.map((v) => {
+            const sub = rows.filter((r) => A.txt(r.village) === v);
+            const inst = sub.filter((r) => r.solar_panel_installed).length;
+            return { name: v, families: sub.length, installed: inst, required: sub.filter((r) => r.solar_panel_wanted).length, pct: A.pct(inst, sub.length) };
+          })}
+          exports={false}
+        />
+      </div>
     </div>
   );
 }
