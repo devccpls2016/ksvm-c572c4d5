@@ -803,8 +803,7 @@ function Occupation({ rows, people }: Ctx) {
         <Kpi tone="red" label="Unemployed" value={g("बेरोजगार / Unemployed")} />
         <Kpi tone="pink" label="Retired / Pensioner" value={g("निवृत्त / Pensioner")} />
         <Kpi tone="primary" label="NRI" value={g("परदेशस्थ / NRI")} />
-        <Kpi tone="green" label="Education Sector" value={g("शिक्षण क्षेत्र")} />
-        <Kpi tone="red" label="Medical Sector" value={g("वैद्यकीय क्षेत्र")} />
+        <Kpi tone="amber" label="Agriculture + Business" value={g("शेती + व्यवसाय")} />
       </KpiGrid>
       <G>
         <ChartCard title="व्यवसाय श्रेणी / Occupation Category"><BarCh horizontal data={data} color="#2563eb" /></ChartCard>
