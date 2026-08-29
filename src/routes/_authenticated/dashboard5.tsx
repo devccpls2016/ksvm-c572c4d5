@@ -1020,11 +1020,20 @@ function CropIrrigation({ rows }: Ctx) {
         <Kpi tone="orange" label="Canal / River Sources" value={irrStats("canal", "नहर").count + irrStats("river", "नदी").count} />
       </KpiGrid>
       <G>
-        <ChartCard title="मुख्य पीक प्रकार / Major Crop Types">{cropTypes.length ? <BarCh horizontal data={cropTypes} color="#84cc16" /> : <Empty />}</ChartCard>
-        <ChartCard title="हंगाम वितरण / Crop Season">{seasons.length ? <PieCh data={seasons} /> : <Empty />}</ChartCard>
+        <ChartCard
+          title="मुख्य पीक प्रकार / Major Crop Types"
+          expand={cropTypes.length ? <div className="h-[60vh]"><BarCh horizontal data={cropTypes} color="#84cc16" /></div> : <Empty />}
+        >
+          {cropTypes.length ? <BarCh horizontal data={cropTypes} color="#84cc16" /> : <Empty />}
+        </ChartCard>
+        <ChartCard
+          title="हंगाम वितरण / Crop Season"
+          expand={seasons.length ? <div className="h-[60vh]"><PieCh data={seasons} /></div> : <Empty />}
+        >
+          {seasons.length ? <PieCh data={seasons} /> : <Empty />}
+        </ChartCard>
         <ChartCard
           title="सिंचन साधन / Irrigation Sources"
-          
           expand={<div className="h-[60vh]"><GroupedBar horizontal data={irrData} series={[{ key: "families", label: "कुटुंबे / Families", color: "#0ea5e9" }, { key: "count", label: "एकूण संख्या / Total Quantity", color: "#06b6d4" }]} /></div>}
         >
           {irrData.some((d) => d.families || d.count) ? (
@@ -1033,8 +1042,21 @@ function CropIrrigation({ rows }: Ctx) {
             <Empty />
           )}
         </ChartCard>
-        <ChartCard title="पंप प्रकार / Pump Type"><PieCh data={[{ name: "विद्युत पंप", value: electric }, { name: "सोलर पंप", value: solar }]} /></ChartCard>
-        <ChartCard title="पीक × गाव / Crop × Village">
+        <ChartCard
+          title="पंप प्रकार / Pump Type"
+          expand={<div className="h-[60vh]"><PieCh data={[{ name: "विद्युत पंप", value: electric }, { name: "सोलर पंप", value: solar }]} /></div>}
+        >
+          <PieCh data={[{ name: "विद्युत पंप", value: electric }, { name: "सोलर पंप", value: solar }]} />
+        </ChartCard>
+        <ChartCard
+          title="पीक × गाव / Crop × Village"
+          expand={<div className="h-[60vh]"><StackedBar columns={cropTypes.slice(0, 6).map((c) => c.name)} data={A.uniq(farm, (r) => A.txt(r.village)).slice(0, 15).map((v) => {
+            const sub = farm.filter((r) => A.txt(r.village) === v);
+            const o: any = { name: v };
+            cropTypes.slice(0, 6).forEach((c) => { o[c.name] = sub.filter((r) => (r.major_crop_types || []).includes(c.name)).length; });
+            return o;
+          })} /></div>}
+        >
           <StackedBar
             columns={cropTypes.slice(0, 6).map((c) => c.name)}
             data={A.uniq(farm, (r) => A.txt(r.village)).slice(0, 15).map((v) => {
@@ -1045,7 +1067,15 @@ function CropIrrigation({ rows }: Ctx) {
             })}
           />
         </ChartCard>
-        <ChartCard title="सिंचन × जमीन आकार / Irrigation × Land Size">
+        <ChartCard
+          title="सिंचन × जमीन आकार / Irrigation × Land Size"
+          expand={<div className="h-[60vh]"><StackedBar columns={irrSources.slice(0, 6).map((c) => c.name)} data={A.LAND_BANDS.map((b) => {
+            const sub = farm.filter((r) => A.landBand(A.num(r.total_farmland)) === b);
+            const o: any = { name: b };
+            irrSources.slice(0, 6).forEach((c) => { o[c.name] = sub.filter((r) => (r.irrigation_sources || []).includes(c.name)).length; });
+            return o;
+          })} /></div>}
+        >
           <StackedBar
             columns={irrSources.slice(0, 6).map((c) => c.name)}
             data={A.LAND_BANDS.map((b) => {
@@ -1059,6 +1089,7 @@ function CropIrrigation({ rows }: Ctx) {
       </G>
       <DataTable
         title="Irrigation Detail Report"
+        exports={false}
         columns={[{ key: "name", label: "Source" }, { key: "families", label: "Families" }, { key: "count", label: "Total Units" }, { key: "electric", label: "Electric" }, { key: "solar", label: "Solar" }]}
         rows={A.IRRIGATION_KEYS.map((k) => ({
           name: k.label,
