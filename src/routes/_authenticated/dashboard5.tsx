@@ -847,7 +847,21 @@ function Occupation({ rows, people }: Ctx) {
         >
           <BarCh horizontal multi data={data} limit={19} unit="सदस्य / Members" />
         </ChartCard>
-        <ChartCard title="व्यवसाय × लिंग / Occupation × Gender">
+        <ChartCard
+          title="व्यवसाय × लिंग / Occupation × Gender"
+          expand={
+            <div style={{ height: Math.max(420, data.length * 34) }}>
+              <StackedBar
+                columns={["पुरुष", "स्त्री"]}
+                data={data.map((d) => ({
+                  name: d.name.split(" / ")[0]!,
+                  पुरुष: withOcc.filter((p) => A.occGroup(p.occupation) === d.name && p.gender === "पुरुष").length,
+                  स्त्री: withOcc.filter((p) => A.occGroup(p.occupation) === d.name && p.gender === "स्त्री").length,
+                }))}
+              />
+            </div>
+          }
+        >
           <StackedBar columns={["पुरुष", "स्त्री"]} data={data.slice(0, 12).map((d) => ({
             name: d.name.split(" / ")[0]!,
             पुरुष: withOcc.filter((p) => A.occGroup(p.occupation) === d.name && p.gender === "पुरुष").length,
@@ -873,6 +887,7 @@ function Occupation({ rows, people }: Ctx) {
       </G>
       <DataTable
         title="Occupation Detail Report"
+        exports={false}
         columns={[
           { key: "name", label: "Occupation" }, { key: "value", label: "Members" },
           { key: "male", label: "Male" }, { key: "female", label: "Female" },
@@ -891,6 +906,7 @@ function Occupation({ rows, people }: Ctx) {
       />
       <DataTable
         title="Employment Report by Village"
+        exports={false}
         columns={[
           { key: "name", label: "Village" }, { key: "govt", label: "Govt" }, { key: "priv", label: "Private" },
           { key: "self", label: "Self-employed" }, { key: "biz", label: "Business" },
