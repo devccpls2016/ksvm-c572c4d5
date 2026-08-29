@@ -227,6 +227,15 @@ export function GroupedBar({
   );
 }
 
+function contrastText(fill = CHART_COLORS[0]!) {
+  const hex = fill.replace("#", "");
+  const r = parseInt(hex.slice(0, 2), 16) || 0;
+  const g = parseInt(hex.slice(2, 4), 16) || 0;
+  const b = parseInt(hex.slice(4, 6), 16) || 0;
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.6 ? "#111827" : "#ffffff";
+}
+
 export function PieCh({ data, donut, unit = "संख्या / Count" }: { data: Datum[]; donut?: boolean; unit?: string }) {
   const clean = data.filter((d) => d.value > 0);
   if (!clean.length) return <Empty />;
@@ -236,12 +245,15 @@ export function PieCh({ data, donut, unit = "संख्या / Count" }: { da
     const share = Math.round((e.value / total) * 1000) / 10;
     if (share < 4) return "";
     const rIn = e.innerRadius || 0;
-    const r = rIn + (e.outerRadius - rIn) * (donut ? 0.5 : 0.62);
+    const r = rIn + (e.outerRadius - e.innerRadius) * (donut ? 0.5 : 0.62);
     const rad = -(e.midAngle * Math.PI) / 180;
     const x = e.cx + r * Math.cos(rad);
     const y = e.cy + r * Math.sin(rad);
+    const fillColor = e.fill || CHART_COLORS[0];
+    const textFill = single && donut ? "currentColor" : contrastText(fillColor);
+    const outline = textFill === "#ffffff" ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.7)";
     return (
-      <text x={single && donut ? e.cx : x} y={single && donut ? e.cy : y} textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600} fill={single && donut ? "currentColor" : "#fff"} className={single && donut ? "fill-foreground" : ""}>
+      <text x={single && donut ? e.cx : x} y={single && donut ? e.cy : y} textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600} fill={textFill} stroke={outline} strokeWidth={0.5} paintOrder="stroke" className={single && donut ? "fill-foreground" : ""}>
         {`${e.value} (${share}%)`}
       </text>
     );
