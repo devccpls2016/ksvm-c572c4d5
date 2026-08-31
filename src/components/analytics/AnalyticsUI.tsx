@@ -332,8 +332,8 @@ export function StackedBar({ data, columns }: { data: any[]; columns: string[] }
 export type Col = { key: string; label: string };
 
 export function DataTable({
-  title, columns, rows, pageSize = 10, exports = true,
-}: { title: string; columns: Col[]; rows: any[]; pageSize?: number; exports?: boolean }) {
+  title, columns, rows, pageSize = 10, exports = true, expandable = true,
+}: { title: string; columns: Col[]; rows: any[]; pageSize?: number; exports?: boolean; expandable?: boolean }) {
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null);
   const [page, setPage] = useState(0);
