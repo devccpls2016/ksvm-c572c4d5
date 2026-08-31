@@ -29,12 +29,17 @@ export const CHART_COLORS = [
 /* ------------------------------------------------------------------- cards */
 
 export function Kpi({
-  label, value, hint, icon: Icon, tone = "primary",
+  label, value, hint, icon: Icon, tone = "primary", onClick, active,
 }: {
   label: string; value: string | number; hint?: string; icon?: any; tone?: string;
+  onClick?: () => void; active?: boolean;
 }) {
   return (
-    <Card className="overflow-hidden border-l-4" style={{ borderLeftColor: toneColor(tone) }}>
+    <Card
+      className={`overflow-hidden border-l-4 ${onClick ? "cursor-pointer transition-shadow hover:shadow-md" : ""} ${active ? "ring-2 ring-offset-1" : ""}`}
+      style={{ borderLeftColor: toneColor(tone), ...(active ? { ["--tw-ring-color" as any]: toneColor(tone) } : {}) }}
+      onClick={onClick}
+    >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           {Icon && (
@@ -55,6 +60,7 @@ export function Kpi({
     </Card>
   );
 }
+
 
 function toneColor(tone: string) {
   const map: Record<string, string> = {
