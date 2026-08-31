@@ -1218,10 +1218,6 @@ function Assets({ rows }: Ctx) {
 
   return (
     <div className="space-y-6">
-      <SectionHeader
-        icon={Package}
-        title="घरगुती वस्तू व सोलर / Household Assets & Solar"
-      />
       {/* ---------------- all KPIs in one place ---------------- */}
       <KpiGrid>
         {orderedAssets.map((t) => <Kpi key={t.name} label={t.name} value={t.families} tone="cyan" />)}
