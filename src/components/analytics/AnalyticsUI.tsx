@@ -332,8 +332,8 @@ export function StackedBar({ data, columns }: { data: any[]; columns: string[] }
 export type Col = { key: string; label: string };
 
 export function DataTable({
-  title, columns, rows, pageSize = 10, exports = true,
-}: { title: string; columns: Col[]; rows: any[]; pageSize?: number; exports?: boolean }) {
+  title, columns, rows, pageSize = 10, exports = true, expandable = true,
+}: { title: string; columns: Col[]; rows: any[]; pageSize?: number; exports?: boolean; expandable?: boolean }) {
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null);
   const [page, setPage] = useState(0);
@@ -421,9 +421,11 @@ export function DataTable({
               <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
               <Input value={q} onChange={(e) => { setQ(e.target.value); setPage(0); }} placeholder="शोधा / Search" className="h-8 w-40 pl-7 text-xs" />
             </div>
-            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setOpen(true)}>
-              <Maximize2 className="h-3.5 w-3.5 mr-1" />सर्व पहा / View all
-            </Button>
+            {expandable && (
+              <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setOpen(true)}>
+                <Maximize2 className="h-3.5 w-3.5 mr-1" />सर्व पहा / View all
+              </Button>
+            )}
             {exports && (
               <>
                 <Button size="sm" variant="outline" className="h-8 text-xs" onClick={doExcel}><FileSpreadsheet className="h-3.5 w-3.5 mr-1" />Excel</Button>

@@ -2196,7 +2196,7 @@ function Quality({ rows }: Ctx) {
           <DialogHeader><DialogTitle className="text-base">{cat.label} — {tableRows.length}</DialogTitle></DialogHeader>
           {tableRows.length === 0
             ? <div className="p-6 text-center text-sm text-muted-foreground">कोणतीही रेकॉर्ड नाही / no records found</div>
-            : <DataTable title={`${cat.label} — ${tableRows.length}`} columns={tableCols} rows={tableRows} exports={false} />}
+            : <DataTable title={`${cat.label} — ${tableRows.length}`} columns={tableCols} rows={tableRows} exports={false} expandable={false} />}
         </DialogContent>
       </Dialog>
     </div>
