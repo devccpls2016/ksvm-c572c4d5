@@ -2123,7 +2123,9 @@ function Quality({ rows }: Ctx) {
     { key: "members", label: "Missing Family Members", tone: "pink", filter: (r) => !(r.members || []).length },
   ];
   const [sel, setSel] = useState("incomplete");
+  const [open, setOpen] = useState(false);
   const cat = CATS.find((c) => c.key === sel) ?? CATS[0]!;
+
 
   const tableCols = [
     { key: "head", label: "Family Head" },
@@ -2167,7 +2169,8 @@ function Quality({ rows }: Ctx) {
         <Kpi tone="green" label="Complete Records" value={complete} />
         {CATS.map((c) => (
           <Kpi key={c.key} tone={c.tone} label={c.label} value={rows.filter(c.filter).length}
-            hint="क्लिक करा / click to list" active={sel === c.key} onClick={() => setSel(c.key)} />
+            hint="क्लिक करा / click to list" active={sel === c.key}
+            onClick={() => { setSel(c.key); setOpen(true); }} />
         ))}
         <Kpi tone="green" label="Overall Data Completion" value={`${comp.overall}%`} />
       </KpiGrid>
@@ -2181,10 +2184,25 @@ function Quality({ rows }: Ctx) {
           <BarCh horizontal color="#ef4444" data={missingChart} />
         </ChartCard>
       </G>
-      <DataTable title={`${cat.label} — ${tableRows.length}`} columns={tableCols} rows={tableRows} exports={false} />
+      {tableRows.length === 0 ? (
+        <Card><CardContent className="p-6 text-center text-sm text-muted-foreground">
+          {cat.label} — कोणतीही रेकॉर्ड नाही / no records found
+        </CardContent></Card>
+      ) : (
+        <DataTable title={`${cat.label} — ${tableRows.length}`} columns={tableCols} rows={tableRows} exports={false} />
+      )}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle className="text-base">{cat.label} — {tableRows.length}</DialogTitle></DialogHeader>
+          {tableRows.length === 0
+            ? <div className="p-6 text-center text-sm text-muted-foreground">कोणतीही रेकॉर्ड नाही / no records found</div>
+            : <DataTable title={`${cat.label} — ${tableRows.length}`} columns={tableCols} rows={tableRows} exports={false} />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
 
 
 /* ======================================================= 23 Cross Analytics */
