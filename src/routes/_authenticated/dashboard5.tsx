@@ -1780,14 +1780,27 @@ function SurveyUsers({ rows, appUsers, isAdmin }: Ctx) {
     };
   }).sort((a, b) => b.surveys - a.surveys);
   const active = byUser.filter((u) => u.surveys > 0);
+  const activeUsers = appUsers.filter((u: any) => u.is_active !== false);
+  const inactiveUsers = appUsers.filter((u: any) => u.is_active === false);
+  const isComplete = (r: any) =>
+    Boolean(A.txt(r.head_name)) &&
+    Boolean(A.txt(r.village)) &&
+    Boolean(A.txt(r.mobile)) &&
+    Array.isArray(r.members) && r.members.length > 0;
+  const completed = rows.filter(isComplete);
+  const pending = rows.length - completed.length;
   return (
     <div className="space-y-4">
       <KpiGrid>
-        <Kpi icon={UserCog} label="Total Survey Users" value={appUsers.length} />
-        <Kpi tone="green" label="Active Survey Users" value={active.length} />
-        <Kpi tone="amber" label="Top Survey User" value={byUser[0]?.name ?? "—"} hint={`${byUser[0]?.surveys ?? 0} surveys`} />
-        <Kpi tone="violet" label="Average Surveys / User" value={active.length ? (rows.length / active.length).toFixed(1) : 0} />
+        <Kpi icon={UserCog} label="Total Survey Users" value={appUsers.length} hint="एकूण नोंदणीकृत सर्वेक्षण वापरकर्ते" />
+        <Kpi icon={UserCog} tone="green" label="Active Users" value={activeUsers.length} hint="सक्रिय वापरकर्ते" />
+        <Kpi icon={UserCog} tone="rose" label="Inactive Users" value={inactiveUsers.length} hint="निष्क्रिय वापरकर्ते" />
+        <Kpi tone="violet" label="Total Surveys Submitted" value={rows.length} hint="एकूण सादर सर्वेक्षणे" />
+        <Kpi tone="green" label="Completed Surveys" value={completed.length} hint="पूर्ण झालेली सर्वेक्षणे" />
+        <Kpi tone="amber" label="Pending / Incomplete Surveys" value={pending} hint="अपूर्ण सर्वेक्षणे" />
+        <Kpi tone="violet" label="Average Surveys per User" value={activeUsers.length ? (completed.length / activeUsers.length).toFixed(1) : 0} hint="प्रति वापरकर्ता सरासरी" />
       </KpiGrid>
+
       <G>
         <ChartCard title="Survey User-wise Submission Count" wide><BarCh horizontal data={active.map((u) => ({ name: u.name, value: u.surveys }))} color="#2563eb" /></ChartCard>
       </G>
