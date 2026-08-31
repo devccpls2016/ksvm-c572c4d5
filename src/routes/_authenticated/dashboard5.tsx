@@ -1646,6 +1646,16 @@ function Women({ rows, people }: Ctx) {
 function HumanResources({ people }: Ctx) {
   const list = A.PROFESSIONS.map((p) => ({ name: p.name, value: people.filter((x) => A.professionOf(x.occupation) === p.name).length }));
   const professionals = people.filter((p) => A.professionOf(p.occupation));
+  // Education columns in canonical order, only levels actually present (no arbitrary truncation)
+  const presentEdu = new Set(professionals.map((p) => A.eduLevel(p.education)));
+  const eduCols = [...A.EDU_LEVELS.map((l) => l.name), "इतर / Other"].filter((n) => presentEdu.has(n));
+  const profEduData = list.filter((l) => l.value > 0).map((l) => {
+    const sub = professionals.filter((p) => A.professionOf(p.occupation) === l.name);
+    const o: any = { name: l.name.split(" / ")[0]! };
+    eduCols.forEach((c) => { o[c] = 0; });
+    sub.forEach((p) => { const k = A.eduLevel(p.education); o[k] = (o[k] || 0) + 1; });
+    return o;
+  });
   return (
     <div className="space-y-4">
       <KpiGrid>
