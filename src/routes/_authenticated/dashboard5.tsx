@@ -1979,6 +1979,8 @@ function ProgressSec({ rows }: Ctx) {
         </ChartCard>
 
         <ChartCard title="जिल्हानिहाय प्रगती / District Progress" expand={<div className="h-[68vh]"><BarCh data={A.groupCount(rows, (r) => A.txt(r.district))} color="#10b981" limit={100} /></div>}><BarCh data={A.groupCount(rows, (r) => A.txt(r.district))} color="#10b981" /></ChartCard>
+        <ChartCard title="तालुकानिहाय प्रगती / Taluka Progress" expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.taluka))} color="#6366f1" limit={200} /></div>}><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.taluka))} color="#6366f1" /></ChartCard>
+
         <ChartCard title="गावनिहाय प्रगती / Village Progress" expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" limit={200} /></div>}><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" /></ChartCard>
       </G>
       <DataTable
