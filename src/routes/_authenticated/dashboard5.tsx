@@ -1670,28 +1670,11 @@ function HumanResources({ people }: Ctx) {
         </ChartCard>
         <ChartCard
           title="व्यवसाय × शिक्षण / Profession × Education"
-          expand={
-            <StackedBar
-              columns={[...new Set(professionals.map((p) => A.eduLevel(p.education)))].slice(0, 8)}
-              data={list.filter((l) => l.value > 0).map((l) => {
-                const sub = professionals.filter((p) => A.professionOf(p.occupation) === l.name);
-                const o: any = { name: l.name.split(" / ")[0]! };
-                sub.forEach((p) => { const k = A.eduLevel(p.education); o[k] = (o[k] || 0) + 1; });
-                return o;
-              })}
-            />
-          }
+          expand={<StackedBar columns={eduCols} data={profEduData} />}
         >
-          <StackedBar
-            columns={[...new Set(professionals.map((p) => A.eduLevel(p.education)))].slice(0, 8)}
-            data={list.filter((l) => l.value > 0).map((l) => {
-              const sub = professionals.filter((p) => A.professionOf(p.occupation) === l.name);
-              const o: any = { name: l.name.split(" / ")[0]! };
-              sub.forEach((p) => { const k = A.eduLevel(p.education); o[k] = (o[k] || 0) + 1; });
-              return o;
-            })}
-          />
+          <StackedBar columns={eduCols} data={profEduData} />
         </ChartCard>
+
         <ChartCard
           title="व्यवसाय × वयोगट / Profession × Age"
           expand={
