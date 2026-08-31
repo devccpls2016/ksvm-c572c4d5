@@ -1562,6 +1562,18 @@ function Women({ rows, people }: Ctx) {
   const women = people.filter((p) => p.gender === "स्त्री");
   const shg = (f: (g: any) => boolean) => women.filter((w) => w.bachat_gat && f(w.bachat_gat)).length;
   const b = (r: A.Row) => (r.benefits_info || {}) as any;
+  const bizList = (pick: (g: any) => boolean, name: (g: any) => any) => {
+    const m = new Map<string, number>();
+    women.forEach((w) => {
+      const g = w.bachat_gat;
+      if (!g || !pick(g)) return;
+      const key = A.txt(name(g)) || "इतर / Other";
+      m.set(key, (m.get(key) ?? 0) + 1);
+    });
+    return [...m.entries()].map(([name, value]) => ({ name, value })).sort((a, z) => z.value - a.value);
+  };
+  const runningBiz = bizList((g) => g.has_rural_home_business, (g) => g.business_name);
+  const wantBiz = bizList((g) => g.wants_to_start_business, (g) => g.desired_business);
   return (
     <div className="space-y-4">
       <KpiGrid>
@@ -1576,6 +1588,19 @@ function Women({ rows, people }: Ctx) {
       </KpiGrid>
       <G>
         <ChartCard title="महिला बचत गट / Self Help Group"><PieCh donut data={[{ name: "सदस्य", value: shg((g) => g.is_member) }, { name: "सहभागी होऊ इच्छिते", value: shg((g) => g.wants_to_join) }, { name: "इतर", value: Math.max(0, women.length - shg((g) => g.is_member) - shg((g) => g.wants_to_join)) }]} /></ChartCard>
+        <ChartCard
+          title="सुरू असलेला घरगुती व्यवसाय / Running Home Business"
+          expand={runningBiz.length ? <div className="h-[62vh]"><BarCh horizontal multi labels limit={999} data={runningBiz} /></div> : <Empty />}
+        >
+          {runningBiz.length ? <BarCh horizontal multi labels data={runningBiz} color="#14b8a6" /> : <Empty />}
+        </ChartCard>
+        <ChartCard
+          title="व्यवसाय सुरू करण्याची इच्छा / Interested in Business"
+          expand={wantBiz.length ? <div className="h-[62vh]"><BarCh horizontal multi labels limit={999} data={wantBiz} /></div> : <Empty />}
+        >
+          {wantBiz.length ? <BarCh horizontal multi labels data={wantBiz} color="#6366f1" /> : <Empty />}
+        </ChartCard>
+
         <ChartCard title="महिला वयोगट / Women by Age Group"><BarCh data={A.AGE_BANDS.map((band) => ({ name: band.name, value: women.filter((w) => typeof w.age === "number" && band.test(w.age)).length }))} color="#ec4899" /></ChartCard>
         <ChartCard title="महिला शिक्षण / Women by Education"><BarCh horizontal data={A.groupCount(women.filter((w) => w.education) as any, (w: any) => A.eduLevel(w.education))} color="#8b5cf6" /></ChartCard>
         <ChartCard title="महिला व्यवसाय / Women by Occupation"><BarCh horizontal data={A.groupCount(women.filter((w) => w.occupation) as any, (w: any) => A.occGroup(w.occupation))} color="#10b981" /></ChartCard>
