@@ -389,13 +389,17 @@ export function crossTab(rows: Row[], dim1Id: string, dim2Id: string) {
 /* --------------------------------------------------------- data quality */
 
 export const QUALITY_SECTIONS: { name: string; fields: (r: Row) => any[] }[] = [
-  { name: "पत्ता / Address", fields: (r) => [r.district, r.taluka, r.village, r.pincode] },
-  { name: "कुटुंब तपशील / Family Details", fields: (r) => [r.head_name, r.mobile, r.gender, r.age, r.marital_status] },
-  { name: "शिक्षण / Education", fields: (r) => [r.education] },
-  { name: "व्यवसाय / Occupation", fields: (r) => [r.occupation] },
-  { name: "शेती / Agriculture", fields: (r) => [r.has_farmland, r.has_farmland ? r.total_farmland : "x"] },
-  { name: "लाभ / Benefits", fields: (r) => [(r.benefits_info || {}).ladki_bahin, (r.benefits_info || {}).critical_illness] },
+  { name: "भौगोलिक / Geographic", fields: (r) => [r.district, r.taluka, r.village, r.pincode] },
+  { name: "कुटुंब प्रमुख / Family Head", fields: (r) => [r.head_name, r.mobile, r.gender, r.age, r.marital_status, r.education, r.occupation] },
+  { name: "कुटुंबातील सदस्य / Family Members", fields: (r) => [Array.isArray(r.members) && r.members.length ? "y" : ""] },
+  { name: "सार्वजनिक पद / Public Position", fields: (r) => [r.has_position == null ? "" : "y", r.has_position ? (positionEntries(r).length ? "y" : "") : "y"] },
+  { name: "आवश्यक / Household Items", fields: (r) => [Array.isArray(r.household_items) && r.household_items.length ? "y" : ""] },
+  { name: "घर / House", fields: (r) => [r.owns_house == null ? "" : "y", r.house_type, r.living_status] },
+  { name: "शेती / Agriculture", fields: (r) => [r.has_farmland == null ? "" : "y", r.has_farmland ? r.total_farmland : "y", r.has_farmland ? (Array.isArray(r.irrigation_sources) && r.irrigation_sources.length ? "y" : "") : "y"] },
+  { name: "लाभार्थी / Beneficiary", fields: (r) => [Object.keys(r.benefits_info || {}).length ? "y" : ""] },
+  { name: "रोजगार / Employment", fields: (r) => [Object.keys(r.employment_info || {}).length ? "y" : ""] },
 ];
+
 
 const filled = (v: any) => v !== null && v !== undefined && v !== "" && !(Array.isArray(v) && v.length === 0);
 
