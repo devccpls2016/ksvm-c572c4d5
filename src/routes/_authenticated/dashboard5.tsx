@@ -1407,6 +1407,17 @@ function Leadership({ rows }: Ctx) {
     .filter((d) => d.total > 0);
   const socialSeries = socialRoles.map((r) => ({ key: r, label: r }));
 
+  /* लोकप्रतिनिधी स्तर — प्रतिनिधी कार्यालय व पद */
+  const repPos = pos.filter((p) => A.txt(p.type).includes("लोकप्रतिनिधी"));
+  const repOffices = Array.from(new Set(repPos.map((p) => A.txt(p.representative_type)).filter(Boolean))).sort();
+  const repRoles = Array.from(new Set(repPos.map((p) => A.txt(p.coop_role) || "इतर"))).sort();
+  const repData = repOffices.map((office) => {
+    const list = repPos.filter((p) => A.txt(p.representative_type) === office);
+    const rec: any = { name: office };
+    repRoles.forEach((r) => { rec[r] = list.filter((p) => (A.txt(p.coop_role) || "इतर") === r).length; });
+    return rec;
+  }).filter((d) => repRoles.some((r) => d[r] > 0));
+
   return (
     <div className="space-y-4">
       <KpiGrid>
@@ -1449,9 +1460,11 @@ function Leadership({ rows }: Ctx) {
         </ChartCard>
         <ChartCard
           title="लोकप्रतिनिधी स्तर / Representative Level"
-          expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(pos.filter((p) => A.txt(p.type).includes("लोकप्रतिनिधी")), (p) => A.txt(p.political_level) || "—")} color="#10b981" /></div>}
+          subtitle="फील्ड: प्रतिनिधी कार्यालय (Office) · मालिका: पद (Post/Role)"
+          h={340}
+          expand={<div className="h-[68vh]">{repData.length ? <GroupedBar stacked horizontal data={repData} series={repRoles.map((r) => ({ key: r, label: r }))} limit={20} /> : <Empty />}</div>}
         >
-          <BarCh horizontal data={A.groupCount(pos.filter((p) => A.txt(p.type).includes("लोकप्रतिनिधी")), (p) => A.txt(p.political_level) || "—")} color="#10b981" />
+          {repData.length ? <GroupedBar stacked horizontal data={repData} series={repRoles.map((r) => ({ key: r, label: r }))} limit={12} /> : <Empty />}
         </ChartCard>
         <ChartCard
           title="पक्षनिहाय / Party-wise"
