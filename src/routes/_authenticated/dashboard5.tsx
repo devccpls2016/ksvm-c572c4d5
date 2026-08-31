@@ -1659,30 +1659,6 @@ function HumanResources({ people }: Ctx) {
           <BarCh horizontal data={list.filter((l) => l.value > 0)} color="#2563eb" />
         </ChartCard>
         <ChartCard
-          title="व्यवसाय × जिल्हा / Profession × District"
-          expand={
-            <StackedBar
-              columns={list.filter((l) => l.value > 0).slice(0, 6).map((l) => l.name)}
-              data={[...new Set(professionals.map((p) => A.txt(p.row.district)))].map((d) => {
-                const sub = professionals.filter((p) => A.txt(p.row.district) === d);
-                const o: any = { name: d || "—" };
-                sub.forEach((p) => { const k = A.professionOf(p.occupation)!; o[k] = (o[k] || 0) + 1; });
-                return o;
-              })}
-            />
-          }
-        >
-          <StackedBar
-            columns={list.filter((l) => l.value > 0).slice(0, 6).map((l) => l.name)}
-            data={[...new Set(professionals.map((p) => A.txt(p.row.district)))].map((d) => {
-              const sub = professionals.filter((p) => A.txt(p.row.district) === d);
-              const o: any = { name: d || "—" };
-              sub.forEach((p) => { const k = A.professionOf(p.occupation)!; o[k] = (o[k] || 0) + 1; });
-              return o;
-            })}
-          />
-        </ChartCard>
-        <ChartCard
           title="व्यवसाय × शिक्षण / Profession × Education"
           expand={
             <StackedBar
