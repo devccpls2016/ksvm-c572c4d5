@@ -1770,12 +1770,25 @@ function SurveyUsers({ rows, appUsers, isAdmin }: Ctx) {
   if (!isAdmin) return <Card><CardContent className="p-6 text-sm text-muted-foreground">ही माहिती फक्त प्रशासकांसाठी उपलब्ध आहे.</CardContent></Card>;
   const byUser = appUsers.map((u) => {
     const sub = rows.filter((r) => r.created_by === u.id);
+    const districts = A.uniq(sub, (r) => A.txt(r.district)).filter(Boolean);
+    const talukas = A.uniq(sub, (r) => A.txt(r.taluka)).filter(Boolean);
+    const villages = A.uniq(sub, (r) => A.txt(r.village)).filter(Boolean);
     return {
+      id: u.id,
       name: u.full_name || u.email,
+      status: (u as any).is_active === false ? "Inactive" : "Active",
+      scope: (u as any).access_scope ?? "all",
+      sub,
       surveys: sub.length,
       families: sub.length,
       members: A.allPersons(sub).length,
-      villages: A.uniq(sub, (r) => A.txt(r.village)).length,
+      districtCount: districts.length,
+      talukaCount: talukas.length,
+      villageCount: villages.length,
+      districtNames: districts.join(", ") || "—",
+      talukaNames: talukas.join(", ") || "—",
+      villages: villages.length,
+      villageNames: villages.join(", ") || "—",
       last: sub[0] ? new Date(sub[0].created_at).toLocaleDateString("en-GB") : "—",
     };
   }).sort((a, b) => b.surveys - a.surveys);
@@ -1789,6 +1802,35 @@ function SurveyUsers({ rows, appUsers, isAdmin }: Ctx) {
     Array.isArray(r.members) && r.members.length > 0;
   const completed = rows.filter(isComplete);
   const pending = rows.length - completed.length;
+
+  // user × geography matrices
+  const topNames = (key: "district" | "taluka" | "village", n: number) => {
+    const counts = new Map<string, number>();
+    rows.forEach((r) => {
+      const v = A.txt((r as any)[key]);
+      if (v) counts.set(v, (counts.get(v) ?? 0) + 1);
+    });
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, n).map(([k]) => k);
+  };
+  const matrix = (key: "district" | "taluka" | "village", n: number) => {
+    const cols = topNames(key, n);
+    const data = active.map((u) => {
+      const row: any = { name: u.name };
+      cols.forEach((c) => { row[c] = u.sub.filter((r) => A.txt((r as any)[key]) === c).length; });
+      return row;
+    });
+    return { cols, data };
+  };
+  const dMat = matrix("district", 8);
+  const tMat = matrix("taluka", 8);
+  const vMat = matrix("village", 8);
+  const coverageSeries = [
+    { key: "districtCount", label: "जिल्हे / Districts", color: "#2563eb" },
+    { key: "talukaCount", label: "तालुके / Talukas", color: "#10b981" },
+    { key: "villageCount", label: "गावे / Villages", color: "#f59e0b" },
+  ];
+  const submissionData = active.map((u) => ({ name: u.name, value: u.surveys }));
+
   return (
     <div className="space-y-4">
       <KpiGrid>
@@ -1802,13 +1844,64 @@ function SurveyUsers({ rows, appUsers, isAdmin }: Ctx) {
       </KpiGrid>
 
       <G>
-        <ChartCard title="Survey User-wise Submission Count" wide><BarCh horizontal data={active.map((u) => ({ name: u.name, value: u.surveys }))} color="#2563eb" /></ChartCard>
+        <ChartCard
+          title="सर्वेक्षक-निहाय सादरीकरण / Survey User-wise Submission Count"
+          wide
+          expand={<BarCh horizontal multi limit={999} unit="सर्वेक्षणे / surveys" data={submissionData} />}
+        >
+          <BarCh horizontal data={submissionData} color="#2563eb" />
+        </ChartCard>
+
+        <ChartCard
+          title="सर्वेक्षक × जिल्हा / Survey User × District"
+          wide
+          expand={<GroupedBar stacked limit={999} data={dMat.data} series={dMat.cols.map((c) => ({ key: c, label: c }))} />}
+        >
+          <GroupedBar stacked data={dMat.data} series={dMat.cols.map((c) => ({ key: c, label: c }))} />
+        </ChartCard>
+
+        <ChartCard
+          title="सर्वेक्षक × तालुका / Survey User × Taluka"
+          wide
+          expand={<GroupedBar stacked limit={999} data={tMat.data} series={tMat.cols.map((c) => ({ key: c, label: c }))} />}
+        >
+          <GroupedBar stacked data={tMat.data} series={tMat.cols.map((c) => ({ key: c, label: c }))} />
+        </ChartCard>
+
+        <ChartCard
+          title="सर्वेक्षक × गाव / Survey User × Village"
+          wide
+          expand={<GroupedBar stacked limit={999} data={vMat.data} series={vMat.cols.map((c) => ({ key: c, label: c }))} />}
+        >
+          <GroupedBar stacked data={vMat.data} series={vMat.cols.map((c) => ({ key: c, label: c }))} />
+        </ChartCard>
+
+        <ChartCard
+          title="भौगोलिक व्याप्ती / Coverage per Survey User"
+          wide
+          expand={<GroupedBar limit={999} data={active} series={coverageSeries} />}
+        >
+          <GroupedBar data={active} series={coverageSeries} />
+        </ChartCard>
       </G>
+
       <DataTable
-        title="Survey User Performance"
-        columns={[{ key: "name", label: "Survey User" }, { key: "surveys", label: "Surveys" }, { key: "families", label: "Families" }, { key: "members", label: "Members" }, { key: "villages", label: "Villages" }, { key: "last", label: "Last Submission" }]}
+        title="सर्वेक्षक कामगिरी तपशील / Survey User Performance"
+        exports={false}
+        columns={[
+          { key: "name", label: "Survey User" },
+          { key: "status", label: "Status" },
+          { key: "scope", label: "Access Scope" },
+          { key: "surveys", label: "Surveys" },
+          { key: "members", label: "Members" },
+          { key: "districtNames", label: "Districts" },
+          { key: "talukaNames", label: "Talukas" },
+          { key: "villageNames", label: "Villages" },
+          { key: "last", label: "Last Submission" },
+        ]}
         rows={byUser}
       />
+
     </div>
   );
 }
