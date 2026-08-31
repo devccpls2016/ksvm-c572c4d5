@@ -226,7 +226,6 @@ function Dashboard5() {
                   }`}
                 >
                   <s.icon className="h-3.5 w-3.5 shrink-0" />
-                  <span className="tabular-nums opacity-70">{s.no}</span>
                   <span className="truncate">{s.label}</span>
                 </button>
               ))}
