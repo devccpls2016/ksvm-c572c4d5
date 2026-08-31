@@ -1966,13 +1966,18 @@ function ProgressSec({ rows }: Ctx) {
       <G>
         <ChartCard
           title="दैनिक प्रगती / Daily Submission"
-          subtitle={`${from} → ${to} · एकूण / total ${rangeTotal}`}
           wide
           actions={rangeControls}
-          expand={<div className="h-[68vh]"><LineCh data={series} /></div>}
+          expand={
+            <div className="space-y-3">
+              <div className="flex justify-end">{rangeControls}</div>
+              <div className="h-[62vh]">{series.length ? <LineCh data={series} /> : <Empty />}</div>
+            </div>
+          }
         >
           {series.length ? <LineCh data={series} /> : <Empty />}
         </ChartCard>
+
         <ChartCard title="जिल्हानिहाय प्रगती / District Progress" expand={<div className="h-[68vh]"><BarCh data={A.groupCount(rows, (r) => A.txt(r.district))} color="#10b981" limit={100} /></div>}><BarCh data={A.groupCount(rows, (r) => A.txt(r.district))} color="#10b981" /></ChartCard>
         <ChartCard title="गावनिहाय प्रगती / Village Progress" expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" limit={200} /></div>}><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" /></ChartCard>
       </G>
