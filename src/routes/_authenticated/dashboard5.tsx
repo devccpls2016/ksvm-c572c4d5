@@ -1422,9 +1422,24 @@ function Leadership({ rows }: Ctx) {
         <Kpi tone="green" label="State Level" value={lvl("राज्य")} />
       </KpiGrid>
       <G>
-        <ChartCard title="पद प्रकार / Position Type"><PieCh donut data={A.groupCount(pos, (p) => A.txt(p.type) || "—")} /></ChartCard>
-        <ChartCard title="आजी / माजी"><PieCh data={A.groupCount(pos, (p) => A.txt(p.status) || "—")} /></ChartCard>
-        <ChartCard title="राजकीय स्तर / Political Level"><BarCh data={A.groupCount(pos.filter((p) => p.political_level), (p) => A.txt(p.political_level))} color="#8b5cf6" /></ChartCard>
+        <ChartCard
+          title="पद प्रकार / Position Type"
+          expand={<div className="h-[68vh]"><PieCh donut data={A.groupCount(pos, (p) => A.txt(p.type) || "—")} /></div>}
+        >
+          <PieCh donut data={A.groupCount(pos, (p) => A.txt(p.type) || "—")} />
+        </ChartCard>
+        <ChartCard
+          title="आजी / माजी"
+          expand={<div className="h-[68vh]"><PieCh data={A.groupCount(pos, (p) => A.txt(p.status) || "—")} /></div>}
+        >
+          <PieCh data={A.groupCount(pos, (p) => A.txt(p.status) || "—")} />
+        </ChartCard>
+        <ChartCard
+          title="राजकीय स्तर / Political Level"
+          expand={<div className="h-[68vh]"><BarCh data={A.groupCount(pos.filter((p) => p.political_level), (p) => A.txt(p.political_level))} color="#8b5cf6" /></div>}
+        >
+          <BarCh data={A.groupCount(pos.filter((p) => p.political_level), (p) => A.txt(p.political_level))} color="#8b5cf6" />
+        </ChartCard>
         <ChartCard
           title="सामाजिक स्तर / Social Level"
           h={340}
@@ -1433,18 +1448,27 @@ function Leadership({ rows }: Ctx) {
           <GroupedBar data={socialData} series={socialSeries} limit={20} />
         </ChartCard>
         <ChartCard
-          title="सामाजिक पद / Social Designations"
-          h={340}
-          expand={<div className="h-[68vh]"><BarCh horizontal multi limit={30} unit="पदे / positions" data={A.groupCount(socialPos, (p) => `${A.txt(p.social_org).split(" (")[0]} – ${A.txt(p.social_role) || "इतर"}`)} /></div>}
+          title="पक्षनिहाय / Party-wise"
+          expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(pos.filter((p) => p.party_name), (p) => A.txt(p.party_name_other) || A.txt(p.party_name))} color="#2563eb" /></div>}
         >
-          <BarCh horizontal multi limit={12} unit="पदे / positions" data={A.groupCount(socialPos, (p) => `${A.txt(p.social_org).split(" (")[0]} – ${A.txt(p.social_role) || "इतर"}`)} />
+          <BarCh horizontal data={A.groupCount(pos.filter((p) => p.party_name), (p) => A.txt(p.party_name_other) || A.txt(p.party_name))} color="#2563eb" />
         </ChartCard>
-        <ChartCard title="पक्षनिहाय / Party-wise"><BarCh horizontal data={A.groupCount(pos.filter((p) => p.party_name), (p) => A.txt(p.party_name_other) || A.txt(p.party_name))} color="#2563eb" /></ChartCard>
-        <ChartCard title="लोकप्रतिनिधी प्रकार / Representative Type"><BarCh horizontal data={A.groupCount(pos.filter((p) => p.representative_type), (p) => A.txt(p.representative_type))} color="#10b981" /></ChartCard>
-        <ChartCard title="संस्था / Organisation"><BarCh horizontal data={A.groupCount(pos.filter((p) => p.coop_org_name || p.social_org), (p) => A.txt(p.coop_org_name) || A.txt(p.social_org))} color="#f59e0b" /></ChartCard>
+        <ChartCard
+          title="लोकप्रतिनिधी प्रकार / Representative Type"
+          expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(pos.filter((p) => p.representative_type), (p) => A.txt(p.representative_type))} color="#10b981" /></div>}
+        >
+          <BarCh horizontal data={A.groupCount(pos.filter((p) => p.representative_type), (p) => A.txt(p.representative_type))} color="#10b981" />
+        </ChartCard>
+        <ChartCard
+          title="संस्था / Organisation"
+          expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(pos.filter((p) => p.coop_org_name || p.social_org), (p) => A.txt(p.coop_org_name) || A.txt(p.social_org))} color="#f59e0b" /></div>}
+        >
+          <BarCh horizontal data={A.groupCount(pos.filter((p) => p.coop_org_name || p.social_org), (p) => A.txt(p.coop_org_name) || A.txt(p.social_org))} color="#f59e0b" />
+        </ChartCard>
       </G>
       <DataTable
         title="Leadership Detail Report"
+        exports={false}
         columns={[
           { key: "person", label: "Person" }, { key: "type", label: "Type" }, { key: "status", label: "Status" },
           { key: "level", label: "Level" }, { key: "rep", label: "Representative / Role" }, { key: "party", label: "Party" },
