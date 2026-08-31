@@ -50,19 +50,17 @@ const SECTIONS = [
   { id: "equipment", no: "08", label: "Farming Equipment", icon: Tractor },
   { id: "housing", no: "09", label: "Housing Analytics", icon: Home },
   { id: "assets", no: "10", label: "Household Assets & Solar", icon: Package },
-  { id: "benefits", no: "11", label: "Benefits & Assistance", icon: Target },
-  { id: "medical", no: "12", label: "Medical & Health", icon: HeartPulse },
-  { id: "sports", no: "13", label: "Sports Analytics", icon: Trophy },
-  { id: "leadership", no: "14", label: "Political & Social Leadership", icon: Landmark },
-  { id: "business", no: "15", label: "Business & Entrepreneurship", icon: Store },
-  { id: "women", no: "16", label: "Women & Family", icon: UserRound },
-  { id: "hr", no: "17", label: "Community Human Resources", icon: BriefcaseBusiness },
-  { id: "needs", no: "18", label: "Community Needs", icon: HandHeart },
-  { id: "users", no: "19", label: "Survey User Performance", icon: UserCog },
-  { id: "progress", no: "20", label: "Survey Progress", icon: TrendingUp },
-  { id: "quality", no: "21", label: "Data Quality", icon: CheckCircle2 },
-  { id: "cross", no: "22", label: "Cross Analytics", icon: Shuffle },
-  { id: "reports", no: "23", label: "Detailed Reports", icon: Table2 },
+  { id: "benefits", no: "11", label: "Benefits, Medical & Sports", icon: Target },
+  { id: "leadership", no: "12", label: "Political & Social Leadership", icon: Landmark },
+  { id: "business", no: "13", label: "Business & Entrepreneurship", icon: Store },
+  { id: "women", no: "14", label: "Women & Family", icon: UserRound },
+  { id: "hr", no: "15", label: "Community Human Resources", icon: BriefcaseBusiness },
+  { id: "needs", no: "16", label: "Community Needs", icon: HandHeart },
+  { id: "users", no: "17", label: "Survey User Performance", icon: UserCog },
+  { id: "progress", no: "18", label: "Survey Progress", icon: TrendingUp },
+  { id: "quality", no: "19", label: "Data Quality", icon: CheckCircle2 },
+  { id: "cross", no: "20", label: "Cross Analytics", icon: Shuffle },
+  { id: "reports", no: "21", label: "Detailed Reports", icon: Table2 },
 ];
 
 /** which filter groups are relevant to each analytics section */
@@ -78,8 +76,6 @@ const SECTION_FILTERS: Record<string, string[]> = {
   housing: ["loc", "house"],
   assets: ["loc", "house"],
   benefits: ["loc", "ben", "fam"],
-  medical: ["loc", "ben"],
-  sports: ["loc", "ben"],
   leadership: ["loc", "pos"],
   business: ["loc", "biz", "occ"],
   women: ["loc", "fam", "ben"],
@@ -286,8 +282,6 @@ function Section({ id, ctx }: { id: string; ctx: Ctx }) {
       case "housing": return <Housing {...ctx} />;
       case "assets": return <Assets {...ctx} />;
       case "benefits": return <Benefits {...ctx} />;
-      case "medical": return <Medical {...ctx} />;
-      case "sports": return <Sports {...ctx} />;
       case "leadership": return <Leadership {...ctx} />;
       case "business": return <BusinessSec {...ctx} />;
       case "women": return <Women {...ctx} />;
