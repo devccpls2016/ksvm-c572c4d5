@@ -1950,6 +1950,8 @@ function ProgressSec({ rows }: Ctx) {
   const series: A.Datum[] = useMemo(() => days.map((d) => ({ name: d.short, value: d.list.length })), [days]);
   const rangeTotal = days.reduce((s, d) => s + d.list.length, 0);
   const [dayOpen, setDayOpen] = useState<DayBucket | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+
 
   const rangeControls = (
     <div className="flex flex-wrap items-center gap-1.5">
