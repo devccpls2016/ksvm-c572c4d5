@@ -1913,6 +1913,48 @@ function ProgressSec({ rows }: Ctx) {
   const weekStart = new Date(today); weekStart.setDate(today.getDate() - 6);
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
   const since = (d: Date) => rows.filter((r) => new Date(r.created_at) >= d).length;
+
+  const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const defFrom = new Date(today); defFrom.setDate(today.getDate() - 29);
+  const [from, setFrom] = useState(iso(defFrom));
+  const [to, setTo] = useState(iso(today));
+
+  const setPreset = (days: number) => {
+    const f = new Date(today); f.setDate(today.getDate() - (days - 1));
+    setFrom(iso(f)); setTo(iso(today));
+  };
+
+  const series = useMemo(() => {
+    const start = new Date(`${from}T00:00:00`);
+    const end = new Date(`${to}T00:00:00`);
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) return [] as A.Datum[];
+    const out: A.Datum[] = [];
+    const cur = new Date(start);
+    let guard = 0;
+    while (cur <= end && guard < 400) {
+      const next = new Date(cur); next.setDate(next.getDate() + 1);
+      out.push({
+        name: cur.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
+        value: rows.filter((r) => { const c = new Date(r.created_at); return c >= cur && c < next; }).length,
+      });
+      cur.setDate(cur.getDate() + 1); guard++;
+    }
+    return out;
+  }, [rows, from, to]);
+
+  const rangeTotal = series.reduce((s, d) => s + d.value, 0);
+
+  const rangeControls = (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <Input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} className="h-7 w-[135px] text-[11px]" />
+      <span className="text-[11px] text-muted-foreground">ते / to</span>
+      <Input type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} className="h-7 w-[135px] text-[11px]" />
+      {[7, 30, 90].map((d) => (
+        <Button key={d} size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => setPreset(d)}>{d}D</Button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="space-y-4">
       <KpiGrid>
@@ -1922,18 +1964,28 @@ function ProgressSec({ rows }: Ctx) {
         <Kpi tone="violet" label="Total Submitted" value={rows.length} />
       </KpiGrid>
       <G>
-        <ChartCard title="दैनिक प्रगती / Daily Submission (30 days)" wide><LineCh data={A.trend(rows, 30)} /></ChartCard>
-        <ChartCard title="जिल्हानिहाय प्रगती / District Progress"><BarCh data={A.groupCount(rows, (r) => A.txt(r.district))} color="#10b981" /></ChartCard>
-        <ChartCard title="गावनिहाय प्रगती / Village Progress"><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" /></ChartCard>
+        <ChartCard
+          title="दैनिक प्रगती / Daily Submission"
+          subtitle={`${from} → ${to} · एकूण / total ${rangeTotal}`}
+          wide
+          actions={rangeControls}
+          expand={<div className="h-[68vh]"><LineCh data={series} /></div>}
+        >
+          {series.length ? <LineCh data={series} /> : <Empty />}
+        </ChartCard>
+        <ChartCard title="जिल्हानिहाय प्रगती / District Progress" expand={<div className="h-[68vh]"><BarCh data={A.groupCount(rows, (r) => A.txt(r.district))} color="#10b981" limit={100} /></div>}><BarCh data={A.groupCount(rows, (r) => A.txt(r.district))} color="#10b981" /></ChartCard>
+        <ChartCard title="गावनिहाय प्रगती / Village Progress" expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" limit={200} /></div>}><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" /></ChartCard>
       </G>
       <DataTable
         title="Daily Submission Report"
         columns={[{ key: "name", label: "Date" }, { key: "value", label: "Surveys" }]}
-        rows={A.trend(rows, 30).slice().reverse()}
+        rows={series.slice().reverse()}
+        exports={false}
       />
     </div>
   );
 }
+
 
 /* ============================================================= 22 Quality */
 
