@@ -1460,7 +1460,6 @@ function Leadership({ rows }: Ctx) {
         </ChartCard>
         <ChartCard
           title="लोकप्रतिनिधी स्तर / Representative Level"
-          subtitle="फील्ड: प्रतिनिधी कार्यालय (Office) · मालिका: पद (Post/Role)"
           h={340}
           expand={<div className="h-[68vh]">{repData.length ? <GroupedBar stacked horizontal data={repData} series={repRoles.map((r) => ({ key: r, label: r }))} limit={20} /> : <Empty />}</div>}
         >
