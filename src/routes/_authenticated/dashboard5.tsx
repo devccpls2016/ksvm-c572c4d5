@@ -1794,7 +1794,7 @@ function SurveyUsers({ rows, appUsers, isAdmin }: Ctx) {
       <KpiGrid>
         <Kpi icon={UserCog} label="Total Survey Users" value={appUsers.length} hint="एकूण नोंदणीकृत सर्वेक्षण वापरकर्ते" />
         <Kpi icon={UserCog} tone="green" label="Active Users" value={activeUsers.length} hint="सक्रिय वापरकर्ते" />
-        <Kpi icon={UserCog} tone="rose" label="Inactive Users" value={inactiveUsers.length} hint="निष्क्रिय वापरकर्ते" />
+        <Kpi icon={UserCog} tone="red" label="Inactive Users" value={inactiveUsers.length} hint="निष्क्रिय वापरकर्ते" />
         <Kpi tone="violet" label="Total Surveys Submitted" value={rows.length} hint="एकूण सादर सर्वेक्षणे" />
         <Kpi tone="green" label="Completed Surveys" value={completed.length} hint="पूर्ण झालेली सर्वेक्षणे" />
         <Kpi tone="amber" label="Pending / Incomplete Surveys" value={pending} hint="अपूर्ण सर्वेक्षणे" />
