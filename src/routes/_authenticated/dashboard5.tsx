@@ -2234,7 +2234,7 @@ function CrossAnalytics({ rows }: Ctx) {
       >
         <StackedBar data={data} columns={columns} />
       </ChartCard>
-      <DataTable title="Cross Analytics Table" columns={tableCols} rows={data} />
+      <DataTable title="Cross Analytics Table" columns={tableCols} rows={data} exports={false} />
 
     </div>
   );
