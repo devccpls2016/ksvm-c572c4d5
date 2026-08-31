@@ -1393,6 +1393,20 @@ function Leadership({ rows }: Ctx) {
   const t = (k: string) => pos.filter((p) => A.txt(p.type).includes(k)).length;
   const st = (k: string) => pos.filter((p) => A.txt(p.status).includes(k)).length;
   const lvl = (k: string) => pos.filter((p) => A.txt(p.political_level).includes(k)).length;
+
+  /* सामाजिक स्तर — संस्थानिहाय पदनिहाय वितरण */
+  const socialPos = pos.filter((p) => A.txt(p.social_org));
+  const socialRoles = Array.from(new Set(socialPos.map((p) => A.txt(p.social_role) || "इतर"))).sort();
+  const socialData = ["शैक्षणिक संस्था (Educational Institution)", "सामाजिक संस्था (Social Organisation)"]
+    .map((org) => {
+      const list = socialPos.filter((p) => A.txt(p.social_org) === org);
+      const rec: any = { name: org.split(" (")[0], total: list.length };
+      socialRoles.forEach((r) => { rec[r] = list.filter((p) => (A.txt(p.social_role) || "इतर") === r).length; });
+      return rec;
+    })
+    .filter((d) => d.total > 0);
+  const socialSeries = socialRoles.map((r) => ({ key: r, label: r }));
+
   return (
     <div className="space-y-4">
       <KpiGrid>
