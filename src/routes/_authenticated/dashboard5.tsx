@@ -1924,25 +1924,30 @@ function ProgressSec({ rows }: Ctx) {
     setFrom(iso(f)); setTo(iso(today));
   };
 
-  const series = useMemo(() => {
+  const days = useMemo(() => {
     const start = new Date(`${from}T00:00:00`);
     const end = new Date(`${to}T00:00:00`);
-    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) return [] as A.Datum[];
-    const out: A.Datum[] = [];
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) return [] as DayBucket[];
+    const out: DayBucket[] = [];
     const cur = new Date(start);
     let guard = 0;
     while (cur <= end && guard < 400) {
       const next = new Date(cur); next.setDate(next.getDate() + 1);
+      const dayStart = new Date(cur);
       out.push({
-        name: cur.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
-        value: rows.filter((r) => { const c = new Date(r.created_at); return c >= cur && c < next; }).length,
+        iso: iso(dayStart),
+        label: dayStart.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        short: dayStart.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
+        list: rows.filter((r) => { const c = new Date(r.created_at); return c >= dayStart && c < next; }),
       });
       cur.setDate(cur.getDate() + 1); guard++;
     }
     return out;
   }, [rows, from, to]);
 
-  const rangeTotal = series.reduce((s, d) => s + d.value, 0);
+  const series: A.Datum[] = useMemo(() => days.map((d) => ({ name: d.short, value: d.list.length })), [days]);
+  const rangeTotal = days.reduce((s, d) => s + d.list.length, 0);
+  const [dayOpen, setDayOpen] = useState<DayBucket | null>(null);
 
   const rangeControls = (
     <div className="flex flex-wrap items-center gap-1.5">
@@ -1983,15 +1988,94 @@ function ProgressSec({ rows }: Ctx) {
 
         <ChartCard title="गावनिहाय प्रगती / Village Progress" expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" limit={200} /></div>}><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" /></ChartCard>
       </G>
-      <DataTable
-        title="Daily Submission Report"
-        columns={[{ key: "name", label: "Date" }, { key: "value", label: "Surveys" }]}
-        rows={series.slice().reverse()}
-        exports={false}
-      />
+
+      <Card>
+        <CardHeader className="pb-2 flex-row items-start justify-between gap-2 space-y-0 flex-wrap">
+          <div>
+            <CardTitle className="text-sm font-semibold">दैनिक सर्वेक्षण अहवाल / Daily Submission Report</CardTitle>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {from} → {to} · एकूण / total {rangeTotal} · संख्येवर क्लिक करा / click a count to see all surveys
+            </p>
+          </div>
+          {rangeControls}
+        </CardHeader>
+        <CardContent className="pt-2">
+          {days.length === 0 ? <Empty /> : (
+            <div className="max-h-[420px] overflow-y-auto rounded-md border">
+              <table className="w-full text-xs">
+                <thead className="sticky top-0 bg-muted/70 backdrop-blur">
+                  <tr>
+                    <th className="text-left p-2 font-semibold">दिनांक / Date</th>
+                    <th className="text-left p-2 font-semibold">सर्वेक्षण / Surveys</th>
+                    <th className="text-left p-2 font-semibold hidden sm:table-cell">सदस्य / Members</th>
+                    <th className="text-left p-2 font-semibold hidden md:table-cell">गावे / Villages</th>
+                    <th className="text-left p-2 font-semibold hidden md:table-cell">जिल्हे / Districts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {days.slice().reverse().map((d) => (
+                    <tr key={d.iso} className="border-t hover:bg-muted/40">
+                      <td className="p-2 whitespace-nowrap">{d.label}</td>
+                      <td className="p-2">
+                        {d.list.length ? (
+                          <Button size="sm" variant="outline" className="h-6 px-2 text-[11px]" onClick={() => setDayOpen(d)}>
+                            {d.list.length}
+                          </Button>
+                        ) : <span className="text-muted-foreground">0</span>}
+                      </td>
+                      <td className="p-2 hidden sm:table-cell">{d.list.reduce((s, r) => s + ((r.members as any[]) || []).length, 0)}</td>
+                      <td className="p-2 hidden md:table-cell">{new Set(d.list.map((r) => A.txt(r.village))).size}</td>
+                      <td className="p-2 hidden md:table-cell">{new Set(d.list.map((r) => A.txt(r.district))).size}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={!!dayOpen} onOpenChange={(o) => !o && setDayOpen(null)}>
+        <DialogContent className="max-w-6xl">
+          <DialogHeader>
+            <DialogTitle className="text-base">{dayOpen?.label} — सर्वेक्षण यादी / Surveys ({dayOpen?.list.length ?? 0})</DialogTitle>
+            <DialogDescription className="text-xs">या दिवशी सादर केलेली सर्व सर्वेक्षणे / all surveys submitted on this day</DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[70vh] overflow-auto rounded-md border">
+            <table className="w-full text-xs">
+              <thead className="sticky top-0 bg-muted/70 backdrop-blur">
+                <tr>
+                  {["#", "कुटुंब प्रमुख / Head", "मोबाईल / Mobile", "गाव / Village", "तालुका / Taluka", "जिल्हा / District", "सदस्य / Members", "शिक्षण / Education", "व्यवसाय / Occupation", "वेळ / Time"].map((h) => (
+                    <th key={h} className="text-left p-2 font-semibold whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(dayOpen?.list ?? []).map((r, i) => (
+                  <tr key={r.id ?? i} className="border-t hover:bg-muted/40">
+                    <td className="p-2">{i + 1}</td>
+                    <td className="p-2 whitespace-nowrap font-medium">{A.txt(r.head_name)}</td>
+                    <td className="p-2 whitespace-nowrap">{A.txt(r.mobile)}</td>
+                    <td className="p-2 whitespace-nowrap">{A.txt(r.village)}</td>
+                    <td className="p-2 whitespace-nowrap">{A.txt(r.taluka)}</td>
+                    <td className="p-2 whitespace-nowrap">{A.txt(r.district)}</td>
+                    <td className="p-2">{((r.members as any[]) || []).length}</td>
+                    <td className="p-2 whitespace-nowrap">{A.txt(r.education)}</td>
+                    <td className="p-2 whitespace-nowrap">{A.txt(r.occupation)}</td>
+                    <td className="p-2 whitespace-nowrap">{new Date(r.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+type DayBucket = { iso: string; label: string; short: string; list: A.Row[] };
+
 
 
 /* ============================================================= 22 Quality */
