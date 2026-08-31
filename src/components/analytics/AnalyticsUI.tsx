@@ -421,9 +421,11 @@ export function DataTable({
               <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
               <Input value={q} onChange={(e) => { setQ(e.target.value); setPage(0); }} placeholder="शोधा / Search" className="h-8 w-40 pl-7 text-xs" />
             </div>
-            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setOpen(true)}>
-              <Maximize2 className="h-3.5 w-3.5 mr-1" />सर्व पहा / View all
-            </Button>
+            {expandable && (
+              <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setOpen(true)}>
+                <Maximize2 className="h-3.5 w-3.5 mr-1" />सर्व पहा / View all
+              </Button>
+            )}
             {exports && (
               <>
                 <Button size="sm" variant="outline" className="h-8 text-xs" onClick={doExcel}><FileSpreadsheet className="h-3.5 w-3.5 mr-1" />Excel</Button>
