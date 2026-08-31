@@ -62,7 +62,6 @@ const SECTIONS = [
   { id: "progress", no: "18", label: "Survey Progress", icon: TrendingUp },
   { id: "quality", no: "19", label: "Data Quality", icon: CheckCircle2 },
   { id: "cross", no: "20", label: "Cross Analytics", icon: Shuffle },
-  { id: "reports", no: "21", label: "Detailed Reports", icon: Table2 },
 ];
 
 /** which filter groups are relevant to each analytics section */
@@ -87,7 +86,6 @@ const SECTION_FILTERS: Record<string, string[]> = {
   progress: ["loc"],
   quality: ["loc", "fam"],
   cross: ["loc", "fam", "edu", "occ", "agri", "house", "ben", "pos", "biz"],
-  reports: ["loc", "fam", "edu", "occ", "agri", "house", "ben", "pos", "biz"],
 };
 
 function Dashboard5() {
@@ -292,13 +290,12 @@ function Section({ id, ctx }: { id: string; ctx: Ctx }) {
       case "users": return <SurveyUsers {...ctx} />;
       case "progress": return <ProgressSec {...ctx} />;
       case "quality": return <Quality {...ctx} />;
-      case "cross": return <CrossAnalytics {...ctx} />;
-      default: return <Reports {...ctx} />;
+      default: return <CrossAnalytics {...ctx} />;
     }
   })();
   return (
     <div className="space-y-4">
-      <SectionHeader title={`${meta.no}. ${meta.label}`} icon={meta.icon} subtitle="Filters above apply to every chart and report in this section." />
+      <SectionHeader title={`${meta.no}. ${meta.label}`} icon={meta.icon} />
       {body}
     </div>
   );
@@ -2236,57 +2233,6 @@ function CrossAnalytics({ rows }: Ctx) {
       </ChartCard>
       <DataTable title="Cross Analytics Table" columns={tableCols} rows={data} exports={false} />
 
-    </div>
-  );
-}
-
-/* =========================================================== 24 Reports */
-
-function Reports({ rows }: Ctx) {
-  const villages = A.uniq(rows, (r) => A.txt(r.village));
-  const people = (v: string) => A.allPersons(rows.filter((r) => A.txt(r.village) === v));
-  return (
-    <div className="space-y-4">
-      <DataTable
-        title="Village Master Report"
-        columns={[
-          { key: "name", label: "Village" }, { key: "families", label: "Families" }, { key: "members", label: "Members" },
-          { key: "male", label: "Male" }, { key: "female", label: "Female" }, { key: "farmers", label: "Farmers" },
-          { key: "graduates", label: "Graduates" }, { key: "govt", label: "Govt Jobs" }, { key: "houses", label: "Own Houses" },
-          { key: "gharkul", label: "Gharkul Need" },
-        ]}
-        rows={villages.map((v) => {
-          const sub = rows.filter((r) => A.txt(r.village) === v);
-          const ppl = people(v);
-          return {
-            name: v, families: sub.length, members: ppl.length,
-            male: ppl.filter((p) => p.gender === "पुरुष").length,
-            female: ppl.filter((p) => p.gender === "स्त्री").length,
-            farmers: sub.filter((r) => r.has_farmland).length,
-            graduates: ppl.filter((p) => ["पदवी / Graduate", "पदव्युत्तर / Postgraduate", "डॉक्टरेट / Ph.D."].includes(A.eduLevel(p.education))).length,
-            govt: ppl.filter((p) => A.occGroup(p.occupation) === "सरकारी कर्मचारी").length,
-            houses: sub.filter((r) => r.owns_house).length,
-            gharkul: sub.filter((r) => r.gharkul_wanted).length,
-          };
-        })}
-      />
-      <DataTable
-        title="Family Master Report"
-        columns={[
-          { key: "head", label: "Family Head" }, { key: "mobile", label: "Mobile" }, { key: "village", label: "Village" },
-          { key: "taluka", label: "Taluka" }, { key: "district", label: "District" }, { key: "members", label: "Members" },
-          { key: "occupation", label: "Occupation" }, { key: "education", label: "Education" },
-          { key: "land", label: "Land (Acre)" }, { key: "house", label: "House" }, { key: "date", label: "Created" },
-        ]}
-        rows={rows.map((r) => ({
-          head: r.head_name, mobile: r.mobile, village: r.village, taluka: r.taluka, district: r.district,
-          members: A.personsOf(r).length, occupation: r.occupation, education: r.education,
-          land: r.has_farmland ? A.num(r.total_farmland) : 0,
-          house: r.house_type || (r.owns_house ? "स्वतःचे" : "—"),
-          date: new Date(r.created_at).toLocaleDateString("en-GB"),
-        }))}
-        pageSize={15}
-      />
     </div>
   );
 }
