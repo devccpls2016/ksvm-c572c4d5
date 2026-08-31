@@ -1950,6 +1950,8 @@ function ProgressSec({ rows }: Ctx) {
   const series: A.Datum[] = useMemo(() => days.map((d) => ({ name: d.short, value: d.list.length })), [days]);
   const rangeTotal = days.reduce((s, d) => s + d.list.length, 0);
   const [dayOpen, setDayOpen] = useState<DayBucket | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+
 
   const rangeControls = (
     <div className="flex flex-wrap items-center gap-1.5">
@@ -1991,19 +1993,10 @@ function ProgressSec({ rows }: Ctx) {
         <ChartCard title="गावनिहाय प्रगती / Village Progress" expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" limit={200} /></div>}><BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" /></ChartCard>
       </G>
 
-      <Card>
-        <CardHeader className="pb-2 flex-row items-start justify-between gap-2 space-y-0 flex-wrap">
-          <div>
-            <CardTitle className="text-sm font-semibold">दैनिक सर्वेक्षण अहवाल / Daily Submission Report</CardTitle>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              {from} → {to} · एकूण / total {rangeTotal} · संख्येवर क्लिक करा / click a count to see all surveys
-            </p>
-          </div>
-          {rangeControls}
-        </CardHeader>
-        <CardContent className="pt-2">
-          {days.length === 0 ? <Empty /> : (
-            <div className="max-h-[420px] overflow-y-auto rounded-md border">
+      {(() => {
+        const reportTable = (max: string) => (
+          days.length === 0 ? <Empty /> : (
+            <div className={`overflow-y-auto rounded-md border ${max}`}>
               <table className="w-full text-xs">
                 <thead className="sticky top-0 bg-muted/70 backdrop-blur">
                   <tr>
@@ -2033,9 +2026,37 @@ function ProgressSec({ rows }: Ctx) {
                 </tbody>
               </table>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          )
+        );
+        return (
+          <>
+            <Card>
+              <CardHeader className="pb-2 flex-row items-start justify-between gap-2 space-y-0 flex-wrap">
+                <CardTitle className="text-sm font-semibold">दैनिक सर्वेक्षण अहवाल / Daily Submission Report</CardTitle>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {rangeControls}
+                  <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" onClick={() => setReportOpen(true)}>सर्व पहा / View more</Button>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-2">{reportTable("max-h-[420px]")}</CardContent>
+            </Card>
+
+            <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+              <DialogContent className="max-w-6xl">
+                <DialogHeader>
+                  <DialogTitle className="text-base">दैनिक सर्वेक्षण अहवाल / Daily Submission Report</DialogTitle>
+                  <DialogDescription className="text-xs">संख्येवर क्लिक करा / click a count to see all surveys</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div className="flex justify-end">{rangeControls}</div>
+                  {reportTable("max-h-[64vh]")}
+                </div>
+              </DialogContent>
+            </Dialog>
+          </>
+        );
+      })()}
+
 
       <Dialog open={!!dayOpen} onOpenChange={(o) => !o && setDayOpen(null)}>
         <DialogContent className="max-w-6xl">
