@@ -1587,7 +1587,12 @@ function Women({ rows, people }: Ctx) {
         <Kpi tone="red" label="Ladki Bahin Beneficiary Families" value={rows.filter((r) => b(r).ladki_bahin).length} />
       </KpiGrid>
       <G>
-        <ChartCard title="महिला बचत गट / Self Help Group"><PieCh donut data={[{ name: "सदस्य", value: shg((g) => g.is_member) }, { name: "सहभागी होऊ इच्छिते", value: shg((g) => g.wants_to_join) }, { name: "इतर", value: Math.max(0, women.length - shg((g) => g.is_member) - shg((g) => g.wants_to_join)) }]} /></ChartCard>
+        <ChartCard
+          title="महिला बचत गट / Self Help Group"
+          expand={<div className="h-[62vh]"><PieCh donut data={[{ name: "सदस्य", value: shg((g) => g.is_member) }, { name: "सहभागी होऊ इच्छिते", value: shg((g) => g.wants_to_join) }, { name: "इतर", value: Math.max(0, women.length - shg((g) => g.is_member) - shg((g) => g.wants_to_join)) }]} /></div>}
+        >
+          <PieCh donut data={[{ name: "सदस्य", value: shg((g) => g.is_member) }, { name: "सहभागी होऊ इच्छिते", value: shg((g) => g.wants_to_join) }, { name: "इतर", value: Math.max(0, women.length - shg((g) => g.is_member) - shg((g) => g.wants_to_join)) }]} />
+        </ChartCard>
         <ChartCard
           title="सुरू असलेला घरगुती व्यवसाय / Running Home Business"
           expand={runningBiz.length ? <div className="h-[62vh]"><BarCh horizontal multi labels limit={999} data={runningBiz} /></div> : <Empty />}
@@ -1601,12 +1606,28 @@ function Women({ rows, people }: Ctx) {
           {wantBiz.length ? <BarCh horizontal multi labels data={wantBiz} color="#6366f1" /> : <Empty />}
         </ChartCard>
 
-        <ChartCard title="महिला वयोगट / Women by Age Group"><BarCh data={A.AGE_BANDS.map((band) => ({ name: band.name, value: women.filter((w) => typeof w.age === "number" && band.test(w.age)).length }))} color="#ec4899" /></ChartCard>
-        <ChartCard title="महिला शिक्षण / Women by Education"><BarCh horizontal data={A.groupCount(women.filter((w) => w.education) as any, (w: any) => A.eduLevel(w.education))} color="#8b5cf6" /></ChartCard>
-        <ChartCard title="महिला व्यवसाय / Women by Occupation"><BarCh horizontal data={A.groupCount(women.filter((w) => w.occupation) as any, (w: any) => A.occGroup(w.occupation))} color="#10b981" /></ChartCard>
+        <ChartCard
+          title="महिला वयोगट / Women by Age Group"
+          expand={<div className="h-[62vh]"><BarCh multi limit={999} data={A.AGE_BANDS.map((band) => ({ name: band.name, value: women.filter((w) => typeof w.age === "number" && band.test(w.age)).length }))} color="#ec4899" /></div>}
+        >
+          <BarCh data={A.AGE_BANDS.map((band) => ({ name: band.name, value: women.filter((w) => typeof w.age === "number" && band.test(w.age)).length }))} color="#ec4899" />
+        </ChartCard>
+        <ChartCard
+          title="महिला शिक्षण / Women by Education"
+          expand={<div className="h-[62vh]"><BarCh horizontal multi limit={999} data={A.groupCount(women.filter((w) => w.education) as any, (w: any) => A.eduLevel(w.education))} color="#8b5cf6" /></div>}
+        >
+          <BarCh horizontal data={A.groupCount(women.filter((w) => w.education) as any, (w: any) => A.eduLevel(w.education))} color="#8b5cf6" />
+        </ChartCard>
+        <ChartCard
+          title="महिला व्यवसाय / Women by Occupation"
+          expand={<div className="h-[62vh]"><BarCh horizontal multi limit={999} data={A.groupCount(women.filter((w) => w.occupation) as any, (w: any) => A.occGroup(w.occupation))} color="#10b981" /></div>}
+        >
+          <BarCh horizontal data={A.groupCount(women.filter((w) => w.occupation) as any, (w: any) => A.occGroup(w.occupation))} color="#10b981" />
+        </ChartCard>
       </G>
       <DataTable
         title="Women Business & Bachat Gat Detail"
+        exports={false}
         columns={[{ key: "name", label: "Name" }, { key: "village", label: "Village" }, { key: "member", label: "Bachat Gat" }, { key: "interest", label: "Interested" }, { key: "business", label: "Home Business" }, { key: "want", label: "Wants Business" }]}
         rows={women.filter((w) => w.bachat_gat).map((w) => ({
           name: w.name, village: A.txt(w.row.village),
