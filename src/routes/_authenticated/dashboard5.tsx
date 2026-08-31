@@ -2106,48 +2106,93 @@ type DayBucket = { iso: string; label: string; short: string; list: A.Row[] };
 function Quality({ rows }: Ctx) {
   const comp = A.completeness(rows);
   const missing = (f: (r: A.Row) => boolean) => rows.filter(f).length;
-  const complete = rows.filter((r) => r.head_name && r.village && r.mobile && r.education && r.occupation && (r.members || []).length > 0).length;
+  const isComplete = (r: A.Row) => !!(r.head_name && r.village && r.mobile && r.education && r.occupation && (r.members || []).length > 0);
+  const complete = rows.filter(isComplete).length;
+
+  const dupKeys = useMemo(() => {
+    const seen: Record<string, number> = {};
+    rows.forEach((r) => {
+      const k = `${A.txt(r.head_name).toLowerCase()}|${A.txt(r.village).toLowerCase()}|${A.txt(r.mobile)}`;
+      seen[k] = (seen[k] || 0) + 1;
+    });
+    return seen;
+  }, [rows]);
+  const isDup = (r: A.Row) => (dupKeys[`${A.txt(r.head_name).toLowerCase()}|${A.txt(r.village).toLowerCase()}|${A.txt(r.mobile)}`] || 0) > 1;
+
+  const CATS: { key: string; label: string; tone: string; filter: (r: A.Row) => boolean }[] = [
+    { key: "incomplete", label: "Incomplete Records", tone: "red", filter: (r) => !isComplete(r) },
+    { key: "dup", label: "Duplicate Records", tone: "amber", filter: isDup },
+    { key: "mobile", label: "Missing Mobile", tone: "violet", filter: (r) => !A.txt(r.mobile) },
+    { key: "pincode", label: "Missing Pincode", tone: "violet", filter: (r) => !A.txt(r.pincode) },
+    { key: "education", label: "Missing Education", tone: "cyan", filter: (r) => !A.txt(r.education) },
+    { key: "occupation", label: "Missing Occupation", tone: "cyan", filter: (r) => !A.txt(r.occupation) },
+    { key: "agri", label: "Missing Agriculture Data", tone: "lime", filter: (r) => r.has_farmland == null },
+    { key: "members", label: "Missing Family Members", tone: "pink", filter: (r) => !(r.members || []).length },
+  ];
+  const [sel, setSel] = useState("incomplete");
+  const cat = CATS.find((c) => c.key === sel) ?? CATS[0]!;
+
+  const tableCols = [
+    { key: "head", label: "Family Head" },
+    { key: "mobile", label: "Mobile" },
+    { key: "village", label: "Village" },
+    { key: "taluka", label: "Taluka" },
+    { key: "district", label: "District" },
+    { key: "members", label: "Members" },
+    { key: "missing", label: "Missing Fields" },
+    { key: "date", label: "Created" },
+  ];
+  const tableRows = rows.filter(cat.filter).map((r) => ({
+    head: A.txt(r.head_name) || "—",
+    mobile: A.txt(r.mobile) || "—",
+    village: A.txt(r.village) || "—",
+    taluka: A.txt(r.taluka) || "—",
+    district: A.txt(r.district) || "—",
+    members: (r.members || []).length,
+    missing: [
+      !A.txt(r.mobile) && "Mobile", !A.txt(r.pincode) && "Pincode", !A.txt(r.education) && "Education",
+      !A.txt(r.occupation) && "Occupation", r.has_farmland == null && "Agriculture", !(r.members || []).length && "Members",
+      isDup(r) && "Duplicate",
+    ].filter(Boolean).join(", ") || "—",
+    date: new Date(r.created_at).toLocaleDateString("en-GB"),
+  }));
+
+  const missingChart = [
+    { name: "Mobile", value: missing((r) => !A.txt(r.mobile)) },
+    { name: "Pincode", value: missing((r) => !A.txt(r.pincode)) },
+    { name: "Education", value: missing((r) => !A.txt(r.education)) },
+    { name: "Occupation", value: missing((r) => !A.txt(r.occupation)) },
+    { name: "Agriculture", value: missing((r) => r.has_farmland == null) },
+    { name: "Members", value: missing((r) => !(r.members || []).length) },
+    { name: "Duplicate", value: rows.filter(isDup).length },
+  ];
+
   return (
     <div className="space-y-4">
       <KpiGrid>
         <Kpi icon={CheckCircle2} label="Total Records" value={rows.length} />
         <Kpi tone="green" label="Complete Records" value={complete} />
-        <Kpi tone="red" label="Incomplete Records" value={rows.length - complete} />
-        <Kpi tone="amber" label="Duplicate Records" value={A.duplicates(rows)} />
-        <Kpi tone="violet" label="Missing Mobile" value={missing((r) => !A.txt(r.mobile))} />
-        <Kpi tone="violet" label="Missing Pincode" value={missing((r) => !A.txt(r.pincode))} />
-        <Kpi tone="cyan" label="Missing Education" value={missing((r) => !A.txt(r.education))} />
-        <Kpi tone="cyan" label="Missing Occupation" value={missing((r) => !A.txt(r.occupation))} />
-        <Kpi tone="lime" label="Missing Agriculture Data" value={missing((r) => r.has_farmland == null)} />
-        <Kpi tone="pink" label="Missing Family Members" value={missing((r) => !(r.members || []).length)} />
+        {CATS.map((c) => (
+          <Kpi key={c.key} tone={c.tone} label={c.label} value={rows.filter(c.filter).length}
+            hint="क्लिक करा / click to list" active={sel === c.key} onClick={() => setSel(c.key)} />
+        ))}
         <Kpi tone="green" label="Overall Data Completion" value={`${comp.overall}%`} />
       </KpiGrid>
       <G>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">विभागनिहाय पूर्णता / Section-wise Completion</CardTitle></CardHeader>
-          <CardContent><CompletionList items={comp.per} /></CardContent>
-        </Card>
-        <ChartCard title="त्रुटी / Missing Data"><BarCh horizontal color="#ef4444" data={[
-          { name: "Mobile", value: missing((r) => !A.txt(r.mobile)) },
-          { name: "Pincode", value: missing((r) => !A.txt(r.pincode)) },
-          { name: "Education", value: missing((r) => !A.txt(r.education)) },
-          { name: "Occupation", value: missing((r) => !A.txt(r.occupation)) },
-          { name: "Agriculture", value: missing((r) => r.has_farmland == null) },
-          { name: "Members", value: missing((r) => !(r.members || []).length) },
-        ]} /></ChartCard>
+        <ChartCard title="विभागनिहाय पूर्णता / Section-wise Completion"
+          expand={<div className="p-1"><CompletionList items={comp.per} /></div>}>
+          <div className="h-full overflow-y-auto pr-1"><CompletionList items={comp.per} /></div>
+        </ChartCard>
+        <ChartCard title="त्रुटी / Missing Data"
+          expand={<div style={{ height: 520 }}><BarCh horizontal color="#ef4444" data={missingChart} /></div>}>
+          <BarCh horizontal color="#ef4444" data={missingChart} />
+        </ChartCard>
       </G>
-      <DataTable
-        title="Incomplete Records"
-        columns={[{ key: "head", label: "Family Head" }, { key: "village", label: "Village" }, { key: "missing", label: "Missing Fields" }, { key: "date", label: "Created" }]}
-        rows={rows.filter((r) => !(r.head_name && r.village && r.mobile && r.education && r.occupation && (r.members || []).length)).map((r) => ({
-          head: r.head_name, village: r.village,
-          missing: [!A.txt(r.mobile) && "Mobile", !A.txt(r.pincode) && "Pincode", !A.txt(r.education) && "Education", !A.txt(r.occupation) && "Occupation", !(r.members || []).length && "Members"].filter(Boolean).join(", "),
-          date: new Date(r.created_at).toLocaleDateString("en-GB"),
-        }))}
-      />
+      <DataTable title={`${cat.label} — ${tableRows.length}`} columns={tableCols} rows={tableRows} exports={false} />
     </div>
   );
 }
+
 
 /* ======================================================= 23 Cross Analytics */
 
