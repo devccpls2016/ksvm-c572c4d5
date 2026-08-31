@@ -1448,16 +1448,16 @@ function Leadership({ rows }: Ctx) {
           <GroupedBar data={socialData} series={socialSeries} limit={20} />
         </ChartCard>
         <ChartCard
+          title="लोकप्रतिनिधी स्तर / Representative Level"
+          expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(pos.filter((p) => A.txt(p.type).includes("लोकप्रतिनिधी")), (p) => A.txt(p.political_level) || "—")} color="#10b981" /></div>}
+        >
+          <BarCh horizontal data={A.groupCount(pos.filter((p) => A.txt(p.type).includes("लोकप्रतिनिधी")), (p) => A.txt(p.political_level) || "—")} color="#10b981" />
+        </ChartCard>
+        <ChartCard
           title="पक्षनिहाय / Party-wise"
           expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(pos.filter((p) => p.party_name), (p) => A.txt(p.party_name_other) || A.txt(p.party_name))} color="#2563eb" /></div>}
         >
           <BarCh horizontal data={A.groupCount(pos.filter((p) => p.party_name), (p) => A.txt(p.party_name_other) || A.txt(p.party_name))} color="#2563eb" />
-        </ChartCard>
-        <ChartCard
-          title="लोकप्रतिनिधी प्रकार / Representative Type"
-          expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(pos.filter((p) => p.representative_type), (p) => A.txt(p.representative_type))} color="#10b981" /></div>}
-        >
-          <BarCh horizontal data={A.groupCount(pos.filter((p) => p.representative_type), (p) => A.txt(p.representative_type))} color="#10b981" />
         </ChartCard>
         <ChartCard
           title="संस्था / Organisation"
