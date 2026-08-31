@@ -2222,10 +2222,20 @@ function CrossAnalytics({ rows }: Ctx) {
           <Badge variant="secondary" className="text-xs">Metric: {unit}</Badge>
         </CardContent>
       </Card>
-      <ChartCard title={`${A.DIMENSIONS.find((d) => d.id === d1)!.label} × ${A.DIMENSIONS.find((d) => d.id === d2)!.label}`} wide>
+      <ChartCard
+        title={`${A.DIMENSIONS.find((d) => d.id === d1)!.label} × ${A.DIMENSIONS.find((d) => d.id === d2)!.label}`}
+        wide
+        expand={
+          <div className="space-y-3">
+            <div style={{ height: 520 }}><StackedBar data={data} columns={columns} /></div>
+            <DataTable title="Cross Analytics Table" columns={tableCols} rows={data} exports={false} />
+          </div>
+        }
+      >
         <StackedBar data={data} columns={columns} />
       </ChartCard>
       <DataTable title="Cross Analytics Table" columns={tableCols} rows={data} />
+
     </div>
   );
 }
