@@ -1652,8 +1652,26 @@ function HumanResources({ people }: Ctx) {
         {list.map((l) => <Kpi key={l.name} label={l.name} value={l.value} tone="primary" />)}
       </KpiGrid>
       <G>
-        <ChartCard title="व्यावसायिक मनुष्यबळ / Professional Categories"><BarCh horizontal data={list.filter((l) => l.value > 0)} color="#2563eb" /></ChartCard>
-        <ChartCard title="व्यवसाय × जिल्हा / Profession × District">
+        <ChartCard
+          title="व्यावसायिक मनुष्यबळ / Professional Categories"
+          expand={<BarCh horizontal limit={999} data={list.filter((l) => l.value > 0)} color="#2563eb" />}
+        >
+          <BarCh horizontal data={list.filter((l) => l.value > 0)} color="#2563eb" />
+        </ChartCard>
+        <ChartCard
+          title="व्यवसाय × जिल्हा / Profession × District"
+          expand={
+            <StackedBar
+              columns={list.filter((l) => l.value > 0).slice(0, 6).map((l) => l.name)}
+              data={[...new Set(professionals.map((p) => A.txt(p.row.district)))].map((d) => {
+                const sub = professionals.filter((p) => A.txt(p.row.district) === d);
+                const o: any = { name: d || "—" };
+                sub.forEach((p) => { const k = A.professionOf(p.occupation)!; o[k] = (o[k] || 0) + 1; });
+                return o;
+              })}
+            />
+          }
+        >
           <StackedBar
             columns={list.filter((l) => l.value > 0).slice(0, 6).map((l) => l.name)}
             data={[...new Set(professionals.map((p) => A.txt(p.row.district)))].map((d) => {
@@ -1664,7 +1682,20 @@ function HumanResources({ people }: Ctx) {
             })}
           />
         </ChartCard>
-        <ChartCard title="व्यवसाय × शिक्षण / Profession × Education">
+        <ChartCard
+          title="व्यवसाय × शिक्षण / Profession × Education"
+          expand={
+            <StackedBar
+              columns={[...new Set(professionals.map((p) => A.eduLevel(p.education)))].slice(0, 8)}
+              data={list.filter((l) => l.value > 0).map((l) => {
+                const sub = professionals.filter((p) => A.professionOf(p.occupation) === l.name);
+                const o: any = { name: l.name.split(" / ")[0]! };
+                sub.forEach((p) => { const k = A.eduLevel(p.education); o[k] = (o[k] || 0) + 1; });
+                return o;
+              })}
+            />
+          }
+        >
           <StackedBar
             columns={[...new Set(professionals.map((p) => A.eduLevel(p.education)))].slice(0, 8)}
             data={list.filter((l) => l.value > 0).map((l) => {
@@ -1675,7 +1706,20 @@ function HumanResources({ people }: Ctx) {
             })}
           />
         </ChartCard>
-        <ChartCard title="व्यवसाय × वयोगट / Profession × Age">
+        <ChartCard
+          title="व्यवसाय × वयोगट / Profession × Age"
+          expand={
+            <StackedBar
+              columns={A.AGE_BANDS.map((b) => b.name)}
+              data={list.filter((l) => l.value > 0).map((l) => {
+                const sub = professionals.filter((p) => A.professionOf(p.occupation) === l.name);
+                const o: any = { name: l.name.split(" / ")[0]! };
+                A.AGE_BANDS.forEach((b) => { o[b.name] = sub.filter((p) => typeof p.age === "number" && b.test(p.age)).length; });
+                return o;
+              })}
+            />
+          }
+        >
           <StackedBar
             columns={A.AGE_BANDS.map((b) => b.name)}
             data={list.filter((l) => l.value > 0).map((l) => {
@@ -1689,6 +1733,7 @@ function HumanResources({ people }: Ctx) {
       </G>
       <DataTable
         title="Community Human Resource Directory"
+        exports={false}
         columns={[{ key: "name", label: "Name" }, { key: "profession", label: "Profession" }, { key: "education", label: "Education" }, { key: "village", label: "Village" }, { key: "taluka", label: "Taluka" }, { key: "district", label: "District" }]}
         rows={professionals.map((p) => ({
           name: p.name, profession: A.professionOf(p.occupation), education: p.education,
