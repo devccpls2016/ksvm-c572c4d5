@@ -1736,10 +1736,17 @@ function Needs({ rows, people }: Ctx) {
         {items.map((i) => <Kpi key={i.name} label={i.name} value={i.value} tone="amber" icon={HandHeart} />)}
       </KpiGrid>
       <G>
-        <ChartCard title="समाजाच्या गरजा / Community Needs" wide><BarCh horizontal data={items} color="#f59e0b" /></ChartCard>
+        <ChartCard
+          title="समाजाच्या गरजा / Community Needs"
+          wide
+          expand={<div className="h-[62vh]"><BarCh horizontal multi labels limit={999} data={items} color="#f59e0b" /></div>}
+        >
+          <BarCh horizontal data={items} color="#f59e0b" />
+        </ChartCard>
       </G>
       <DataTable
         title="Village-wise Needs Report"
+        exports={false}
         columns={[{ key: "name", label: "Village" }, { key: "gharkul", label: "Gharkul" }, { key: "solar", label: "Solar" }, { key: "medical", label: "Medical" }, { key: "equipment", label: "Equipment" }, { key: "loan", label: "Loan" }]}
         rows={A.uniq(rows, (r) => A.txt(r.village)).map((v) => {
           const sub = rows.filter((r) => A.txt(r.village) === v);
