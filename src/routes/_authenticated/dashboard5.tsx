@@ -1518,13 +1518,34 @@ function BusinessSec({ rows, people }: Ctx) {
         <Kpi tone="pink" label="Entrepreneur Share" value={`${A.pct(entrepreneurs.length, rows.length)}%`} />
       </KpiGrid>
       <G>
-        <ChartCard title="उद्योजकता / Entrepreneurship"><PieCh donut data={[{ name: "उद्योजक कुटुंबे", value: entrepreneurs.length }, { name: "इतर", value: rows.length - entrepreneurs.length }]} /></ChartCard>
-        <ChartCard title="व्यवसाय प्रकार / Business Types">{entrepreneurs.length ? <BarCh horizontal data={A.groupCount(entrepreneurs, (r) => A.txt(e(r).entrepreneur_details) || "—")} color="#8b5cf6" /> : <Empty />}</ChartCard>
-        <ChartCard title="जोड व्यवसाय / Side Business">{side.length ? <BarCh horizontal data={A.groupCount(side, (r) => A.txt(e(r).side_business_details) || "—")} color="#f59e0b" /> : <Empty />}</ChartCard>
-        <ChartCard title="गावनिहाय उद्योजक / Entrepreneurs by Village">{entrepreneurs.length ? <BarCh horizontal data={A.groupCount(entrepreneurs, (r) => A.txt(r.village))} color="#10b981" /> : <Empty />}</ChartCard>
+        <ChartCard
+          title="उद्योजकता / Entrepreneurship"
+          expand={<div className="h-[60vh]"><PieCh donut data={[{ name: "उद्योजक कुटुंबे", value: entrepreneurs.length }, { name: "इतर", value: rows.length - entrepreneurs.length }]} /></div>}
+        >
+          <PieCh donut data={[{ name: "उद्योजक कुटुंबे", value: entrepreneurs.length }, { name: "इतर", value: rows.length - entrepreneurs.length }]} />
+        </ChartCard>
+        <ChartCard
+          title="व्यवसाय प्रकार / Business Types"
+          expand={entrepreneurs.length ? <div className="h-[60vh]"><BarCh horizontal limit={999} data={A.groupCount(entrepreneurs, (r) => A.txt(e(r).entrepreneur_details) || "—")} color="#8b5cf6" /></div> : <Empty />}
+        >
+          {entrepreneurs.length ? <BarCh horizontal data={A.groupCount(entrepreneurs, (r) => A.txt(e(r).entrepreneur_details) || "—")} color="#8b5cf6" /> : <Empty />}
+        </ChartCard>
+        <ChartCard
+          title="जोड व्यवसाय / Side Business"
+          expand={side.length ? <div className="h-[60vh]"><BarCh horizontal limit={999} data={A.groupCount(side, (r) => A.txt(e(r).side_business_details) || "—")} color="#f59e0b" /></div> : <Empty />}
+        >
+          {side.length ? <BarCh horizontal data={A.groupCount(side, (r) => A.txt(e(r).side_business_details) || "—")} color="#f59e0b" /> : <Empty />}
+        </ChartCard>
+        <ChartCard
+          title="गावनिहाय उद्योजक / Entrepreneurs by Village"
+          expand={entrepreneurs.length ? <div className="h-[60vh]"><BarCh horizontal limit={999} data={A.groupCount(entrepreneurs, (r) => A.txt(r.village))} color="#10b981" /></div> : <Empty />}
+        >
+          {entrepreneurs.length ? <BarCh horizontal data={A.groupCount(entrepreneurs, (r) => A.txt(r.village))} color="#10b981" /> : <Empty />}
+        </ChartCard>
       </G>
       <DataTable
         title="Business & Entrepreneurship Report"
+        exports={false}
         columns={[{ key: "head", label: "Family Head" }, { key: "business", label: "Business" }, { key: "address", label: "Business Location" }, { key: "side", label: "Side Business" }, { key: "village", label: "Village" }]}
         rows={[...entrepreneurs, ...side.filter((r) => !entrepreneurs.includes(r))].map((r) => ({
           head: r.head_name, business: e(r).entrepreneur_details, address: e(r).entrepreneur_address,
