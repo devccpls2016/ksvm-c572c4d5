@@ -1462,9 +1462,9 @@ function Leadership({ rows }: Ctx) {
           title="लोकप्रतिनिधी स्तर / Representative Level"
           subtitle="फील्ड: प्रतिनिधी कार्यालय (Office) · मालिका: पद (Post/Role)"
           h={340}
-          expand={<div className="h-[68vh]">{repData.length ? <StackedBar horizontal data={repData} columns={repRoles} /> : <Empty />}</div>}
+          expand={<div className="h-[68vh]">{repData.length ? <GroupedBar stacked horizontal data={repData} series={repRoles.map((r) => ({ key: r, label: r }))} limit={20} /> : <Empty />}</div>}
         >
-          {repData.length ? <StackedBar horizontal data={repData} columns={repRoles} /> : <Empty />}
+          {repData.length ? <GroupedBar stacked horizontal data={repData} series={repRoles.map((r) => ({ key: r, label: r }))} limit={12} /> : <Empty />}
         </ChartCard>
         <ChartCard
           title="पक्षनिहाय / Party-wise"
