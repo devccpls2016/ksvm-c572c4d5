@@ -1562,6 +1562,18 @@ function Women({ rows, people }: Ctx) {
   const women = people.filter((p) => p.gender === "स्त्री");
   const shg = (f: (g: any) => boolean) => women.filter((w) => w.bachat_gat && f(w.bachat_gat)).length;
   const b = (r: A.Row) => (r.benefits_info || {}) as any;
+  const bizList = (pick: (g: any) => boolean, name: (g: any) => any) => {
+    const m = new Map<string, number>();
+    women.forEach((w) => {
+      const g = w.bachat_gat;
+      if (!g || !pick(g)) return;
+      const key = A.txt(name(g)) || "इतर / Other";
+      m.set(key, (m.get(key) ?? 0) + 1);
+    });
+    return [...m.entries()].map(([name, value]) => ({ name, value })).sort((a, z) => z.value - a.value);
+  };
+  const runningBiz = bizList((g) => g.has_rural_home_business, (g) => g.business_name);
+  const wantBiz = bizList((g) => g.wants_to_start_business, (g) => g.desired_business);
   return (
     <div className="space-y-4">
       <KpiGrid>
