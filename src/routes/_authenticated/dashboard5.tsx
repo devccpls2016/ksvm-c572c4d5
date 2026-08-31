@@ -1460,9 +1460,11 @@ function Leadership({ rows }: Ctx) {
         </ChartCard>
         <ChartCard
           title="लोकप्रतिनिधी स्तर / Representative Level"
-          expand={<div className="h-[68vh]"><BarCh horizontal data={A.groupCount(pos.filter((p) => A.txt(p.type).includes("लोकप्रतिनिधी")), (p) => A.txt(p.political_level) || "—")} color="#10b981" /></div>}
+          subtitle="फील्ड: प्रतिनिधी कार्यालय (Office) · मालिका: पद (Post/Role)"
+          h={340}
+          expand={<div className="h-[68vh]">{repData.length ? <StackedBar horizontal data={repData} columns={repRoles} /> : <Empty />}</div>}
         >
-          <BarCh horizontal data={A.groupCount(pos.filter((p) => A.txt(p.type).includes("लोकप्रतिनिधी")), (p) => A.txt(p.political_level) || "—")} color="#10b981" />
+          {repData.length ? <StackedBar horizontal data={repData} columns={repRoles} /> : <Empty />}
         </ChartCard>
         <ChartCard
           title="पक्षनिहाय / Party-wise"
