@@ -2123,7 +2123,9 @@ function Quality({ rows }: Ctx) {
     { key: "members", label: "Missing Family Members", tone: "pink", filter: (r) => !(r.members || []).length },
   ];
   const [sel, setSel] = useState("incomplete");
+  const [open, setOpen] = useState(false);
   const cat = CATS.find((c) => c.key === sel) ?? CATS[0]!;
+
 
   const tableCols = [
     { key: "head", label: "Family Head" },
