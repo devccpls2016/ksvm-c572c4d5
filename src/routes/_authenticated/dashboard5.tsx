@@ -50,19 +50,17 @@ const SECTIONS = [
   { id: "equipment", no: "08", label: "Farming Equipment", icon: Tractor },
   { id: "housing", no: "09", label: "Housing Analytics", icon: Home },
   { id: "assets", no: "10", label: "Household Assets & Solar", icon: Package },
-  { id: "benefits", no: "11", label: "Benefits & Assistance", icon: Target },
-  { id: "medical", no: "12", label: "Medical & Health", icon: HeartPulse },
-  { id: "sports", no: "13", label: "Sports Analytics", icon: Trophy },
-  { id: "leadership", no: "14", label: "Political & Social Leadership", icon: Landmark },
-  { id: "business", no: "15", label: "Business & Entrepreneurship", icon: Store },
-  { id: "women", no: "16", label: "Women & Family", icon: UserRound },
-  { id: "hr", no: "17", label: "Community Human Resources", icon: BriefcaseBusiness },
-  { id: "needs", no: "18", label: "Community Needs", icon: HandHeart },
-  { id: "users", no: "19", label: "Survey User Performance", icon: UserCog },
-  { id: "progress", no: "20", label: "Survey Progress", icon: TrendingUp },
-  { id: "quality", no: "21", label: "Data Quality", icon: CheckCircle2 },
-  { id: "cross", no: "22", label: "Cross Analytics", icon: Shuffle },
-  { id: "reports", no: "23", label: "Detailed Reports", icon: Table2 },
+  { id: "benefits", no: "11", label: "Benefits, Medical & Sports", icon: Target },
+  { id: "leadership", no: "12", label: "Political & Social Leadership", icon: Landmark },
+  { id: "business", no: "13", label: "Business & Entrepreneurship", icon: Store },
+  { id: "women", no: "14", label: "Women & Family", icon: UserRound },
+  { id: "hr", no: "15", label: "Community Human Resources", icon: BriefcaseBusiness },
+  { id: "needs", no: "16", label: "Community Needs", icon: HandHeart },
+  { id: "users", no: "17", label: "Survey User Performance", icon: UserCog },
+  { id: "progress", no: "18", label: "Survey Progress", icon: TrendingUp },
+  { id: "quality", no: "19", label: "Data Quality", icon: CheckCircle2 },
+  { id: "cross", no: "20", label: "Cross Analytics", icon: Shuffle },
+  { id: "reports", no: "21", label: "Detailed Reports", icon: Table2 },
 ];
 
 /** which filter groups are relevant to each analytics section */
@@ -78,8 +76,6 @@ const SECTION_FILTERS: Record<string, string[]> = {
   housing: ["loc", "house"],
   assets: ["loc", "house"],
   benefits: ["loc", "ben", "fam"],
-  medical: ["loc", "ben"],
-  sports: ["loc", "ben"],
   leadership: ["loc", "pos"],
   business: ["loc", "biz", "occ"],
   women: ["loc", "fam", "ben"],
@@ -286,8 +282,6 @@ function Section({ id, ctx }: { id: string; ctx: Ctx }) {
       case "housing": return <Housing {...ctx} />;
       case "assets": return <Assets {...ctx} />;
       case "benefits": return <Benefits {...ctx} />;
-      case "medical": return <Medical {...ctx} />;
-      case "sports": return <Sports {...ctx} />;
       case "leadership": return <Leadership {...ctx} />;
       case "business": return <BusinessSec {...ctx} />;
       case "women": return <Women {...ctx} />;
@@ -1275,11 +1269,14 @@ function Assets({ rows }: Ctx) {
   );
 }
 
-/* =========================================================== 12 Benefits */
+/* ============================ 11 Benefits, Medical & Sports (merged) */
 
 function Benefits({ rows }: Ctx) {
   const b = (r: A.Row) => (r.benefits_info || {}) as any;
+
+  /* --- Ladki Bahin / benefits --- */
   const benef = rows.filter((r) => b(r).ladki_bahin);
+  const nonBenef = rows.filter((r) => b(r).ladki_bahin === false);
   const members = benef.reduce((a, r) => a + (b(r).ladki_bahin_beneficiaries?.length || A.num(b(r).ladki_bahin_count)), 0);
   const regular = benef.filter((r) => b(r).ladki_bahin_regular).length;
   const reasons = A.countMulti(rows, (r) => [
@@ -1287,90 +1284,101 @@ function Benefits({ rows }: Ctx) {
     ...(b(r).ladki_bahin_non_beneficiaries || []).map((x: any) => A.txt(x?.reason)),
   ].filter(Boolean));
 
+  /* --- Medical --- */
+  const ill = rows.filter((r) => b(r).critical_illness);
+  const aid = rows.filter((r) => b(r).medical_aid_needed);
+
+  /* --- Sports --- */
+  const sp = rows.filter((r) => b(r).has_sportsperson);
+  const lvl = (k: string) => sp.filter((r) => A.txt(b(r).sport_level).includes(k)).length;
+
+  const villages = A.uniq(rows, (r) => A.txt(r.village));
+
   return (
     <div className="space-y-4">
+      {/* ---------------------------------------------------------- KPIs */}
       <KpiGrid>
         <Kpi icon={Target} label="Beneficiary Families" value={benef.length} hint={`${A.pct(benef.length, rows.length)}%`} />
         <Kpi tone="green" label="Beneficiary Members" value={members} />
         <Kpi tone="cyan" label="Regularly Receiving" value={regular} />
         <Kpi tone="red" label="Not Regularly Receiving" value={benef.length - regular} />
-        <Kpi tone="amber" label="Non-Beneficiary Families" value={rows.filter((r) => b(r).ladki_bahin === false).length} />
+        <Kpi tone="amber" label="Non-Beneficiary Families" value={nonBenef.length} />
         <Kpi tone="violet" label="Recorded Issue Reasons" value={reasons.reduce((a, r) => a + r.value, 0)} />
+        <Kpi icon={HeartPulse} tone="red" label="Families with Critical Illness" value={ill.length} />
+        <Kpi tone="amber" label="Members in Affected Families" value={A.allPersons(ill).length} />
+        <Kpi tone="violet" label="Medical Assistance Required" value={aid.length} />
+        <Kpi tone="cyan" label="Illness Share of Families" value={`${A.pct(ill.length, rows.length)}%`} />
+        <Kpi icon={Trophy} tone="amber" label="Total Sportspersons" value={sp.length} />
+        <Kpi tone="green" label="State Level" value={lvl("राज्य")} />
+        <Kpi tone="violet" label="National Level" value={lvl("राष्ट्रीय")} />
+        <Kpi tone="cyan" label="International Level" value={lvl("आंतरराष्ट्रीय")} />
       </KpiGrid>
+
+      {/* -------------------------------------------------------- Charts */}
       <G>
-        <ChartCard title="लाडकी बहीण लाभार्थी / Ladki Bahin"><PieCh donut data={[{ name: "लाभार्थी", value: benef.length }, { name: "लाभार्थी नाही", value: rows.filter((r) => b(r).ladki_bahin === false).length }]} /></ChartCard>
-        <ChartCard title="नियमित लाभ / Benefit Regularity"><PieCh data={[{ name: "नियमित", value: regular }, { name: "अनियमित", value: benef.length - regular }]} /></ChartCard>
-        <ChartCard title="कारणे / Reasons (KYC, Aadhaar, DBT…)" wide>{reasons.length ? <BarCh horizontal data={reasons} color="#ef4444" /> : <Empty />}</ChartCard>
+        <ChartCard title="लाडकी बहीण लाभार्थी / Ladki Bahin" h={320}
+          expand={<div className="h-[68vh]"><PieCh donut data={[{ name: "लाभार्थी", value: benef.length }, { name: "लाभार्थी नाही", value: nonBenef.length }]} /></div>}>
+          <PieCh donut data={[{ name: "लाभार्थी", value: benef.length }, { name: "लाभार्थी नाही", value: nonBenef.length }]} />
+        </ChartCard>
+        <ChartCard title="नियमित लाभ / Benefit Regularity" h={320}
+          expand={<div className="h-[68vh]"><PieCh data={[{ name: "नियमित", value: regular }, { name: "अनियमित", value: benef.length - regular }]} /></div>}>
+          <PieCh data={[{ name: "नियमित", value: regular }, { name: "अनियमित", value: benef.length - regular }]} />
+        </ChartCard>
+        <ChartCard title="कारणे / Reasons (KYC, Aadhaar, DBT…)" wide h={320}
+          expand={<div className="h-[68vh]">{reasons.length ? <BarCh horizontal data={reasons} color="#ef4444" limit={100} /> : <Empty />}</div>}>
+          {reasons.length ? <BarCh horizontal data={reasons} color="#ef4444" /> : <Empty />}
+        </ChartCard>
+
+        <ChartCard title="गंभीर आजार / Critical Illness" h={320}
+          expand={<div className="h-[68vh]"><PieCh donut data={[{ name: "आजार आहे", value: ill.length }, { name: "आजार नाही", value: rows.length - ill.length }]} /></div>}>
+          <PieCh donut data={[{ name: "आजार आहे", value: ill.length }, { name: "आजार नाही", value: rows.length - ill.length }]} />
+        </ChartCard>
+        <ChartCard title="वैद्यकीय मदतीची आवश्यकता / Medical Assistance" h={320}
+          expand={<div className="h-[68vh]"><PieCh data={[{ name: "आवश्यक", value: aid.length }, { name: "आवश्यक नाही", value: rows.length - aid.length }]} /></div>}>
+          <PieCh data={[{ name: "आवश्यक", value: aid.length }, { name: "आवश्यक नाही", value: rows.length - aid.length }]} />
+        </ChartCard>
+        <ChartCard title="गावनिहाय वैद्यकीय गरज / Medical Assistance by Village" wide h={320}
+          expand={<div className="h-[68vh]"><BarCh horizontal color="#ef4444" limit={100} data={villages.map((v) => ({ name: v, value: aid.filter((r) => A.txt(r.village) === v).length })).filter((d) => d.value > 0)} /></div>}>
+          <BarCh horizontal color="#ef4444" data={villages.map((v) => ({ name: v, value: aid.filter((r) => A.txt(r.village) === v).length })).filter((d) => d.value > 0)} />
+        </ChartCard>
+
+        <ChartCard title="खेळ प्रकार / Sport Type" h={320}
+          expand={<div className="h-[68vh]">{sp.length ? <BarCh horizontal data={A.groupCount(sp, (r) => A.txt(b(r).sport_type) || "—")} color="#f59e0b" limit={100} /> : <Empty />}</div>}>
+          {sp.length ? <BarCh horizontal data={A.groupCount(sp, (r) => A.txt(b(r).sport_type) || "—")} color="#f59e0b" /> : <Empty />}
+        </ChartCard>
+        <ChartCard title="स्तरानुसार / By Level" h={320}
+          expand={<div className="h-[68vh]">{sp.length ? <PieCh data={A.groupCount(sp, (r) => A.txt(b(r).sport_level) || "—")} /> : <Empty />}</div>}>
+          {sp.length ? <PieCh data={A.groupCount(sp, (r) => A.txt(b(r).sport_level) || "—")} /> : <Empty />}
+        </ChartCard>
+        <ChartCard title="गावनिहाय खेळाडू / Sportspersons by Village" wide h={320}
+          expand={<div className="h-[68vh]">{sp.length ? <BarCh horizontal data={A.groupCount(sp, (r) => A.txt(r.village))} color="#10b981" limit={100} /> : <Empty />}</div>}>
+          {sp.length ? <BarCh horizontal data={A.groupCount(sp, (r) => A.txt(r.village))} color="#10b981" /> : <Empty />}
+        </ChartCard>
       </G>
+
+      {/* -------------------------------------------------------- Tables */}
       <DataTable
         title="Ladki Bahin Report by Village"
+        exports={false}
         columns={[{ key: "name", label: "Village" }, { key: "families", label: "Families" }, { key: "benef", label: "Beneficiary" }, { key: "regular", label: "Regular" }, { key: "pct", label: "Coverage %" }]}
-        rows={A.uniq(rows, (r) => A.txt(r.village)).map((v) => {
+        rows={villages.map((v) => {
           const sub = rows.filter((r) => A.txt(r.village) === v);
           const bf = sub.filter((r) => b(r).ladki_bahin).length;
           return { name: v, families: sub.length, benef: bf, regular: sub.filter((r) => b(r).ladki_bahin_regular).length, pct: A.pct(bf, sub.length) };
         })}
       />
-    </div>
-  );
-}
-
-/* ============================================================ 13 Medical */
-
-function Medical({ rows, people }: Ctx) {
-  const b = (r: A.Row) => (r.benefits_info || {}) as any;
-  const ill = rows.filter((r) => b(r).critical_illness);
-  const aid = rows.filter((r) => b(r).medical_aid_needed);
-  return (
-    <div className="space-y-4">
-      <KpiGrid>
-        <Kpi icon={HeartPulse} tone="red" label="Families with Critical Illness" value={ill.length} />
-        <Kpi tone="amber" label="Members in Affected Families" value={A.allPersons(ill).length} />
-        <Kpi tone="violet" label="Medical Assistance Required" value={aid.length} />
-        <Kpi tone="cyan" label="Share of Surveyed Families" value={`${A.pct(ill.length, rows.length)}%`} />
-      </KpiGrid>
-      <G>
-        <ChartCard title="गंभीर आजार / Critical Illness"><PieCh donut data={[{ name: "आजार आहे", value: ill.length }, { name: "आजार नाही", value: rows.length - ill.length }]} /></ChartCard>
-        <ChartCard title="वैद्यकीय मदतीची आवश्यकता / Medical Assistance"><PieCh data={[{ name: "आवश्यक", value: aid.length }, { name: "आवश्यक नाही", value: rows.length - aid.length }]} /></ChartCard>
-        <ChartCard title="गावनिहाय गरज / Assistance by Village" wide>
-          <BarCh horizontal color="#ef4444" data={A.uniq(rows, (r) => A.txt(r.village)).map((v) => ({ name: v, value: aid.filter((r) => A.txt(r.village) === v).length })).filter((d) => d.value > 0)} />
-        </ChartCard>
-      </G>
       <DataTable
         title="Medical Assistance Detail"
+        exports={false}
         columns={[{ key: "head", label: "Family Head" }, { key: "village", label: "Village" }, { key: "taluka", label: "Taluka" }, { key: "mobile", label: "Mobile" }, { key: "members", label: "Members" }]}
         rows={[...ill, ...aid.filter((r) => !ill.includes(r))].map((r) => ({
           head: r.head_name, village: r.village, taluka: r.taluka, mobile: r.mobile,
           members: A.personsOf(r).length,
         }))}
       />
-      <div className="text-xs text-muted-foreground">Illness-type breakdown (cancer / heart / kidney) appears here once recorded in the survey record.</div>
-      <div className="hidden">{people.length}</div>
-    </div>
-  );
-}
-
-/* ============================================================= 14 Sports */
-
-function Sports({ rows }: Ctx) {
-  const b = (r: A.Row) => (r.benefits_info || {}) as any;
-  const sp = rows.filter((r) => b(r).has_sportsperson);
-  const lvl = (k: string) => sp.filter((r) => A.txt(b(r).sport_level).includes(k)).length;
-  return (
-    <div className="space-y-4">
-      <KpiGrid>
-        <Kpi icon={Trophy} tone="amber" label="Total Sportspersons" value={sp.length} />
-        <Kpi tone="green" label="State Level" value={lvl("राज्य")} />
-        <Kpi tone="violet" label="National Level" value={lvl("राष्ट्रीय")} />
-        <Kpi tone="cyan" label="International Level" value={lvl("आंतरराष्ट्रीय")} />
-      </KpiGrid>
-      <G>
-        <ChartCard title="खेळ प्रकार / Sport Type">{sp.length ? <BarCh horizontal data={A.groupCount(sp, (r) => A.txt(b(r).sport_type) || "—")} color="#f59e0b" /> : <Empty />}</ChartCard>
-        <ChartCard title="स्तरानुसार / By Level">{sp.length ? <PieCh data={A.groupCount(sp, (r) => A.txt(b(r).sport_level) || "—")} /> : <Empty />}</ChartCard>
-        <ChartCard title="गावनिहाय खेळाडू / Sportspersons by Village" wide>{sp.length ? <BarCh horizontal data={A.groupCount(sp, (r) => A.txt(r.village))} color="#10b981" /> : <Empty />}</ChartCard>
-      </G>
       <DataTable
         title="Sports Detail Report"
+        exports={false}
         columns={[{ key: "head", label: "Family Head" }, { key: "sport", label: "Sport" }, { key: "level", label: "Level" }, { key: "village", label: "Village" }, { key: "district", label: "District" }]}
         rows={sp.map((r) => ({ head: r.head_name, sport: b(r).sport_type, level: b(r).sport_level, village: r.village, district: r.district }))}
       />
