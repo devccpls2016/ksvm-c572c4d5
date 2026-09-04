@@ -308,6 +308,39 @@ function Overview({ rows, people }: Ctx) {
   const other = people.filter((p) => p.gender && p.gender !== "पुरुष" && p.gender !== "स्त्री").length;
   const ages = people.map((p) => p.age).filter((a): a is number => typeof a === "number");
 
+  /* शिक्षणानुसार */
+  const withEdu = people.filter((p) => p.education);
+  const eduData = A.EDU_LEVELS.map((l) => ({ name: l.name.split(" / ")[0]!, value: withEdu.filter((p) => A.eduLevel(p.education) === l.name).length })).filter((d) => d.value > 0);
+
+  /* व्यवसायानुसार */
+  const withOcc = people.filter((p) => p.occupation);
+  const occData = A.groupCount(withOcc as any, (p: any) => A.occGroup(p.occupation)).map((d) => ({ ...d, name: d.name.split(" / ")[0]! }));
+
+  /* घर प्रकारानुसार */
+  const houseData = A.groupCount(rows.filter((r) => r.house_type), (r) => A.txt(r.house_type));
+
+  /* शेतजमीन */
+  const farm = rows.filter((r) => r.has_farmland);
+  const landData = A.LAND_BANDS.map((b) => ({ name: b, value: farm.filter((r) => A.landBand(A.num(r.total_farmland)) === b).length }));
+
+  /* पिक प्रकारानुसार */
+  const cropData = A.countMulti(rows, (r) => (Array.isArray(r.major_crop_types) ? r.major_crop_types : []));
+
+  /* सिंचन साधनानुसार */
+  const irrData = A.countMulti(rows, (r) => (Array.isArray(r.irrigation_sources) ? r.irrigation_sources : []));
+
+  /* घरातील वस्तू */
+  const assetData = A.countMulti(rows, (r) => (Array.isArray(r.household_items) ? r.household_items : []));
+
+  /* पदानुसार — राजकीय / सामाजिक / लोकप्रतिनिधी × आजी / माजी */
+  const pos = A.allPositions(rows);
+  const posTypes = ["राजकीय", "सामाजिक", "लोकप्रतिनिधी"];
+  const posData = posTypes.map((t) => ({
+    name: t,
+    आजी: pos.filter((p) => A.txt(p.type).includes(t) && A.txt(p.status).includes("आजी")).length,
+    माजी: pos.filter((p) => A.txt(p.type).includes(t) && A.txt(p.status).includes("माजी")).length,
+  }));
+
   return (
     <div className="space-y-4">
       <G>
@@ -325,6 +358,70 @@ function Overview({ rows, people }: Ctx) {
         </ChartCard>
         <ChartCard title="गावनिहाय कुटुंबे / Families by Village">
           <BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" />
+        </ChartCard>
+
+        <ChartCard
+          title="शिक्षणानुसार / Education-wise"
+          subtitle="कुटुंबातील सदस्यांचे शैक्षणिक स्तर"
+          expand={<div className="h-[70vh]"><BarCh horizontal multi limit={40} data={eduData} unit="सदस्य / Members" /></div>}
+        >
+          <BarCh horizontal data={eduData} color="#2563eb" unit="सदस्य / Members" />
+        </ChartCard>
+
+        <ChartCard
+          title="व्यवसायानुसार / Occupation-wise"
+          subtitle="व्यवसाय गटानुसार सदस्य संख्या"
+          expand={<div className="h-[70vh]"><BarCh horizontal multi limit={40} data={occData} unit="सदस्य / Members" /></div>}
+        >
+          <BarCh horizontal data={occData} color="#10b981" unit="सदस्य / Members" />
+        </ChartCard>
+
+        <ChartCard
+          title="घर प्रकारानुसार / House Type"
+          subtitle="कच्चे / पक्के घर वितरण"
+          expand={<div className="h-[68vh]"><PieCh donut data={houseData} unit="कुटुंबे / families" /></div>}
+        >
+          <PieCh donut data={houseData} unit="कुटुंबे / families" />
+        </ChartCard>
+
+        <ChartCard
+          title="शेतजमीन / Landholding"
+          subtitle="जमीन धारणा गटानुसार कुटुंबे"
+          expand={<div className="h-[68vh]"><BarCh multi limit={20} data={landData} unit="कुटुंबे / Families" /></div>}
+        >
+          <BarCh data={landData} color="#84cc16" unit="कुटुंबे / Families" />
+        </ChartCard>
+
+        <ChartCard
+          title="पिक प्रकारानुसार / Crop Types"
+          subtitle="मुख्य पिके घेणाऱ्या कुटुंबांची संख्या"
+          expand={<div className="h-[70vh]"><BarCh horizontal multi limit={40} data={cropData} unit="कुटुंबे / Families" /></div>}
+        >
+          <BarCh horizontal data={cropData} color="#f59e0b" unit="कुटुंबे / Families" />
+        </ChartCard>
+
+        <ChartCard
+          title="सिंचन साधनानुसार / Irrigation Sources"
+          subtitle="सिंचन साधने वापरणाऱ्या कुटुंबांची संख्या"
+          expand={<div className="h-[68vh]"><PieCh data={irrData} unit="कुटुंबे / families" /></div>}
+        >
+          <PieCh data={irrData} unit="कुटुंबे / families" />
+        </ChartCard>
+
+        <ChartCard
+          title="घरातील वस्तू / Household Assets"
+          subtitle="वस्तू असलेल्या कुटुंबांची संख्या"
+          expand={<div className="h-[70vh]"><BarCh horizontal multi limit={40} data={assetData} unit="कुटुंबे / Families" /></div>}
+        >
+          <BarCh horizontal data={assetData} color="#06b6d4" unit="कुटुंबे / Families" />
+        </ChartCard>
+
+        <ChartCard
+          title="पदानुसार — आजी / माजी / Positions"
+          subtitle="राजकीय / सामाजिक / लोकप्रतिनिधी — धारण केलेले पद"
+          expand={<div className="h-[68vh]"><GroupedBar data={posData} series={[{ key: "आजी", label: "आजी / Current", color: "#10b981" }, { key: "माजी", label: "माजी / Former", color: "#f59e0b" }]} /></div>}
+        >
+          <GroupedBar data={posData} series={[{ key: "आजी", label: "आजी / Current", color: "#10b981" }, { key: "माजी", label: "माजी / Former", color: "#f59e0b" }]} />
         </ChartCard>
       </G>
     </div>
