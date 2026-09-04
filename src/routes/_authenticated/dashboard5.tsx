@@ -320,6 +320,9 @@ function Overview({ rows, people }: Ctx) {
         <ChartCard title="जिल्हानिहाय कुटुंबे / Families by District">
           <BarCh data={A.groupCount(rows, (r) => A.txt(r.district))} color="#10b981" />
         </ChartCard>
+        <ChartCard title="तालुकानिहाय कुटुंबे / Families by Taluka">
+          <BarCh data={A.groupCount(rows, (r) => A.txt(r.taluka))} color="#8b5cf6" />
+        </ChartCard>
         <ChartCard title="गावनिहाय कुटुंबे / Families by Village">
           <BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" />
         </ChartCard>
