@@ -446,6 +446,13 @@ function Overview({ rows, people, appUsers, isAdmin }: Ctx) {
         >
           <GroupedBar data={posData} series={[{ key: "आजी", label: "आजी / Current", color: "#10b981" }, { key: "माजी", label: "माजी / Former", color: "#f59e0b" }]} />
         </ChartCard>
+
+        <ChartCard
+          title="सर्वेक्षकानुसार सर्वेक्षण संख्या / Survey User wise Survey Count"
+          expand={<div className="h-[70vh]">{userSurveyData.length ? <BarCh horizontal multi limit={999} data={userSurveyData} color="#6366f1" unit="सर्वेक्षणे / surveys" /> : <Empty />}</div>}
+        >
+          {userSurveyData.length ? <BarCh horizontal multi data={userSurveyData} color="#6366f1" unit="सर्वेक्षणे / surveys" /> : <Empty />}
+        </ChartCard>
       </G>
     </div>
   );
