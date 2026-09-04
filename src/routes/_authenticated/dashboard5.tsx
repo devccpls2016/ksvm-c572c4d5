@@ -302,7 +302,7 @@ function Section({ id, ctx }: { id: string; ctx: Ctx }) {
 
 /* ============================================================ 01 Overview */
 
-function Overview({ rows, people }: Ctx) {
+function Overview({ rows, people, appUsers, isAdmin }: Ctx) {
   const male = people.filter((p) => p.gender === "पुरुष").length;
   const female = people.filter((p) => p.gender === "स्त्री").length;
   const other = people.filter((p) => p.gender && p.gender !== "पुरुष" && p.gender !== "स्त्री").length;
@@ -340,6 +340,16 @@ function Overview({ rows, people }: Ctx) {
     आजी: pos.filter((p) => A.txt(p.type).includes(t) && A.txt(p.status).includes("आजी")).length,
     माजी: pos.filter((p) => A.txt(p.type).includes(t) && A.txt(p.status).includes("माजी")).length,
   }));
+
+  /* सर्वेक्षकानुसार सर्वेक्षण संख्या */
+  const userSurveyData = appUsers.length
+    ? appUsers
+        .map((u) => ({ name: A.txt(u.full_name) || A.txt(u.email) || "—", value: rows.filter((r) => r.created_by === u.id).length }))
+        .filter((d) => d.value > 0)
+        .sort((a, b) => b.value - a.value)
+    : isAdmin
+      ? []
+      : [{ name: "माझी सर्वेक्षणे / My Surveys", value: rows.length }];
 
   const genderData = [{ name: "पुरुष", value: male }, { name: "स्त्री", value: female }, { name: "इतर", value: other }];
   const ageData = A.AGE_BANDS.map((b) => ({ name: b.name, value: ages.filter(b.test).length }));
