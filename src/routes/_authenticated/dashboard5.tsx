@@ -341,28 +341,48 @@ function Overview({ rows, people }: Ctx) {
     माजी: pos.filter((p) => A.txt(p.type).includes(t) && A.txt(p.status).includes("माजी")).length,
   }));
 
+  const genderData = [{ name: "पुरुष", value: male }, { name: "स्त्री", value: female }, { name: "इतर", value: other }];
+  const ageData = A.AGE_BANDS.map((b) => ({ name: b.name, value: ages.filter(b.test).length }));
+  const districtData = A.groupCount(rows, (r) => A.txt(r.district));
+  const talukaData = A.groupCount(rows, (r) => A.txt(r.taluka));
+  const villageData = A.groupCount(rows, (r) => A.txt(r.village));
+
   return (
     <div className="space-y-4">
       <G>
-        <ChartCard title="लिंग वितरण / Gender Distribution">
-          <PieCh donut data={[{ name: "पुरुष", value: male }, { name: "स्त्री", value: female }, { name: "इतर", value: other }]} />
+        <ChartCard
+          title="लिंग वितरण / Gender Distribution"
+          expand={<div className="h-[68vh]"><PieCh donut data={genderData} unit="सदस्य / members" /></div>}
+        >
+          <PieCh donut data={genderData} />
         </ChartCard>
-        <ChartCard title="वयोगट वितरण / Age Group Distribution">
-          <BarCh data={A.AGE_BANDS.map((b) => ({ name: b.name, value: ages.filter(b.test).length }))} />
+        <ChartCard
+          title="वयोगट वितरण / Age Group Distribution"
+          expand={<div className="h-[70vh]"><BarCh multi limit={40} data={ageData} unit="सदस्य / members" /></div>}
+        >
+          <BarCh data={ageData} />
         </ChartCard>
-        <ChartCard title="जिल्हानिहाय कुटुंबे / Families by District">
-          <BarCh data={A.groupCount(rows, (r) => A.txt(r.district))} color="#10b981" />
+        <ChartCard
+          title="जिल्हानिहाय कुटुंबे / Families by District"
+          expand={<div className="h-[70vh]"><BarCh horizontal multi limit={999} data={districtData} color="#10b981" unit="कुटुंबे / families" /></div>}
+        >
+          <BarCh data={districtData} color="#10b981" />
         </ChartCard>
-        <ChartCard title="तालुकानिहाय कुटुंबे / Families by Taluka">
-          <BarCh data={A.groupCount(rows, (r) => A.txt(r.taluka))} color="#8b5cf6" />
+        <ChartCard
+          title="तालुकानिहाय कुटुंबे / Families by Taluka"
+          expand={<div className="h-[70vh]"><BarCh horizontal multi limit={999} data={talukaData} color="#8b5cf6" unit="कुटुंबे / families" /></div>}
+        >
+          <BarCh data={talukaData} color="#8b5cf6" />
         </ChartCard>
-        <ChartCard title="गावनिहाय कुटुंबे / Families by Village">
-          <BarCh horizontal data={A.groupCount(rows, (r) => A.txt(r.village))} color="#f59e0b" />
+        <ChartCard
+          title="गावनिहाय कुटुंबे / Families by Village"
+          expand={<div className="h-[70vh]"><BarCh horizontal multi limit={999} data={villageData} color="#f59e0b" unit="कुटुंबे / families" /></div>}
+        >
+          <BarCh horizontal data={villageData} color="#f59e0b" />
         </ChartCard>
 
         <ChartCard
           title="शिक्षणानुसार / Education-wise"
-          subtitle="कुटुंबातील सदस्यांचे शैक्षणिक स्तर"
           expand={<div className="h-[70vh]"><BarCh horizontal multi limit={40} data={eduData} unit="सदस्य / Members" /></div>}
         >
           <BarCh horizontal data={eduData} color="#2563eb" unit="सदस्य / Members" />
@@ -370,7 +390,6 @@ function Overview({ rows, people }: Ctx) {
 
         <ChartCard
           title="व्यवसायानुसार / Occupation-wise"
-          subtitle="व्यवसाय गटानुसार सदस्य संख्या"
           expand={<div className="h-[70vh]"><BarCh horizontal multi limit={40} data={occData} unit="सदस्य / Members" /></div>}
         >
           <BarCh horizontal data={occData} color="#10b981" unit="सदस्य / Members" />
@@ -378,7 +397,6 @@ function Overview({ rows, people }: Ctx) {
 
         <ChartCard
           title="घर प्रकारानुसार / House Type"
-          subtitle="कच्चे / पक्के घर वितरण"
           expand={<div className="h-[68vh]"><PieCh donut data={houseData} unit="कुटुंबे / families" /></div>}
         >
           <PieCh donut data={houseData} unit="कुटुंबे / families" />
@@ -386,7 +404,6 @@ function Overview({ rows, people }: Ctx) {
 
         <ChartCard
           title="शेतजमीन / Landholding"
-          subtitle="जमीन धारणा गटानुसार कुटुंबे"
           expand={<div className="h-[68vh]"><BarCh multi limit={20} data={landData} unit="कुटुंबे / Families" /></div>}
         >
           <BarCh data={landData} color="#84cc16" unit="कुटुंबे / Families" />
@@ -394,7 +411,6 @@ function Overview({ rows, people }: Ctx) {
 
         <ChartCard
           title="पिक प्रकारानुसार / Crop Types"
-          subtitle="मुख्य पिके घेणाऱ्या कुटुंबांची संख्या"
           expand={<div className="h-[70vh]"><BarCh horizontal multi limit={40} data={cropData} unit="कुटुंबे / Families" /></div>}
         >
           <BarCh horizontal data={cropData} color="#f59e0b" unit="कुटुंबे / Families" />
@@ -402,7 +418,6 @@ function Overview({ rows, people }: Ctx) {
 
         <ChartCard
           title="सिंचन साधनानुसार / Irrigation Sources"
-          subtitle="सिंचन साधने वापरणाऱ्या कुटुंबांची संख्या"
           expand={<div className="h-[68vh]"><PieCh data={irrData} unit="कुटुंबे / families" /></div>}
         >
           <PieCh data={irrData} unit="कुटुंबे / families" />
@@ -410,7 +425,6 @@ function Overview({ rows, people }: Ctx) {
 
         <ChartCard
           title="घरातील वस्तू / Household Assets"
-          subtitle="वस्तू असलेल्या कुटुंबांची संख्या"
           expand={<div className="h-[70vh]"><BarCh horizontal multi limit={40} data={assetData} unit="कुटुंबे / Families" /></div>}
         >
           <BarCh horizontal data={assetData} color="#06b6d4" unit="कुटुंबे / Families" />
@@ -418,7 +432,6 @@ function Overview({ rows, people }: Ctx) {
 
         <ChartCard
           title="पदानुसार — आजी / माजी / Positions"
-          subtitle="राजकीय / सामाजिक / लोकप्रतिनिधी — धारण केलेले पद"
           expand={<div className="h-[68vh]"><GroupedBar data={posData} series={[{ key: "आजी", label: "आजी / Current", color: "#10b981" }, { key: "माजी", label: "माजी / Former", color: "#f59e0b" }]} /></div>}
         >
           <GroupedBar data={posData} series={[{ key: "आजी", label: "आजी / Current", color: "#10b981" }, { key: "माजी", label: "माजी / Former", color: "#f59e0b" }]} />
