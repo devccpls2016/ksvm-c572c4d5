@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, ClipboardList, PlusCircle, LogOut, UserPlus, BarChart3, PieChart, Gauge } from "lucide-react";
+import { LayoutDashboard, ClipboardList, PlusCircle, LogOut, UserPlus, Gauge } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
