@@ -15,9 +15,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedNewRouteImport } from './routes/_authenticated/new'
 import { Route as AuthenticatedDashboard5RouteImport } from './routes/_authenticated/dashboard5'
-import { Route as AuthenticatedDashboard4RouteImport } from './routes/_authenticated/dashboard4'
-import { Route as AuthenticatedDashboard3RouteImport } from './routes/_authenticated/dashboard3'
-import { Route as AuthenticatedDashboard2RouteImport } from './routes/_authenticated/dashboard2'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedSurveysIndexRouteImport } from './routes/_authenticated/surveys.index'
 import { Route as AuthenticatedSurveysIdRouteImport } from './routes/_authenticated/surveys.$id'
@@ -52,21 +49,6 @@ const AuthenticatedDashboard5Route = AuthenticatedDashboard5RouteImport.update({
   path: '/dashboard5',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedDashboard4Route = AuthenticatedDashboard4RouteImport.update({
-  id: '/dashboard4',
-  path: '/dashboard4',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedDashboard3Route = AuthenticatedDashboard3RouteImport.update({
-  id: '/dashboard3',
-  path: '/dashboard3',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedDashboard2Route = AuthenticatedDashboard2RouteImport.update({
-  id: '/dashboard2',
-  path: '/dashboard2',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -94,9 +76,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/dashboard2': typeof AuthenticatedDashboard2Route
-  '/dashboard3': typeof AuthenticatedDashboard3Route
-  '/dashboard4': typeof AuthenticatedDashboard4Route
   '/dashboard5': typeof AuthenticatedDashboard5Route
   '/new': typeof AuthenticatedNewRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -108,9 +87,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/dashboard2': typeof AuthenticatedDashboard2Route
-  '/dashboard3': typeof AuthenticatedDashboard3Route
-  '/dashboard4': typeof AuthenticatedDashboard4Route
   '/dashboard5': typeof AuthenticatedDashboard5Route
   '/new': typeof AuthenticatedNewRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -124,9 +100,6 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/dashboard2': typeof AuthenticatedDashboard2Route
-  '/_authenticated/dashboard3': typeof AuthenticatedDashboard3Route
-  '/_authenticated/dashboard4': typeof AuthenticatedDashboard4Route
   '/_authenticated/dashboard5': typeof AuthenticatedDashboard5Route
   '/_authenticated/new': typeof AuthenticatedNewRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
@@ -140,9 +113,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/dashboard'
-    | '/dashboard2'
-    | '/dashboard3'
-    | '/dashboard4'
     | '/dashboard5'
     | '/new'
     | '/users'
@@ -154,9 +124,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/dashboard'
-    | '/dashboard2'
-    | '/dashboard3'
-    | '/dashboard4'
     | '/dashboard5'
     | '/new'
     | '/users'
@@ -169,9 +136,6 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/dashboard'
-    | '/_authenticated/dashboard2'
-    | '/_authenticated/dashboard3'
-    | '/_authenticated/dashboard4'
     | '/_authenticated/dashboard5'
     | '/_authenticated/new'
     | '/_authenticated/users'
@@ -230,27 +194,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboard5RouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/dashboard4': {
-      id: '/_authenticated/dashboard4'
-      path: '/dashboard4'
-      fullPath: '/dashboard4'
-      preLoaderRoute: typeof AuthenticatedDashboard4RouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/dashboard3': {
-      id: '/_authenticated/dashboard3'
-      path: '/dashboard3'
-      fullPath: '/dashboard3'
-      preLoaderRoute: typeof AuthenticatedDashboard3RouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/dashboard2': {
-      id: '/_authenticated/dashboard2'
-      path: '/dashboard2'
-      fullPath: '/dashboard2'
-      preLoaderRoute: typeof AuthenticatedDashboard2RouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -284,9 +227,6 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedDashboard2Route: typeof AuthenticatedDashboard2Route
-  AuthenticatedDashboard3Route: typeof AuthenticatedDashboard3Route
-  AuthenticatedDashboard4Route: typeof AuthenticatedDashboard4Route
   AuthenticatedDashboard5Route: typeof AuthenticatedDashboard5Route
   AuthenticatedNewRoute: typeof AuthenticatedNewRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
@@ -297,9 +237,6 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedDashboard2Route: AuthenticatedDashboard2Route,
-  AuthenticatedDashboard3Route: AuthenticatedDashboard3Route,
-  AuthenticatedDashboard4Route: AuthenticatedDashboard4Route,
   AuthenticatedDashboard5Route: AuthenticatedDashboard5Route,
   AuthenticatedNewRoute: AuthenticatedNewRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
