@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UserLoginRouteImport } from './routes/user-login'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
@@ -21,9 +23,19 @@ import { Route as AuthenticatedSurveysIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedSurveysIdRouteImport } from './routes/_authenticated/surveys.$id'
 import { Route as AuthenticatedSurveysViewIdRouteImport } from './routes/_authenticated/surveys.view.$id'
 
+const UserLoginRoute = UserLoginRouteImport.update({
+  id: '/user-login',
+  path: '/user-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin-login',
+  path: '/admin-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -81,7 +93,9 @@ const AuthenticatedSurveysViewIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/admin-login': typeof AdminLoginRoute
   '/auth': typeof AuthRoute
+  '/user-login': typeof UserLoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dashboard5': typeof AuthenticatedDashboard5Route
   '/new': typeof AuthenticatedNewRoute
@@ -93,7 +107,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/admin-login': typeof AdminLoginRoute
   '/auth': typeof AuthRoute
+  '/user-login': typeof UserLoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dashboard5': typeof AuthenticatedDashboard5Route
   '/new': typeof AuthenticatedNewRoute
@@ -107,7 +123,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/admin-login': typeof AdminLoginRoute
   '/auth': typeof AuthRoute
+  '/user-login': typeof UserLoginRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/dashboard5': typeof AuthenticatedDashboard5Route
   '/_authenticated/new': typeof AuthenticatedNewRoute
@@ -121,7 +139,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$'
+    | '/admin-login'
     | '/auth'
+    | '/user-login'
     | '/dashboard'
     | '/dashboard5'
     | '/new'
@@ -133,7 +153,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$'
+    | '/admin-login'
     | '/auth'
+    | '/user-login'
     | '/dashboard'
     | '/dashboard5'
     | '/new'
@@ -146,7 +168,9 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/_authenticated'
+    | '/admin-login'
     | '/auth'
+    | '/user-login'
     | '/_authenticated/dashboard'
     | '/_authenticated/dashboard5'
     | '/_authenticated/new'
@@ -160,16 +184,32 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AdminLoginRoute: typeof AdminLoginRoute
   AuthRoute: typeof AuthRoute
+  UserLoginRoute: typeof UserLoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/user-login': {
+      id: '/user-login'
+      path: '/user-login'
+      fullPath: '/user-login'
+      preLoaderRoute: typeof UserLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-login': {
+      id: '/admin-login'
+      path: '/admin-login'
+      fullPath: '/admin-login'
+      preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -273,7 +313,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AdminLoginRoute: AdminLoginRoute,
   AuthRoute: AuthRoute,
+  UserLoginRoute: UserLoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
