@@ -13,6 +13,8 @@ export const Route = createFileRoute("/admin-login")({
       { name: "description", content: "कोहळी समाज विकास मंडळ — प्रशासक लॉगिन पॅनेल." },
       { property: "og:title", content: `Admin Login | ${T.appName}` },
       { property: "og:description", content: "कोहळी समाज विकास मंडळ — प्रशासक लॉगिन पॅनेल." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AdminLogin,

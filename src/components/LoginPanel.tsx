@@ -18,8 +18,8 @@ export function LoginPanel({
   subtitle: _subtitle,
   defaultEmail = "",
   hint,
-  otherLabel,
-  otherTo,
+  otherLabel: _otherLabel,
+  otherTo: _otherTo,
 }: {
   panel: Panel;
   title: string;
@@ -86,15 +86,15 @@ export function LoginPanel({
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 pb-6 sm:px-7">
-          <nav aria-label="लॉगिन प्रकार" className="mb-5 grid h-36px grid-cols-2 rounded-[10px] bg-secondary p-1">
+          <nav aria-label="लॉगिन प्रकार" className="mb-5 grid h-[36px] grid-cols-2 rounded-[10px] bg-secondary p-1">
             <Link
-              to={panel === "admin" ? "/admin-login" : "/admin-login"}
+              to="/admin-login"
               className={`flex h-8 items-center justify-center gap-2 rounded-[8px] text-sm transition-colors ${panel === "admin" ? "bg-card font-medium text-foreground shadow-sm" : "text-muted-foreground"}`}
             >
               <ShieldCheck className="h-4 w-4" /> Admin
             </Link>
             <Link
-              to={panel === "surveyor" ? "/user-login" : "/user-login"}
+              to="/user-login"
               className={`flex h-8 items-center justify-center gap-2 rounded-[8px] text-sm transition-colors ${panel === "surveyor" ? "bg-card font-medium text-foreground shadow-sm" : "text-muted-foreground"}`}
             >
               <UserRound className="h-4 w-4" /> Survey User
