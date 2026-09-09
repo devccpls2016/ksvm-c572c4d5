@@ -10,6 +10,8 @@ export const Route = createFileRoute("/user-login")({
       { name: "description", content: "कोहळी समाज विकास मंडळ — सर्वेक्षण कर्मचारी लॉगिन पॅनेल." },
       { property: "og:title", content: `Survey User Login | ${T.appName}` },
       { property: "og:description", content: "कोहळी समाज विकास मंडळ — सर्वेक्षण कर्मचारी लॉगिन पॅनेल." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: UserLogin,
@@ -18,6 +20,7 @@ export const Route = createFileRoute("/user-login")({
 function UserLogin() {
   return (
     <LoginPanel
+      key="surveyor-login"
       panel="surveyor"
       title="Survey User Panel"
       subtitle="सर्वेक्षण कर्मचारी लॉगिन — सर्वेक्षण नोंदणी"
