@@ -9,12 +9,23 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
 });
 
+const SURVEYOR_ALLOWED = ["/new", "/surveys"];
+
 function AuthLayout() {
-  const { session, loading } = useAuth();
+  const { session, loading, role, roleLoading } = useAuth();
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth" });
   }, [loading, session, navigate]);
+
+  // survey users only get the survey part of the app
+  useEffect(() => {
+    if (loading || roleLoading || !session || role !== "surveyor") return;
+    const allowed = SURVEYOR_ALLOWED.some((p) => pathname === p || pathname.startsWith(p + "/"));
+    if (!allowed) navigate({ to: "/surveys", replace: true });
+  }, [loading, roleLoading, session, role, pathname, navigate]);
 
   if (loading || !session) {
     return (
