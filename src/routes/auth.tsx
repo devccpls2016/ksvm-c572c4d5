@@ -20,6 +20,7 @@ export const Route = createFileRoute("/auth")({
 function AuthChooser() {
   return (
     <LoginPanel
+      key="auth-admin-login"
       panel="admin"
       title="Admin Panel"
       subtitle="प्रशासक लॉगिन"

@@ -20,6 +20,7 @@ export const Route = createFileRoute("/user-login")({
 function UserLogin() {
   return (
     <LoginPanel
+      key="surveyor-login"
       panel="surveyor"
       title="Survey User Panel"
       subtitle="सर्वेक्षण कर्मचारी लॉगिन — सर्वेक्षण नोंदणी"

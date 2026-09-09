@@ -26,6 +26,7 @@ function AdminLogin() {
 
   return (
     <LoginPanel
+      key="admin-login"
       panel="admin"
       title="Admin Panel"
       subtitle="प्रशासक लॉगिन — संपूर्ण डॅशबोर्ड व व्यवस्थापन"
