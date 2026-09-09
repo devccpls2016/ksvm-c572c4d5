@@ -17,9 +17,8 @@ const ADMIN_ITEMS = [
 ];
 
 const SURVEYOR_ITEMS = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Final Dashboard", url: "/dashboard5", icon: Gauge },
   { title: "Make Survey", url: "/new", icon: PlusCircle },
+  { title: "My Surveys", url: "/surveys", icon: ClipboardList },
 ];
 
 
